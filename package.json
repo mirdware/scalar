@@ -1,0 +1,30 @@
+{
+  "name": "pinnacle",
+  "version": "0.1.0",
+  "description": "Javascript not intrusive",
+  "main": "pinnacle.js",
+  "scripts": {
+    "build": "node_modules/webpack/bin/webpack.js --watch",
+    "start": "npm run build & node_modules/webpack-dev-server/bin/webpack-dev-server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/mirdware/pinnacle.git"
+  },
+  "keywords": [
+    "javascript",
+    "structure"
+  ],
+  "author": "Marlon Ramirez",
+  "bugs": {
+    "url": "https://github.com/mirdware/pinnacle/issues"
+  },
+  "homepage": "https://github.com/mirdware/pinnacle#readme",
+  "devDependencies": {
+    "babel-core": "^6.17.0",
+    "babel-loader": "^6.2.5",
+    "babel-preset-es2015": "^6.16.0",
+    "webpack": "^1.13.2",
+    "webpack-dev-server": "^1.16.2"
+  }
+}

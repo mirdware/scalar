@@ -1,0 +1,17 @@
+#square {
+    width: 200px;
+    height: 200px;
+    background-color: #000;
+}
+
+#square div {
+    color: #FFF;
+}
+
+#square .close {
+    width: 15px;
+    height: 15px;
+    background-color: #FFF;
+    display: block;
+    float: right;
+}
