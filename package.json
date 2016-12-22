@@ -4,8 +4,7 @@
   "description": "Javascript not intrusive",
   "main": "pinnacle.js",
   "scripts": {
-    "build": "node_modules/webpack/bin/webpack.js --watch",
-    "start": "npm run build & node_modules/webpack-dev-server/bin/webpack-dev-server.js"
+    "start": "node_modules/webpack-dev-server/bin/webpack-dev-server.js"
   },
   "repository": {
     "type": "git",
@@ -16,6 +15,7 @@
     "structure"
   ],
   "author": "Marlon Ramirez",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/mirdware/pinnacle/issues"
   },

@@ -1,17 +1,17 @@
 #square {
-    width: 200px;
-    height: 200px;
-    background-color: #000;
+  width: 200px;
+  height: 200px;
+  background-color: #000;
 }
 
-#square div {
-    color: #FFF;
+#square table {
+  color: #FFF;
 }
 
-#square .close {
-    width: 15px;
-    height: 15px;
-    background-color: #FFF;
-    display: block;
-    float: right;
+#square .open {
+  width: 15px;
+  height: 15px;
+  background-color: #FFF;
+  display: block;
+  float: right;
 }

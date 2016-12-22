@@ -1,16 +1,16 @@
 import {Template} from '../../pinnacle';
 
+function render(addr) {
+  return Template.html`
+    <tr>
+      <td>$${addr.first}</td>
+      <td>$${addr.last}</td>
+    </tr>
+  `;
+}
+
 export default class Table extends Template {
-    constructor() {
-        super((addrs) => Template.html`
-            <table>
-            ${addrs.map((addr) => Template.html`
-                <tr>
-                    <td>$${addr.first}</td>
-                    <td>$${addr.last}</td>
-                </tr>
-            `)}
-            </table>
-        `);
-    }
+  constructor() {
+    super((addrs) => addrs.map(render));
+  }
 }

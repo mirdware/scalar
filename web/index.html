@@ -7,11 +7,18 @@
 </head>
 <body>
     <div id="square">
-        <span class="close"></span>
-        <div data-bind="innerHTML:name"></div>
+        <span class="open" data-bind="classList:openClass"></span>
+        <table>
+            <thead>
+                <th>Nombre</th>
+                <th>Apellido</th>
+            </thead>
+            <tbody data-bind="innerHTML:name"></tbody>
+        </table>
     </div>
     <form id="hello-world">
-        <input type="text" />
+        <input type="text" /><br/>
+        <textarea data-bind="textContent:name" disabled></textarea>
         <div data-bind="innerHTML:name"></div>
     </form>
     <script src="../dist/pinnacle.min.js"></script>
