@@ -1,4 +1,4 @@
-import {Resource} from '../../pinnacle';
+import {Resource} from '../../scalar';
 import Table from '../templates/Table';
 
 const tplTable = new Table();

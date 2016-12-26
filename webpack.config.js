@@ -3,7 +3,7 @@ var path = require('path'),
     webpack = require('webpack');
 
 module.exports = {
-    entry: './examples/'+config.name+'.js',
+    entry: './examples/app.js',
     output: {
         path: __dirname,
         filename: './dist/'+config.name+'.min.js'

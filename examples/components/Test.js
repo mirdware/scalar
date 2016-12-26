@@ -1,5 +1,5 @@
 import User from '../repositories/User';
-import {Component} from '../../pinnacle';
+import {Component} from '../../scalar';
 
 const user = new User();
 
@@ -9,8 +9,8 @@ function enter(e) {
 
 function close(e) {
   let className = e.target.className;
-  this.getOpenClass().remove(className);
-  user.get((tpl) => this.setName(tpl));
+  this.open.removeClass(className);
+  user.get((tpl) => this.name.value(tpl));
 }
 
 export default class Test extends Component {

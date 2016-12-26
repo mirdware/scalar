@@ -1,7 +1,7 @@
-import {Component} from '../../pinnacle';
+import {Component} from '../../scalar';
 
 function render(e) {
-  this.setName(`<b>${e.target.value}</b>`);
+  this.name.value(`<b>${e.target.value}</b>`);
 }
 
 export default class HelloWorld extends Component {

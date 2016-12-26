@@ -2,25 +2,25 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Pinnacle</title>
+    <title>Scalar</title>
     <link rel="stylesheet" type="text/css" href="theme.css" />
 </head>
 <body>
     <div id="square">
-        <span class="open" data-bind="classList:openClass"></span>
+        <span class="open" data-bind="open"></span>
         <table>
             <thead>
                 <th>Nombre</th>
                 <th>Apellido</th>
             </thead>
-            <tbody data-bind="innerHTML:name"></tbody>
+            <tbody data-bind="name"></tbody>
         </table>
     </div>
     <form id="hello-world">
         <input type="text" /><br/>
-        <textarea data-bind="textContent:name" disabled></textarea>
-        <div data-bind="innerHTML:name"></div>
+        <textarea data-bind="name" disabled></textarea>
+        <div data-bind="name"></div>
     </form>
-    <script src="../dist/pinnacle.min.js"></script>
+    <script src="../dist/scalar.min.js"></script>
 </body>
 </html>

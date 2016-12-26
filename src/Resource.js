@@ -5,28 +5,27 @@ export class Resource {
   }
 
   get(data = {}) {
-    return manage(this.xhr, formatURL(this.url, data), 'GET', data);
+    let url = formatURL(this.url, data, true);
+    return manage(this.xhr, url, 'GET', null);
   }
 
   post(data = {}) {
-    return manage(this.xhr, formatURL(this.url, data), 'POST', data);
+    let url = formatURL(this.url, data);
+    return manage(this.xhr, url, 'POST', formatQuery(data));
   }
 
   put(data = {}) {
-    return manage(this.xhr, formatURL(this.url, data), 'PUT', data);
+    let url = formatURL(this.url, data);
+    return manage(this.xhr, url, 'PUT', formatQuery(data));
   }
 
   delete(data = {}) {
-    return manage(this.xhr, formatURL(this.url, data), 'DELETE', data);
+    let url = formatURL(this.url, data, true);
+    return manage(this.xhr, url, 'DELETE', null);
   }
 }
 
 function manage(xmlHttp, url, method, data) {
-  data = formatQuery(data);
-  if (method == 'GET') {
-    url = url+'?'+data;
-    data = null;
-  }
   xmlHttp.open(method, url, true);
   xmlHttp.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
   xmlHttp.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
@@ -36,7 +35,7 @@ function manage(xmlHttp, url, method, data) {
   });
 }
 
-function formatURL(url, data) {
+function formatURL(url, data, hasQueryString) {
   for (let key in data) {
     let variable = '/{' + key + '}';
     if (url.indexOf(variable) !== -1) {
@@ -44,7 +43,13 @@ function formatURL(url, data) {
       delete data[key];
     }
   }
-  return url.replace(/\/\{(\w+)\}/gi, '');
+  url = url.replace(/\/\{(\w+)\}/gi, '');
+  if (hasQueryString) {
+    data = formatQuery(data);
+    if (data) url += '?' + data;
+    data = null;
+  }
+  return url;
 }
 
 function formatQuery(obj) {

@@ -1,4 +1,4 @@
-import {Template} from '../../pinnacle';
+import {Template} from '../../scalar';
 
 function render(addr) {
   return Template.html`

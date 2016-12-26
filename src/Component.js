@@ -1,15 +1,15 @@
+import {Observer} from './Observer';
+
 let collection = [];
-let props = {};
-let id = 0;
 let evtMount = new Event('mount');
 
-export class Component {
+export class Component extends Observer {
   constructor(selector, events) {
-    this.elements = document.querySelectorAll(selector);
-    this.id = (++id)+selector;
+    super();
     this.events = events || {};
-    props[this.id] = {}
-    for (let i=0, element; element = this.elements[i]; i++) {
+    let elements = document.querySelectorAll(selector);
+    for (let i=0, element; element = elements[i]; i++) {
+      this.addElement(element);
       let dataBinds = element.querySelectorAll('[data-bind]');
       for(let j=0, bind; bind = dataBinds[j]; j++) {
         bindData(bind, this);
@@ -58,29 +58,9 @@ function bindEvent(element, events, component) {
 
 function bindData(domElement, obj) {
   let id = obj.id;
-  let bind = domElement.getAttribute("data-bind").split(":");
-  let domAttr = bind[0].trim();
-  let itemAttr = bind[1].trim();
-  let prop = props[id][itemAttr];
-  let method = (itemAttr + '').replace(/^\s*([a-z])/g, ($1) => {
-    return $1.toUpperCase();
-  });
-  if (!prop) {
-    prop = {
-      value: domElement[domAttr],
-      obs: []
-    };
-    obj['set'+method] = (newValue) => {
-      prop.value = newValue;
-      for (let i=0, fn; fn = prop.obs[i]; i++) {
-        fn(newValue);
-      }
-      return obj;
-    }
-    obj['get'+method] = () => prop.value;
-    props[id][itemAttr] = prop;
+  let prop = domElement.getAttribute("data-bind");
+  if (!obj[prop]) {
+    obj[prop] = new Observer();
   }
-  prop.obs.push(
-    (newValue) => domElement[domAttr] = newValue
-  );
+  obj[prop].addElement(domElement);
 }
