@@ -6,38 +6,54 @@ export class Observer {
 
   addElement(domElement) {
     this.elements.push(domElement);
+    return this;
   }
 
   value(newValue) {
     if (newValue) {
       this.val = newValue;
-      for (let i=0, element; element = this.elements[i]; i++) {
+      this.elements.forEach((element) => {
         let attr = element.nodeName === 'INPUT'? 'value': 'innerHTML';
         element[attr] = newValue;
-      }
+      });
       return this;
     }
     return this.val;
   }
 
   addClass(ClassName) {
-    for (let i=0, element; element = this.elements[i]; i++) {
+    this.elements.forEach((element) => {
       element.classList.add(ClassName);
-    }
+    });
     return this;
   }
 
   removeClass(ClassName) {
-    for (let i=0, element; element = this.elements[i]; i++) {
+    this.elements.forEach((element) => {
       element.classList.remove(ClassName);
-    }
+    });
     return this;
   }
 
   toggleClass(ClassName) {
-    for (let i=0, element; element = this.elements[i]; i++) {
+    this.elements.forEach((element) => {
       element.classList.toggle(ClassName);
-    }
+    });
     return this;
+  }
+
+  static mix(mixin) {
+    copyProperties(Observer, mixin);
+    copyProperties(Observer.prototype, mixin.prototype);
+    return Observer;
+  }
+}
+
+function copyProperties(target, source) {
+  for (let key of Reflect.ownKeys(source)) {
+    if (key !== "constructor" && key !== "prototype" && key !== "name") {
+      let desc = Object.getOwnPropertyDescriptor(source, key);
+      Object.defineProperty(target, key, desc);
+    }
   }
 }

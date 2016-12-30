@@ -11,12 +11,12 @@ export class Resource {
 
   post(data = {}) {
     let url = formatURL(this.url, data);
-    return manage(this.xhr, url, 'POST', formatQuery(data));
+    return manage(this.xhr, url, 'POST', serialize(data));
   }
 
   put(data = {}) {
     let url = formatURL(this.url, data);
-    return manage(this.xhr, url, 'PUT', formatQuery(data));
+    return manage(this.xhr, url, 'PUT', serialize(data));
   }
 
   delete(data = {}) {
@@ -45,14 +45,14 @@ function formatURL(url, data, hasQueryString) {
   }
   url = url.replace(/\/\{(\w+)\}/gi, '');
   if (hasQueryString) {
-    data = formatQuery(data);
+    data = serialize(data);
     if (data) url += '?' + data;
     data = null;
   }
   return url;
 }
 
-function formatQuery(obj) {
+function serialize(obj) {
   if(typeof obj !== 'object') {
     return obj;
   }
