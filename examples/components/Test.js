@@ -10,7 +10,7 @@ function enter(e) {
 function close(e) {
   let className = e.target.className;
   this.open.removeClass(className);
-  user.get((tpl) => this.name.value(tpl));
+  user.get((tpl) => this.name.set(tpl));
 }
 
 export default class Test extends Component {

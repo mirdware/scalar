@@ -1,24 +1,55 @@
+function copyProperties(target, source) {
+  for (let key of Reflect.ownKeys(source)) {
+    if (key !== "constructor" && key !== "prototype" && key !== "name") {
+      let desc = Object.getOwnPropertyDescriptor(source, key);
+      Object.defineProperty(target, key, desc);
+    }
+  }
+}
+
+function bindData(component, domElement) {
+  let id = component.id;
+  let prop = domElement.getAttribute("data-bind");
+  if (!component[prop]) {
+    component[prop] = new Observer();
+  }
+  component[prop].addElement(domElement);
+}
+
 export class Observer {
   constructor() {
     this.elements = [];
-    this.val = '';
+    this.value = '';
+  }
+
+  get() {
+    return this.value;
+  }
+
+  set(value) {
+    this.value = value;
+    this.elements.forEach((element) => {
+      let attr = element.nodeName === 'INPUT'? 'value': 'innerHTML';
+      element[attr] = value;
+    });
+    return this;
   }
 
   addElement(domElement) {
     this.elements.push(domElement);
+    let dataBinds = domElement.querySelectorAll('[data-bind]');
+    console.log(dataBinds);
+    for(let bind of dataBinds) {
+      bindData(this, bind);
+    }
     return this;
   }
 
-  value(newValue) {
-    if (newValue) {
-      this.val = newValue;
-      this.elements.forEach((element) => {
-        let attr = element.nodeName === 'INPUT'? 'value': 'innerHTML';
-        element[attr] = newValue;
-      });
-      return this;
-    }
-    return this.val;
+  setAttribute(name, attr) {
+    this.elements.forEach((element) => {
+      element[name] = attr;
+    });
+    return this;
   }
 
   addClass(ClassName) {
@@ -46,14 +77,5 @@ export class Observer {
     copyProperties(Observer, mixin);
     copyProperties(Observer.prototype, mixin.prototype);
     return Observer;
-  }
-}
-
-function copyProperties(target, source) {
-  for (let key of Reflect.ownKeys(source)) {
-    if (key !== "constructor" && key !== "prototype" && key !== "name") {
-      let desc = Object.getOwnPropertyDescriptor(source, key);
-      Object.defineProperty(target, key, desc);
-    }
   }
 }

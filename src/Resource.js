@@ -1,30 +1,3 @@
-export class Resource {
-  constructor(url) {
-    this.url = url;
-    this.xhr = new XMLHttpRequest();
-  }
-
-  get(data = {}) {
-    let url = formatURL(this.url, data, true);
-    return manage(this.xhr, url, 'GET', null);
-  }
-
-  post(data = {}) {
-    let url = formatURL(this.url, data);
-    return manage(this.xhr, url, 'POST', serialize(data));
-  }
-
-  put(data = {}) {
-    let url = formatURL(this.url, data);
-    return manage(this.xhr, url, 'PUT', serialize(data));
-  }
-
-  delete(data = {}) {
-    let url = formatURL(this.url, data, true);
-    return manage(this.xhr, url, 'DELETE', null);
-  }
-}
-
 function manage(xmlHttp, url, method, data) {
   xmlHttp.open(method, url, true);
   xmlHttp.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
@@ -52,13 +25,13 @@ function formatURL(url, data, hasQueryString) {
   return url;
 }
 
-function serialize(obj) {
-  if(typeof obj !== 'object') {
-    return obj;
+function serialize(data) {
+  if(typeof data !== 'object') {
+    return data;
   }
   let res = [];
-  for(let key in obj) {
-    let value = obj[key];
+  for(let key in data) {
+    let value = data[key];
     if(typeof value !== 'function') {
       res.push(encodeURIComponent(key) + '=' + encodeURIComponent(value));
     }
@@ -78,5 +51,32 @@ function solve(xmlHttp, resolve, reject) {
     } else {
       reject(response, status);
     }
+  }
+}
+
+export class Resource {
+  constructor(url) {
+    this.url = url;
+    this.xhr = new XMLHttpRequest();
+  }
+
+  get(data = {}) {
+    let url = formatURL(this.url, data, true);
+    return manage(this.xhr, url, 'GET', null);
+  }
+
+  post(data = {}) {
+    let url = formatURL(this.url, data);
+    return manage(this.xhr, url, 'POST', serialize(data));
+  }
+
+  put(data = {}) {
+    let url = formatURL(this.url, data);
+    return manage(this.xhr, url, 'PUT', serialize(data));
+  }
+
+  delete(data = {}) {
+    let url = formatURL(this.url, data, true);
+    return manage(this.xhr, url, 'DELETE', null);
   }
 }

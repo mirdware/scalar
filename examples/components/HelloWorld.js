@@ -1,7 +1,7 @@
 import {Component} from '../../scalar';
 
 function render(e) {
-  this.name.value(`<b>${e.target.value}</b>`);
+  this.name.set(`<b>${e.target.value}</b>`);
 }
 
 export default class HelloWorld extends Component {

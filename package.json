@@ -1,15 +1,16 @@
 {
   "name": "scalar",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Javascript not intrusive",
-  "main": "scalar.js",
+  "main": "dist/scalar.min.js",
   "scripts": {
     "build": "node_modules/.bin/webpack --progress -p",
-    "start": "node_modules/.bin/webpack-dev-server"
+    "serve": "node_modules/.bin/webpack-dev-server",
+    "postinstall": "npm run build"
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/mirdware/pinnacle.git"
+    "url": "git+ssh://git@github.com/mirdware/scalar.git"
   },
   "keywords": [
     "javascript",
@@ -18,9 +19,9 @@
   "author": "Marlon Ramirez",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/mirdware/pinnacle/issues"
+    "url": "https://github.com/mirdware/scalar/issues"
   },
-  "homepage": "https://github.com/mirdware/pinnacle#readme",
+  "homepage": "https://github.com/mirdware/scalar#readme",
   "devDependencies": {
     "babel-core": "^6.17.0",
     "babel-loader": "^6.2.5",

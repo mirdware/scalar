@@ -1,17 +1,20 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <title>Scalar</title>
     <link rel="stylesheet" type="text/css" href="theme.css" />
+     <link rel="shortcut icon" type="image/x-icon" href="favicon.ico" />
 </head>
 <body>
     <div id="square">
         <span class="open" data-bind="open"></span>
         <table>
             <thead>
-                <th>Nombre</th>
-                <th>Apellido</th>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Apellido</th>
+                </tr>
             </thead>
             <tbody data-bind="name"></tbody>
         </table>
@@ -21,6 +24,6 @@
         <textarea data-bind="name" disabled></textarea>
         <div data-bind="name"></div>
     </form>
-    <script src="../dist/scalar.min.js"></script>
+    <script src="../dist/app.min.js"></script>
 </body>
 </html>

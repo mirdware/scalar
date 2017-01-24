@@ -1,3 +1,12 @@
+function htmlEscape(str) {
+  return str.replace(/&/g, '&amp;')
+    .replace(/>/g, '&gt;')
+    .replace(/</g, '&lt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+    .replace(/`/g, '&#96;');
+}
+
 export class Template {
   constructor(tpl) {
     this.tpl = tpl;
@@ -28,13 +37,4 @@ export class Template {
     result += raw[raw.length-1];
     return result;
   }
-}
-
-function htmlEscape(str) {
-  return str.replace(/&/g, '&amp;')
-    .replace(/>/g, '&gt;')
-    .replace(/</g, '&lt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;')
-    .replace(/`/g, '&#96;');
 }
