@@ -7,19 +7,22 @@ function copyProperties(target, source) {
   }
 }
 
-function bindData(component, domElement) {
-  let id = component.id;
+function bindData(observer, domElement) {
   let prop = domElement.getAttribute("data-bind");
-  if (!component[prop]) {
-    component[prop] = new Observer();
+  if (!observer[prop]) {
+    observer[prop] = new Observer();
   }
-  component[prop].addElement(domElement);
+  observer[prop].addElement(domElement);
+}
+
+function observe(observer, fn) {
+  observer.elements.forEach(fn);
+  return observer;
 }
 
 export class Observer {
   constructor() {
     this.elements = [];
-    this.value = '';
   }
 
   get() {
@@ -27,50 +30,48 @@ export class Observer {
   }
 
   set(value) {
-    this.value = value;
-    this.elements.forEach((element) => {
-      let attr = element.nodeName === 'INPUT'? 'value': 'innerHTML';
-      element[attr] = value;
-    });
-    return this;
+    let observer = this;
+    if (value.then) {
+      value.then((data) => observer.set(data));
+      return observer;
+    }
+    let template = observer.template;
+    value = template? template.render(value): value;
+    observer.elements.forEach((element) => element[element.nodeName === 'INPUT'? 'value': 'innerHTML'] = value);
+    observer.value = value;
+    return observer;
   }
 
   addElement(domElement) {
-    this.elements.push(domElement);
+    let observer = this;
     let dataBinds = domElement.querySelectorAll('[data-bind]');
-    console.log(dataBinds);
-    for(let bind of dataBinds) {
-      bindData(this, bind);
+    observer.elements.push(domElement);
+    for (let i = 0, bind; bind = dataBinds[i]; i++) {
+      bindData(observer, bind);
     }
-    return this;
+    return observer;
+  }
+
+  setTemplate(tpl) {
+    let observer = this;
+    observer.template = tpl;
+    return observer;
   }
 
   setAttribute(name, attr) {
-    this.elements.forEach((element) => {
-      element[name] = attr;
-    });
-    return this;
+    return observe(this, (element) => element[name] = attr);
   }
 
   addClass(ClassName) {
-    this.elements.forEach((element) => {
-      element.classList.add(ClassName);
-    });
-    return this;
+    return observe(this, (element) => element.classList.add(ClassName));
   }
 
   removeClass(ClassName) {
-    this.elements.forEach((element) => {
-      element.classList.remove(ClassName);
-    });
-    return this;
+    return observe(this, (element) => element.classList.remove(ClassName));
   }
 
   toggleClass(ClassName) {
-    this.elements.forEach((element) => {
-      element.classList.toggle(ClassName);
-    });
-    return this;
+    return observe(this, (element) => element.classList.toggle(ClassName));
   }
 
   static mix(mixin) {

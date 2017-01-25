@@ -22,6 +22,8 @@ module.exports = {
       }
     ]
   },
+  devtool: 'source-map',
+  debug: true,
   devServer: {
     host: '0.0.0.0',
     port: 6969,

@@ -1,4 +1,4 @@
-import {Component} from '../../scalar';
+import { Component } from '../../scalar';
 
 function render(e) {
   this.name.set(`<b>${e.target.value}</b>`);

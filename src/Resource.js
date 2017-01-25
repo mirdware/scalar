@@ -61,8 +61,9 @@ export class Resource {
   }
 
   get(data = {}) {
-    let url = formatURL(this.url, data, true);
-    return manage(this.xhr, url, 'GET', null);
+    let resource = this;
+    let url = formatURL(resource.url, data, true);
+    return manage(resource.xhr, url, 'GET', null);
   }
 
   post(data = {}) {

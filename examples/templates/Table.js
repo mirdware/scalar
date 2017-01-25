@@ -1,4 +1,4 @@
-import {Template} from '../../scalar';
+import { Template } from '../../scalar';
 
 function render(addr) {
   return Template.html`
@@ -9,7 +9,7 @@ function render(addr) {
   `;
 }
 
-export default class Table extends Template {
+export class Table extends Template {
   constructor() {
     super((addrs) => addrs.map(render));
   }

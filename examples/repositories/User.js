@@ -1,17 +1,7 @@
-import {Resource} from '../../scalar';
-import Table from '../templates/Table';
+import { Resource } from '../../scalar';
 
-const tplTable = new Table();
-
-export default class User extends Resource {
+export class User extends Resource {
     constructor() {
         super('response.json');
-    }
-
-    get(fn) {
-      return super.get().then((data) => {
-          data = tplTable.render(data);
-          fn(data);
-        });
     }
 }

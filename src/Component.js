@@ -1,4 +1,4 @@
-import {Observer} from './Observer';
+import { Observer } from './Observer';
 
 let collection = [];
 let evtMount = new Event('mount');
@@ -7,8 +7,7 @@ function bindEvent(component, element, events) {
   for (let el in events) {
     let fn = events[el];
     if (typeof fn === 'function') {
-      fn = fn.bind(component);
-      element.addEventListener(el, fn, true);
+      element.addEventListener(el, fn.bind(component), true);
       element.dispatchEvent(evtMount);
     } else {
       let elements = element.querySelectorAll(el);
@@ -22,17 +21,20 @@ function bindEvent(component, element, events) {
 export class Component extends Observer {
   constructor(selector, events) {
     super();
-    this.events = events || {};
+    let component = this;
     let elements = document.querySelectorAll(selector);
-    for (let element of elements) {
-      this.addElement(element);
+    component.events = events || {};
+    for (let i = 0, element; element = elements[i]; i++) {
+      component.addElement(element);
     }
   }
 
   compose() {
-    if (this.elements.length) {
-      for (let element of this.elements) {
-        bindEvent(this, element, this.events);
+    let component = this;
+    let elements = component.elements;
+    if (elements.length) {
+      for (let i = 0, element; element = elements[i]; i++) {
+        bindEvent(component, element, component.events);
       }
     }
   }
@@ -46,7 +48,7 @@ export class Component extends Observer {
   }
 
   static execute() {
-    for (let component of collection) {
+    for (let i = 0, component; component = collection[i]; i++) {
       component.compose();
     }
   }

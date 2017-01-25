@@ -1,25 +1,27 @@
-import User from '../repositories/User';
-import {Component} from '../../scalar';
+import { Component } from '../../scalar';
+import { User } from '../repositories/User';
+import { Table } from '../templates/Table';
 
 const user = new User();
 
-function enter(e) {
-  console.log(this);
+function track(e) {
+  console.log(this, e.x, e.y);
 }
 
-function close(e) {
+function sendRequest(e) {
   let className = e.target.className;
   this.open.removeClass(className);
-  user.get((tpl) => this.name.set(tpl));
+  this.name.set(user.get());
 }
 
 export default class Test extends Component {
   constructor() {
     super('#square', {
-      'mousemove': enter,
+      'mousemove': track,
       '.open': {
-        'click': close
+        'click': sendRequest
       }
     });
+    this.name.setTemplate(new Table());
   }
 }
