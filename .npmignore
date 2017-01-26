@@ -1,0 +1,10 @@
+/node_modules
+*.lock
+*.log
+!.gitkeep
+# Windows detritus
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store

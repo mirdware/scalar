@@ -1,10 +1,10 @@
 import { Component } from '../../scalar';
 
 function render(e) {
-  this.name.set(`<b>${e.target.value}</b>`);
+  this.name.set(e.target.value);
 }
 
-export default class HelloWorld extends Component {
+export class HelloWorld extends Component {
   constructor() {
     super('#hello-world', {
       'input': {

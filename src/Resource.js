@@ -1,4 +1,11 @@
-function manage(xmlHttp, url, method, data) {
+function manage(resource, method, data, hasQueryString) {
+  let xmlHttp = resource.xhr;
+  let url = formatURL(resource.url, data);
+  data = serialize(data);
+  if (hasQueryString) {
+    if (data) url += '?' + data;
+    data = null;
+  }
   xmlHttp.open(method, url, true);
   xmlHttp.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
   xmlHttp.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
@@ -8,7 +15,7 @@ function manage(xmlHttp, url, method, data) {
   });
 }
 
-function formatURL(url, data, hasQueryString) {
+function formatURL(url, data) {
   for (let key in data) {
     let variable = '/{' + key + '}';
     if (url.indexOf(variable) !== -1) {
@@ -16,17 +23,11 @@ function formatURL(url, data, hasQueryString) {
       delete data[key];
     }
   }
-  url = url.replace(/\/\{(\w+)\}/gi, '');
-  if (hasQueryString) {
-    data = serialize(data);
-    if (data) url += '?' + data;
-    data = null;
-  }
-  return url;
+  return url.replace(/\/\{(\w+)\}/gi, '');
 }
 
 function serialize(data) {
-  if(typeof data !== 'object') {
+  if (typeof data !== 'object') {
     return data;
   }
   let res = [];
@@ -61,23 +62,18 @@ export class Resource {
   }
 
   get(data = {}) {
-    let resource = this;
-    let url = formatURL(resource.url, data, true);
-    return manage(resource.xhr, url, 'GET', null);
+    return manage(this, 'GET', data, true);
   }
 
   post(data = {}) {
-    let url = formatURL(this.url, data);
-    return manage(this.xhr, url, 'POST', serialize(data));
+    return manage(this, 'POST', data);
   }
 
   put(data = {}) {
-    let url = formatURL(this.url, data);
-    return manage(this.xhr, url, 'PUT', serialize(data));
+    return manage(this, 'PUT', data);
   }
 
   delete(data = {}) {
-    let url = formatURL(this.url, data, true);
-    return manage(this.xhr, url, 'DELETE', null);
+    return manage(this, 'DELETE', data, true);
   }
 }

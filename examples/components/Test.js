@@ -5,7 +5,7 @@ import { Table } from '../templates/Table';
 const user = new User();
 
 function track(e) {
-  console.log(this, e.x, e.y);
+  console.log(this, e.clientX + ',' + e.clientY);
 }
 
 function sendRequest(e) {
@@ -14,7 +14,7 @@ function sendRequest(e) {
   this.name.set(user.get());
 }
 
-export default class Test extends Component {
+export class Test extends Component {
   constructor() {
     super('#square', {
       'mousemove': track,

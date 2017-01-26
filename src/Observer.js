@@ -1,3 +1,8 @@
+function observe(observer, fn) {
+  observer.elements.forEach(fn);
+  return observer;
+}
+
 function copyProperties(target, source) {
   for (let key of Reflect.ownKeys(source)) {
     if (key !== "constructor" && key !== "prototype" && key !== "name") {
@@ -10,14 +15,9 @@ function copyProperties(target, source) {
 function bindData(observer, domElement) {
   let prop = domElement.getAttribute("data-bind");
   if (!observer[prop]) {
-    observer[prop] = new Observer();
+    observer[prop] = new Property();
   }
   observer[prop].addElement(domElement);
-}
-
-function observe(observer, fn) {
-  observer.elements.forEach(fn);
-  return observer;
 }
 
 export class Observer {
@@ -25,37 +25,13 @@ export class Observer {
     this.elements = [];
   }
 
-  get() {
-    return this.value;
-  }
-
-  set(value) {
-    let observer = this;
-    if (value.then) {
-      value.then((data) => observer.set(data));
-      return observer;
-    }
-    let template = observer.template;
-    value = template? template.render(value): value;
-    observer.elements.forEach((element) => element[element.nodeName === 'INPUT'? 'value': 'innerHTML'] = value);
-    observer.value = value;
-    return observer;
-  }
-
   addElement(domElement) {
-    let observer = this;
     let dataBinds = domElement.querySelectorAll('[data-bind]');
-    observer.elements.push(domElement);
+    this.elements.push(domElement);
     for (let i = 0, bind; bind = dataBinds[i]; i++) {
-      bindData(observer, bind);
+      bindData(this, bind);
     }
-    return observer;
-  }
-
-  setTemplate(tpl) {
-    let observer = this;
-    observer.template = tpl;
-    return observer;
+    return this;
   }
 
   setAttribute(name, attr) {
@@ -78,5 +54,33 @@ export class Observer {
     copyProperties(Observer, mixin);
     copyProperties(Observer.prototype, mixin.prototype);
     return Observer;
+  }
+}
+
+export class Property extends Observer {
+  get() {
+    return this.value;
+  }
+
+  set(value) {
+    let property = this;
+    if (value.then) {
+      value.then((data) => property.set(data));
+      return property;
+    }
+    property.value = value;
+    property.elements.forEach((element) => {
+        let attr = element.nodeName === 'INPUT'? 'value': 'innerHTML';
+        if (attr === 'innerHTML' && property.tpl) {
+          value = property.tpl.render(value)
+        }
+        element[attr] = value;
+    });
+    return property;
+  }
+
+  setTemplate(template) {
+    this.tpl = template;
+    return this;
   }
 }

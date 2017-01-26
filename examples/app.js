@@ -1,6 +1,6 @@
-import HelloWorld from './components/HelloWorld';
-import Test from './components/Test';
-import {Component} from '../scalar';
+import { HelloWorld } from './components/HelloWorld';
+import { Test } from './components/Test';
+import { Component } from '../scalar';
 
 Component
   .add(new Test())

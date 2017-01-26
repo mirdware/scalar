@@ -6,7 +6,7 @@
   "scripts": {
     "build": "node_modules/.bin/webpack --progress -p",
     "serve": "node_modules/.bin/webpack-dev-server",
-    "prepublish": "npm run build"
+    "publish": "npm run build"
   },
   "repository": {
     "type": "git",
