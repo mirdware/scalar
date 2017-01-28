@@ -4,8 +4,9 @@ function observe(observer, fn) {
 }
 
 function copyProperties(target, source) {
-  for (let key of Reflect.ownKeys(source)) {
-    if (key !== "constructor" && key !== "prototype" && key !== "name") {
+  let keys = Reflect.ownKeys(source);
+  for (let i = 0, key; key = keys[i]; i++) {
+    if (key !== 'constructor' && key !== 'prototype' && key !== 'name') {
       let desc = Object.getOwnPropertyDescriptor(source, key);
       Object.defineProperty(target, key, desc);
     }
@@ -57,26 +58,27 @@ export class Observer {
   }
 }
 
+function changeContent(property, value) {
+  property.value = value;
+  property.elements.forEach((element) => {
+    let attr = element.nodeName === 'INPUT'? 'value': 'innerHTML';
+    if (attr === 'innerHTML' && property.tpl) {
+      value = property.tpl.render(value)
+    }
+    element[attr] = value;
+  });
+}
+
 export class Property extends Observer {
   get() {
     return this.value;
   }
 
   set(value) {
-    let property = this;
-    if (value.then) {
-      value.then((data) => property.set(data));
-      return property;
-    }
-    property.value = value;
-    property.elements.forEach((element) => {
-        let attr = element.nodeName === 'INPUT'? 'value': 'innerHTML';
-        if (attr === 'innerHTML' && property.tpl) {
-          value = property.tpl.render(value)
-        }
-        element[attr] = value;
-    });
-    return property;
+    value.then?
+      value.then((data) => changeContent(this, data)):
+      changeContent(this, value);
+    return this;
   }
 
   setTemplate(template) {

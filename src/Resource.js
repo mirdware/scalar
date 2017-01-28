@@ -1,14 +1,18 @@
+const encodeURIComponent = window.encodeURIComponent;
+
 function manage(resource, method, data, hasQueryString) {
   let xmlHttp = resource.xhr;
+  let headers = resource.headers;
   let url = formatURL(resource.url, data);
-  data = serialize(data);
-  if (hasQueryString) {
-    if (data) url += '?' + data;
+  data = data? serialize(data): null;
+  if (hasQueryString && data) {
+    url += '?' + data;
     data = null;
   }
   xmlHttp.open(method, url, true);
-  xmlHttp.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-  xmlHttp.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+  for (let header in headers) {
+    xmlHttp.setRequestHeader(header, headers[header]);
+  }
   xmlHttp.send(data);
   return new Promise((resolve, reject) => {
     xmlHttp.onreadystatechange = (res) => solve(xmlHttp, resolve, reject);
@@ -27,14 +31,10 @@ function formatURL(url, data) {
 }
 
 function serialize(data) {
-  if (typeof data !== 'object') {
-    return data;
-  }
   let res = [];
   for(let key in data) {
-    let value = data[key];
-    if(typeof value !== 'function') {
-      res.push(encodeURIComponent(key) + '=' + encodeURIComponent(value));
+    if(typeof data[key] !== 'function') {
+      res.push(encodeURIComponent(key) + '=' + encodeURIComponent(data[key]));
     }
   }
   return res.join('&');
@@ -43,15 +43,16 @@ function serialize(data) {
 function solve(xmlHttp, resolve, reject) {
   if (xmlHttp.readyState === 4) {
     let status = xmlHttp.status;
-    let response = xmlHttp.responseText;
-    try {
+    let content = xmlHttp.getResponseHeader('Content-Type');
+    let response = /(aplication|text)\/xml/.test(content)?
+      xmlHttp.responseXML:
+      xmlHttp.responseText;
+    if (content === 'application/json') {
       response = JSON.parse(response);
-    } catch (ex) {}
-    if (status >= 200 && status <= 299) {
-      resolve(response);
-    } else {
-      reject(response, status);
     }
+    (status >= 200 && status <= 299)?
+      resolve(response):
+      reject(response, status);
   }
 }
 
@@ -59,21 +60,29 @@ export class Resource {
   constructor(url) {
     this.url = url;
     this.xhr = new XMLHttpRequest();
+    this.headers = {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'X-Requested-With': 'XMLHttpRequest'
+    };
   }
 
-  get(data = {}) {
+  get(data) {
     return manage(this, 'GET', data, true);
   }
 
-  post(data = {}) {
+  post(data) {
     return manage(this, 'POST', data);
   }
 
-  put(data = {}) {
+  put(data) {
     return manage(this, 'PUT', data);
   }
 
-  delete(data = {}) {
+  delete(data) {
     return manage(this, 'DELETE', data, true);
+  }
+
+  request(method, data, hasQueryString) {
+    return manage(this, method, data, hasQueryString);
   }
 }

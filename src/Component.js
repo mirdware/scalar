@@ -21,21 +21,16 @@ function bindEvent(component, element, events) {
 export class Component extends Observer {
   constructor(selector, events) {
     super();
-    let component = this;
+    this.events = events || {};
     let elements = document.querySelectorAll(selector);
-    component.events = events || {};
     for (let i = 0, element; element = elements[i]; i++) {
-      component.addElement(element);
+      this.addElement(element);
     }
   }
 
   compose() {
-    let component = this;
-    let elements = component.elements;
-    if (elements.length) {
-      for (let i = 0, element; element = elements[i]; i++) {
-        bindEvent(component, element, component.events);
-      }
+    for (let i = 0, element; element = this.elements[i]; i++) {
+      bindEvent(this, element, this.events);
     }
   }
 
