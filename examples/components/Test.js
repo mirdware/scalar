@@ -1,6 +1,5 @@
-import { Component } from '../../scalar';
+import { Component, Template } from '../../scalar';
 import { User } from '../repositories/User';
-import { Table } from '../templates/Table';
 
 const user = new User();
 
@@ -9,9 +8,18 @@ function track(e) {
 }
 
 function sendRequest(e) {
-  let className = e.target.className;
-  this.open.removeClass(className);
+  let element = e.target;
+  element.classList.remove(element.className);
   this.name.set(user.get());
+}
+
+function renderTable(addr) {
+  return Template.html`
+    <tr>
+      <td>$${addr.first}</td>
+      <td>$${addr.last}</td>
+    </tr>
+  `;
 }
 
 export class Test extends Component {
@@ -22,6 +30,6 @@ export class Test extends Component {
         'click': sendRequest
       }
     });
-    this.name.setTemplate(new Table());
+    this.name.setTemplate(renderTable);
   }
 }

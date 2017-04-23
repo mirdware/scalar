@@ -1,7 +1,4 @@
-function observe(observer, fn) {
-  observer.elements.forEach(fn);
-  return observer;
-}
+import { Template } from './Template';
 
 function copyProperties(target, source) {
   let keys = Reflect.ownKeys(source);
@@ -35,22 +32,6 @@ export class Observer {
     return this;
   }
 
-  setAttribute(name, attr) {
-    return observe(this, (element) => element[name] = attr);
-  }
-
-  addClass(ClassName) {
-    return observe(this, (element) => element.classList.add(ClassName));
-  }
-
-  removeClass(ClassName) {
-    return observe(this, (element) => element.classList.remove(ClassName));
-  }
-
-  toggleClass(ClassName) {
-    return observe(this, (element) => element.classList.toggle(ClassName));
-  }
-
   static mix(mixin) {
     copyProperties(Observer, mixin);
     copyProperties(Observer.prototype, mixin.prototype);
@@ -82,7 +63,7 @@ export class Property extends Observer {
   }
 
   setTemplate(template) {
-    this.tpl = template;
+    this.tpl = new Template(template);
     return this;
   }
 }

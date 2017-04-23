@@ -9,7 +9,10 @@ module.exports = {
   },
   output: {
     path: __dirname,
-    filename: './dist/[name].min.js'
+    filename: './dist/[name].min.js',
+    library: config.name,
+    libraryTarget: 'umd',
+    umdNamedDefine: true
   },
   module: {
     loaders: [
@@ -22,18 +25,16 @@ module.exports = {
       }
     ]
   },
-  devtool: 'source-map',
-  debug: true,
   devServer: {
     host: '0.0.0.0',
     port: 6969,
     inline: true
   },
   plugins: [
-    new webpack.optimize.DedupePlugin(),
     new webpack.optimize.UglifyJsPlugin({
       compressor: {screw_ie8: true, keep_fnames: true, warnings: false},
-      mangle: {screw_ie8: true, keep_fnames: true}
+      mangle: {screw_ie8: true, keep_fnames: true},
+      sourcemap: true
     }),
     new webpack.DefinePlugin({
       __DEV__: JSON.stringify(JSON.parse(process.env.BUILD_DEV || 'true')),

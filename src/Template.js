@@ -8,8 +8,8 @@ function htmlEscape(str) {
 }
 
 export class Template {
-  constructor(tpl) {
-    this.tpl = tpl;
+  constructor(fn) {
+    this.tpl = (data) => data.map(fn);
   }
 
   render(...params) {

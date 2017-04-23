@@ -1,4 +1,4 @@
-import { Observer } from './Observer';
+import { Observer } from './Reactive';
 
 let collection = [];
 let evtMount = new Event('mount');
