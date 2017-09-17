@@ -6,12 +6,16 @@ function render(e) {
 
 export class HelloWorld extends Component {
   constructor() {
-    super('#hello-world', {
+    super('#hello-world');
+  }
+
+  bind() {
+    return {
       'input': {
         'keyup': render,
         'mount': render
       },
       'submit': (e) => e.preventDefault()
-    });
+    };
   }
 }

@@ -16,7 +16,7 @@ function sendRequest(e) {
 function renderTable(addr) {
   return Template.html`
     <tr>
-      <td>$${addr.first}</td>
+      <td class="first">$${addr.first}</td>
       <td>$${addr.last}</td>
     </tr>
   `;
@@ -24,12 +24,22 @@ function renderTable(addr) {
 
 export class Test extends Component {
   constructor() {
-    super('#square', {
+    super('#square');
+  }
+
+  bind() {
+    return {
       'mousemove': track,
       '.open': {
         'click': sendRequest
+      },
+      '.first': {
+        'click': (e) => alert('click on' + e.target.innerHTML)
       }
-    });
+    };
+  }
+
+  compose() {
     this.name.setTemplate(renderTable);
   }
 }

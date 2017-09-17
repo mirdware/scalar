@@ -20,7 +20,7 @@ module.exports = {
         'test': path.join(__dirname, ''),
         'loader': 'babel-loader',
         query: {
-          'presets': ['es2015'],
+          'presets': ['env'],
         }
       }
     ]
