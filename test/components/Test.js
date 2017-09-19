@@ -9,7 +9,7 @@ function track(e) {
 function sendRequest(e) {
   let element = e.target;
   element.classList.remove(element.className);
-  this.name.set(user.get());
+  this.name = user.get();
 }
 
 function renderTable(addr) {
@@ -38,7 +38,7 @@ export class Test extends Component {
     };
   }
 
-  init() {
-    this.name.setTemplate(renderTable);
+  init(properties) {
+    properties.name.setTemplate(renderTable);
   }
 }

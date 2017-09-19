@@ -1,14 +1,18 @@
 import { Template } from './Template';
 import { addListeners } from './Event';
+import { Wrapper } from './Wrapper';
+
+let privy = new Wrapper();
 
 function changeContent(property, value) {
-  property.value = value;
+  let privateProperties = privy.get(property);
+  privateProperties.value = value;
   property.nodes.forEach((node) => {
     let attr = node.nodeName === 'INPUT'? 'value': 'innerHTML';
     let complexType = property.complexType;
     if (complexType && attr === 'innerHTML') {
       node[attr] = complexType.render(value);
-      addListeners(property, node, property.events);
+      addListeners(property, node, privateProperties.events);
     } else {
       node[attr] = value;
     }
@@ -17,12 +21,14 @@ function changeContent(property, value) {
 
 export class Property {
   constructor (events) {
+    privy.set(this, {
+      events: events,
+    });
     this.nodes = [];
-    this.events = events;
   }
 
   get() {
-    return this.value;
+    return privy.get(this).value;
   }
 
   set(value) {

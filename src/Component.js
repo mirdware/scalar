@@ -1,12 +1,20 @@
 import { Property } from './Property';
 import { addListeners } from './Event';
+import { Wrapper } from './Wrapper';
+
+let privy = new Wrapper();
 
 function bindData(observer, domElement, events) {
-  let prop = domElement.getAttribute("data-bind");
-  if (!observer[prop]) {
-    observer[prop] = new Property(events);
+  let name = domElement.getAttribute("data-bind");
+  let privateProperties = privy.get(observer);
+  if (!privateProperties[name]) {
+    privateProperties[name] = new Property(events);
+    Object.defineProperty(observer, name, {
+      get: () => privateProperties[name].get(),
+      set: (value) => privateProperties[name].set(value)
+    });
   }
-  observer[prop].nodes.push(domElement);
+  privateProperties[name].nodes.push(domElement);
 }
 
 function watch(observer, nodes) {
@@ -20,8 +28,10 @@ function watch(observer, nodes) {
 
 export class Component {
   constructor(selector) {
+    let properties = {};
+    privy.set(this, properties);
     watch(this, document.querySelectorAll(selector));
-    this.init();
+    this.init(properties);
   }
 
   init() { }
