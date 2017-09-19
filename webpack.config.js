@@ -5,7 +5,7 @@ const webpack = require('webpack');
 module.exports = {
   entry: {
     scalar: ['./' + config.name + '.js'],
-    app: './examples/app.js'
+    app: './test/app.js'
   },
   output: {
     path: __dirname,

@@ -3,17 +3,15 @@ import { Observer } from './Reactive';
 export class Component extends Observer {
   constructor(selector) {
     super();
-    let events = this.bind();
+    let events = this.listen();
     let elements = document.querySelectorAll(selector);
-    for (let i = 0, element; element = elements[i]; i++) {
-      this.addElement(element, events);
-    }
-    this.compose();
+    elements.forEach((element) => this.addElement(element, events));
+    this.init();
   }
 
-  compose() { }
+  init() { }
 
-  bind() {
+  listen() {
     return {};
   }
 }

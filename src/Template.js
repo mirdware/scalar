@@ -23,7 +23,7 @@ export class Template {
   static html(literalSections, ...substs) {
     let raw = literalSections.raw;
     let result = '';
-    for (let i=0, subst; subst = substs[i]; i++) {
+    substs.forEach((subst, i) => {
       let lit = raw[i];
       if (Array.isArray(subst)) {
         subst = subst.join('');
@@ -33,7 +33,7 @@ export class Template {
         lit = lit.slice(0, -1);
       }
       result += lit + subst;
-    }
+    });
     result += raw[raw.length-1];
     return result;
   }

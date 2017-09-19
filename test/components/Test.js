@@ -1,7 +1,6 @@
-import { Component, Template } from '../../scalar';
-import { User } from '../repositories/User';
+import { Component, Template, Resource } from '../../scalar';
 
-const user = new User();
+const user = new Resource('response.json');
 
 function track(e) {
   console.log(this, e.clientX + ',' + e.clientY);
@@ -27,19 +26,19 @@ export class Test extends Component {
     super('#square');
   }
 
-  bind() {
+  listen() {
     return {
       'mousemove': track,
       '.open': {
         'click': sendRequest
       },
       '.first': {
-        'click': (e) => alert('click on' + e.target.innerHTML)
+        'click': (e) => alert('click on ' + e.target.innerHTML)
       }
     };
   }
 
-  compose() {
+  init() {
     this.name.setTemplate(renderTable);
   }
 }

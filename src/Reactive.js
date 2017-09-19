@@ -25,16 +25,6 @@ function bindEvent(component, element, events) {
   }
 }
 
-function copyProperties(target, source) {
-  let keys = Reflect.ownKeys(source);
-  for (let i = 0, key; key = keys[i]; i++) {
-    if (key !== 'constructor' && key !== 'prototype' && key !== 'name') {
-      let desc = Object.getOwnPropertyDescriptor(source, key);
-      Object.defineProperty(target, key, desc);
-    }
-  }
-}
-
 export class Observer {
   constructor() {
     this.elements = [];
@@ -43,17 +33,9 @@ export class Observer {
   addElement(domElement, events) {
     let dataBinds = domElement.querySelectorAll('[data-bind]');
     this.elements.push(domElement);
-    for (let i = 0, bind; bind = dataBinds[i]; i++) {
-      bindData(this, bind, events);
-    }
+    dataBinds.forEach((bind) => bindData(this, bind, events));
     bindEvent(this, domElement, events);
     return this;
-  }
-
-  static mix(mixin) {
-    copyProperties(Observer, mixin);
-    copyProperties(Observer.prototype, mixin.prototype);
-    return Observer;
   }
 }
 
@@ -63,9 +45,7 @@ function changeContent(property, value) {
     let attr = element.nodeName === 'INPUT'? 'value': 'innerHTML';
     if (attr === 'innerHTML' && property.tpl) {
       element[attr] = property.tpl.render(value);
-      for (let i = 0, element; element = property.elements[i]; i++) {
-        bindEvent(property, element, property.events);
-      };
+      bindEvent(property, element, property.events);
     } else {
       element[attr] = value;
     }

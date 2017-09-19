@@ -9,7 +9,7 @@ export class HelloWorld extends Component {
     super('#hello-world');
   }
 
-  bind() {
+  listen() {
     return {
       'input': {
         'keyup': render,
