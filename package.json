@@ -1,6 +1,6 @@
 {
   "name": "scalar",
-  "version": "0.1.4-beta.2",
+  "version": "0.1.4-beta.3",
   "description": "Javascript not intrusive",
   "main": "dist/scalar.min.js",
   "scripts": {

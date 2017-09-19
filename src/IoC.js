@@ -11,6 +11,9 @@ function generateUUID() {
 
 export function provide(...components) {
   components.forEach((component) => {
+    if (component.uuid) {
+      throw 'Class ' + component.uuid + ' previously provided';
+    }
     component.uuid = generateUUID();
     collection[component.uuid] = new component();
   });

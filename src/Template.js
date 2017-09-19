@@ -9,11 +9,11 @@ function htmlEscape(str) {
 
 export class Template {
   constructor(fn) {
-    this.tpl = (data) => data.map(fn);
+    this.fn = (data) => data.map(fn);
   }
 
   render(...params) {
-    let template = this.tpl.apply(this, params);
+    let template = this.fn.apply(this, params);
     if (Array.isArray(template)) {
       template = template.join('');
     }

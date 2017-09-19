@@ -1,11 +1,26 @@
-import { Observer } from './Reactive';
+import { Property } from './Property';
+import { addListeners } from './Event';
 
-export class Component extends Observer {
+function bindData(observer, domElement, events) {
+  let prop = domElement.getAttribute("data-bind");
+  if (!observer[prop]) {
+    observer[prop] = new Property(events);
+  }
+  observer[prop].nodes.push(domElement);
+}
+
+function watch(observer, nodes) {
+  let events = observer.listen();
+  nodes.forEach((node) => {
+    let dataBinds = node.querySelectorAll('[data-bind]');
+    dataBinds.forEach((bind) => bindData(observer, bind, events));
+    addListeners(observer, node, events);
+  });
+}
+
+export class Component {
   constructor(selector) {
-    super();
-    let events = this.listen();
-    let elements = document.querySelectorAll(selector);
-    elements.forEach((element) => this.addElement(element, events));
+    watch(this, document.querySelectorAll(selector));
     this.init();
   }
 
