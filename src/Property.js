@@ -7,7 +7,7 @@ let privy = new Wrapper();
 function changeContent(property, value) {
   let privateProperties = privy.get(property);
   privateProperties.value = value;
-  property.nodes.forEach((node) => {
+  for (let i = 0, node; node = property.nodes[i]; i++) {
     let attr = node.nodeName === 'INPUT'? 'value': 'innerHTML';
     let complexType = property.complexType;
     if (complexType && attr === 'innerHTML') {
@@ -16,7 +16,7 @@ function changeContent(property, value) {
     } else {
       node[attr] = value;
     }
-  });
+  }
 }
 
 export class Property {

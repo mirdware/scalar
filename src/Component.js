@@ -19,11 +19,13 @@ function bindData(observer, domElement, events) {
 
 function watch(observer, nodes) {
   let events = observer.listen();
-  nodes.forEach((node) => {
+  for (let i = 0, node; node = nodes[i]; i++) {
     let dataBinds = node.querySelectorAll('[data-bind]');
-    dataBinds.forEach((bind) => bindData(observer, bind, events));
+    for (let j = 0, bind; bind = dataBinds[j]; j++) {
+      bindData(observer, bind, events);
+    }
     addListeners(observer, node, events);
-  });
+  }
 }
 
 export class Component {

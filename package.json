@@ -1,12 +1,12 @@
 {
   "name": "scalar",
-  "version": "0.1.4-beta.3",
+  "version": "0.1.5",
   "description": "Javascript not intrusive",
   "main": "dist/scalar.min.js",
   "scripts": {
     "build": "./node_modules/.bin/webpack --progress -p",
     "serve": "./node_modules/.bin/webpack-dev-server",
-    "prepublish": "npm run build",
+    "prepare": "npm run build",
     "start": "npm run build & npm run serve"
   },
   "repository": {

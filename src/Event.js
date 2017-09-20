@@ -1,14 +1,16 @@
 let evtMount = new Event('mount');
 
 export function addListeners(observer, element, events) {
-  for (let el in events) {
-    let fn = events[el];
+  for (let selector in events) {
+    let fn = events[selector];
     if (typeof fn === 'function') {
-      element.addEventListener(el, fn.bind(observer), true);
+      element.addEventListener(selector, fn.bind(observer), true);
       setTimeout(() => element.dispatchEvent(evtMount), 1);
     } else {
-      let elements = element.querySelectorAll(el);
-      elements.forEach((el) => addListeners(observer, el, fn));
+      let nodeList = element.querySelectorAll(selector);
+      for (let i = 0, node; node = nodeList[i]; i++) {
+        addListeners(observer, node, fn);
+      }
     }
   }
 }
