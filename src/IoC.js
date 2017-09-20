@@ -2,19 +2,24 @@ import { Component } from './Component';
 
 let collection = {};
 
-export function provide(...components) {
-  components.forEach((component) => {
-    let name = component.name;
-    if (collection[name]) {
-      throw 'Class ' + name + ' previously provided';
+export class IoC {
+  static provide(name, provider) {
+    if (typeof name === 'object') {
+      for (let prop in name) {
+        IoC.provide(prop, name[prop]);
+      }
+      return IoC;
     }
-    collection[name] = new component();
-  });
-}
+    if (collection[name]) {
+      throw 'Class for ' + name + ' previously provided';
+    }
+    collection[name] = new provider();
+    return IoC;
+  }
 
-export function inject(component) {
-  let name = component.name;
-  if (collection[name]) {
-    return collection[name];
+  static inject(name) {
+    if (collection[name]) {
+      return collection[name];
+    }
   }
 }

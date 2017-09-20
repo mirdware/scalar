@@ -1,5 +1,8 @@
 import { HelloWorld } from './components/HelloWorld';
 import { Test } from './components/Test';
-import { provide } from '../scalar';
+import { IoC } from '../scalar';
 
-provide(HelloWorld, Test);
+IoC.provide({
+    hello: HelloWorld,
+    test: Test
+});

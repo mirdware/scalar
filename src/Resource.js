@@ -32,7 +32,7 @@ function formatURL(url, data) {
 
 function serialize(data) {
   let res = [];
-  for(let key in data) {
+  for (let key in data) {
     if(typeof data[key] !== 'function') {
       res.push(encodeURIComponent(key) + '=' + encodeURIComponent(data[key]));
     }
