@@ -1,6 +1,6 @@
 {
   "name": "scalar",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Javascript not intrusive",
   "main": "dist/scalar.min.js",
   "scripts": {
@@ -16,9 +16,11 @@
   "keywords": [
     "javascript",
     "structure",
-    "CTR"
+    "components",
+    "resources",
+    "templates"
   ],
-  "author": "Marlon Ramirez",
+  "author": "Marlon Ramire,z",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/mirdware/scalar/issues"

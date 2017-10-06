@@ -1,25 +1,33 @@
+import { generateUUID } from './scUtils';
 import { Component } from './Component';
 
-let collection = {};
+let classes = {};
+let instances = {};
 
 export class IoC {
-  static provide(name, provider) {
-    if (typeof name === 'object') {
-      for (let prop in name) {
-        IoC.provide(prop, name[prop]);
+  static provide(...providers) {
+    for (let i = 0, provider; provider = providers[i]; i++) {
+      if (!provider.uuid) {
+        if (provider.prototype instanceof Component) {
+          let component = new provider();
+          provider.uuid = component.uuid;
+          instances[component.uuid] = component;
+        } else {
+          let uuid = generateUUID();
+          provider.uuid = uuid;
+          classes[uuid] = provider;
+        }
       }
-      return IoC;
     }
-    if (collection[name]) {
-      throw 'Class for ' + name + ' previously provided';
-    }
-    collection[name] = new provider();
-    return IoC;
   }
 
-  static inject(name) {
-    if (collection[name]) {
-      return collection[name];
+  static inject(component) {
+    let uuid = component.uuid;
+    if (classes[uuid] && !instances[uuid]) {
+      let component = new classes[uuid]();
+      component.uuid = uuid;
+      instances[uuid] = component;
     }
+    return instances[uuid];
   }
 }

@@ -1,6 +1,6 @@
 import { Template } from './Template';
 import { addListeners } from './Event';
-import { Wrapper } from './Wrapper';
+import { Wrapper } from './scUtils';
 
 let privy = new Wrapper();
 
