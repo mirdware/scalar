@@ -1,6 +1,6 @@
 {
   "name": "scalar",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "Javascript not intrusive",
   "main": "dist/scalar.min.js",
   "scripts": {
@@ -14,13 +14,13 @@
     "url": "git+ssh://git@github.com/mirdware/scalar.git"
   },
   "keywords": [
+    "scalar",
     "javascript",
-    "structure",
     "components",
     "resources",
     "templates"
   ],
-  "author": "Marlon Ramire,z",
+  "author": "Marlon Ramirez",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/mirdware/scalar/issues"
@@ -29,8 +29,8 @@
   "devDependencies": {
     "babel-core": "^6.26.0",
     "babel-loader": "^7.1.2",
-    "babel-preset-env": "^1.6.0",
-    "webpack": "^3.6.0",
-    "webpack-dev-server": "^2.8.2"
+    "babel-preset-env": "^1.6.1",
+    "webpack": "^3.11.0",
+    "webpack-dev-server": "^2.11.1"
   }
 }

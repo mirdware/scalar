@@ -1,6 +1,6 @@
 import { Property } from './Property';
-import { addListeners } from './Event';
-import { Wrapper } from './scUtils';
+import { addListeners } from './scUtils';
+import { Wrapper } from './Wrapper';
 
 let privy = new Wrapper();
 
