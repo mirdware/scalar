@@ -1,5 +1,5 @@
 [
-  {"first": "Jane", "last": "Bond"},
-  {"first": "Lars", "last": "Croft"},
-  {"first": "other", "last": "<name>"}
+  {"first": "red", "last": "Bond"},
+  {"first": "blue", "last": "Croft"},
+  {"first": "black", "last": "<name>"}
 ]

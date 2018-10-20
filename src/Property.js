@@ -8,22 +8,23 @@ function changeContent(property, value) {
   const privateProperties = privy.get(property);
   privateProperties.value = value;
   for (let i = 0, node; node = property.nodes[i]; i++) {
-    const attr = isInput(node) ? 'value': 'innerHTML';
     const complexType = privateProperties.complexType;
+    let attr = isInput(node) ? 'value': 'innerHTML';
     if (complexType && attr === 'innerHTML') {
       node[attr] = complexType.render(value);
       addListeners(property, node, privateProperties.events);
-    } else {
-      node[attr] = value;
+      return;
     }
+    if (node.type === 'file') return;
+    if (node.type === 'checkbox' || node.type === 'radio') attr = 'checked';
+    if (node.type === 'radio') value = node.value === property.get();
+    node[attr] = value;
   }
 }
 
 export class Property {
   constructor (events) {
-    privy.set(this, {
-      events: events,
-    });
+    privy.set(this, {events: events});
     this.nodes = [];
   }
 

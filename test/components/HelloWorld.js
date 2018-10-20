@@ -9,7 +9,16 @@ export class HelloWorld extends Component {
     return {
       'submit': (e) => e.preventDefault(),
       '.click-me': {
-        'click': () => this.show ? alert(this.name) : console.log(this)
+        'click': () => this.show ? alert(this.file) : console.log(this)
+      },
+      '.fill': {
+        'click': () => {
+          this.name = 'Marlon Ramírez';
+          this.password = 'MySecretPassword';
+          this.sexo = 'M';
+          this.show = false;
+          this.select = 'm';
+        }
       }
     };
   }

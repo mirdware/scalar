@@ -33,7 +33,7 @@ export class Test extends Component {
         'click': sendRequest
       },
       '.first': {
-        'click': (e) => alert('click on ' + e.target.innerHTML)
+        'click': (e) => this.perform((node) => node.style.backgroundColor = e.target.innerHTML)
       }
     };
   }

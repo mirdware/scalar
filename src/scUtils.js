@@ -1,19 +1,16 @@
-const evtMount = new Event('mount');
-
-function listen(observer, element, selector, fn) {
-  if (typeof fn === 'function') {
-    element.addEventListener(selector, fn.bind(observer), true);
-    return setTimeout(() => element.dispatchEvent(evtMount), 1);
-  }
-  const nodeList = element.querySelectorAll(selector);
-  for (let i = 0, node; node = nodeList[i]; i++) {
-    addListeners(observer, node, fn);
-  }
-}
+const mount = new Event('mount');
 
 export function addListeners(observer, element, events) {
   for (let selector in events) {
-    listen(observer, element, selector, events[selector]);
+    const fn = events[selector];
+    if (typeof fn === 'function') {
+      element.addEventListener(selector, fn.bind(observer), true);
+      element.dispatchEvent(mount);
+    }
+    const nodeList = element.querySelectorAll(selector);
+    for (let i = 0, node; node = nodeList[i]; i++) {
+      addListeners(observer, node, fn);
+    }
   }
 }
 
@@ -28,5 +25,5 @@ export function generateUUID() {
 
 export function isInput(node) {
   const nodeName = node.nodeName;
-  return nodeName === 'INPUT' || nodeName === 'TEXTAREA';
+  return nodeName === 'INPUT' || nodeName === 'TEXTAREA' || nodeName === 'SELECT';
 }
