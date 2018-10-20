@@ -21,3 +21,8 @@ export function generateUUID() {
     return v.toString(16);
   });
 }
+
+export function isInput(node) {
+  const nodeName = node.nodeName;
+  return nodeName === 'INPUT' || nodeName === 'TEXTAREA';
+}

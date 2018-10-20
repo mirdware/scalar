@@ -20,10 +20,14 @@
     </table>
   </div>
   <form id="hello-world">
-    <input type="text" /><br/>
+    <input type="text" data-bind="name" /><br/>
     <input type="text" data-bind="name" disabled />
-    <div data-bind="name"></div>
+    <label><input type="checkbox" data-bind="show" /> ¿Mostrar alert?</label>
+    <div data-bind="show"></div>
+    <textarea data-bind="name"></textarea>
+    <input type="button" value="Click me inside" class="click-me" />
   </form>
+  <input type="button" value="Click me outside" class="click-me" />
   <script src="../dist/app.min.js"></script>
 </body>
 </html>

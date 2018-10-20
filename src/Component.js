@@ -1,26 +1,44 @@
 import { Property } from './Property';
-import { addListeners } from './scUtils';
+import { addListeners, isInput } from './scUtils';
 import { Wrapper } from './Wrapper';
 
 let privy = new Wrapper();
 
+function getProperty(observer, name, events) {
+  const property = new Property(events);
+  Object.defineProperty(observer, name, {
+    get: () => property.get(),
+    set: (value) => property.set(value)
+  });
+  return property;
+}
+
+function evalValue(e) {
+  const target = e.target;
+  return target.type === 'checkbox' ? target.checked : target.value;
+}
+
 function bindData(observer, domElement, events) {
-  let name = domElement.getAttribute("data-bind");
-  let privateProperties = privy.get(observer);
+  const name = domElement.getAttribute("data-bind");
+  const privateProperties = privy.get(observer);
   if (!privateProperties[name]) {
-    privateProperties[name] = new Property(events);
-    Object.defineProperty(observer, name, {
-      get: () => privateProperties[name].get(),
-      set: (value) => privateProperties[name].set(value)
+    privateProperties[name] = getProperty(observer, name, events);
+  }
+  const property = privateProperties[name];
+  if (isInput(domElement)) {
+    addListeners(observer, domElement, {
+      keyup: (e) => property.set(e.target.value),
+      click: (e) => property.set(evalValue(e)),
+      mount: (e) => property.set(evalValue(e))
     });
   }
-  privateProperties[name].nodes.push(domElement);
+  property.nodes.push(domElement);
 }
 
 function watch(observer, nodes) {
-  let events = observer.listen();
+  const events = observer.listen();
   for (let i = 0, node; node = nodes[i]; i++) {
-    let dataBinds = node.querySelectorAll('[data-bind]');
+    const dataBinds = node.querySelectorAll('[data-bind]');
     for (let j = 0, bind; bind = dataBinds[j]; j++) {
       bindData(observer, bind, events);
     }
@@ -30,7 +48,7 @@ function watch(observer, nodes) {
 
 export class Component {
   constructor(selector) {
-    let properties = {};
+    const properties = {};
     privy.set(this, properties);
     watch(this, document.querySelectorAll(selector));
     this.init(properties);

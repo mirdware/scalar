@@ -1,9 +1,5 @@
 import { Component } from '../../scalar';
 
-function render(e) {
-  this.name = e.target.value;
-}
-
 export class HelloWorld extends Component {
   constructor() {
     super('#hello-world');
@@ -11,11 +7,10 @@ export class HelloWorld extends Component {
 
   listen() {
     return {
-      'input': {
-        'keyup': render,
-        'mount': render
-      },
-      'submit': (e) => e.preventDefault()
+      'submit': (e) => e.preventDefault(),
+      '.click-me': {
+        'click': () => this.show ? alert(this.name) : console.log(this)
+      }
     };
   }
 }
