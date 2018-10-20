@@ -1,9 +1,9 @@
 const encodeURIComponent = window.encodeURIComponent;
 
 function manage(resource, method, data, queryString) {
-  let xmlHttp = resource.xhr;
-  let headers = resource.headers;
-  data = formatData(data, headers);  
+  const xmlHttp = resource.xhr;
+  const headers = resource.headers;
+  data = formatData(data, headers);
   xmlHttp.open(
     method,
     formatURL(resource.url, queryString) + formatQueryString(queryString),
@@ -38,7 +38,7 @@ function formatQueryString(queryString) {
 
 function formatURL(url, data) {
   for (let key in data) {
-    let variable = '/{' + key + '}';
+    const variable = '/{' + key + '}';
     if (url.indexOf(variable) !== -1) {
       url = url.replace(variable, '/' + data[key]);
       delete data[key];
@@ -48,7 +48,7 @@ function formatURL(url, data) {
 }
 
 function serialize(data) {
-  let res = [];
+  const res = [];
   for (let key in data) {
     if(typeof data[key] !== 'function') {
       res.push(encodeURIComponent(key) + '=' + encodeURIComponent(data[key]));
@@ -59,8 +59,8 @@ function serialize(data) {
 
 function solve(xmlHttp, resolve, reject) {
   if (xmlHttp.readyState === 4) {
-    let status = xmlHttp.status;
-    let content = xmlHttp.getResponseHeader('Content-Type').split(';');
+    const status = xmlHttp.status;
+    const content = xmlHttp.getResponseHeader('Content-Type').split(';');
     let response = /(aplication|text)\/xml/.test(content)?
       xmlHttp.responseXML:
       xmlHttp.responseText;
@@ -79,7 +79,7 @@ export class Resource {
     this.xhr = new XMLHttpRequest();
     this.async = true;
     this.headers = {
-      'Content-Type': 'application/x-www-form-urlencoded',
+      'Content-Type': 'application/json',
       'X-Requested-With': 'XMLHttpRequest'
     };
   }

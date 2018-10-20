@@ -1,16 +1,16 @@
 import { generateUUID } from './scUtils';
 import { Component } from './Component';
 
-let classes = {};
-let instances = {};
+const classes = {};
+const instances = {};
 
 function instance(provider) {
   if (provider.prototype instanceof Component) {
-    let component = new provider();
+    const component = new provider();
     provider.uuid = component.uuid;
     return instances[component.uuid] = component;
   }
-  let uuid = generateUUID();
+  const uuid = generateUUID();
   provider.uuid = uuid;
   classes[uuid] = provider;
 }
@@ -23,9 +23,9 @@ export class IoC {
   }
 
   static inject(component) {
-    let uuid = component.uuid;
+    const uuid = component.uuid;
     if (classes[uuid] && !instances[uuid]) {
-      let component = new classes[uuid]();
+      const component = new classes[uuid]();
       component.uuid = uuid;
       instances[uuid] = component;
     }

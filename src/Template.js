@@ -21,7 +21,7 @@ export class Template {
   }
 
   static html(literalSections, ...substs) {
-    let raw = literalSections.raw;
+    const raw = literalSections.raw;
     let result = '';
     substs.forEach((subst, i) => {
       let lit = raw[i];

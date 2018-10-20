@@ -2,7 +2,7 @@ import { Property } from './Property';
 import { addListeners, isInput } from './scUtils';
 import { Wrapper } from './Wrapper';
 
-let privy = new Wrapper();
+const privy = new Wrapper();
 
 function getProperty(observer, name, events) {
   const property = new Property(events);
@@ -54,7 +54,7 @@ export class Component {
     this.init(properties);
   }
 
-  init() { }
+  init() {}
 
   listen() {
     return {};
