@@ -1,9 +1,9 @@
 const mount = new Event('mount');
 
-export function addListeners(observer, element, events) {
+export function addListeners(observer, element, events, root = true) {
   for (let selector in events) {
     const fn = events[selector];
-    if (typeof fn === 'function') {
+    if (root && typeof fn === 'function') {
       element.addEventListener(selector, fn.bind(observer), true);
       element.dispatchEvent(mount);
     }

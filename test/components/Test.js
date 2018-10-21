@@ -8,7 +8,7 @@ function track(e) {
 
 function sendRequest(e) {
   let element = e.target;
-  element.classList.remove(element.className);
+  this.open = '';
   this.name = user.get();
 }
 
@@ -34,6 +34,13 @@ export class Test extends Component {
       },
       '.first': {
         'click': (e) => this.perform((node) => node.style.backgroundColor = e.target.innerHTML)
+      },
+      '.reset': {
+        'click': (e) => {
+          e.preventDefault();
+          this.reset();
+          this.open = 'open';
+        }
       }
     };
   }

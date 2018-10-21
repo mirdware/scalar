@@ -8,35 +8,36 @@
 </head>
 <body>
   <div id="square">
-    <span class="open"></span>
+    <span data-attr="className: open" class="open"></span>
     <table>
       <thead>
         <tr>
-          <th>Nombre</th>
-          <th>Apellido</th>
+          <th>Color</th>
+          <th>Meta</th>
         </tr>
       </thead>
       <tbody data-bind="name"></tbody>
+      <tfoot><a href="#" class="reset">Reset</a></tfoot>
     </table>
   </div>
   <form id="hello-world">
-    <input type="text" data-bind="password" /><br/>
     <input type="text" data-bind="name" disabled />
     <label><input type="checkbox" data-bind="show" checked /> ¿Mostrar alert?</label>
     <div data-bind="show"></div>
-    <textarea data-bind="name"></textarea>
+    <textarea data-bind="name"></textarea><br/>
     <select data-bind="select">
       <option value="h">Hola</option>
       <option value="m">Mundo</option>
     </select>
-    <input type="text" name="select" data-bind="select">
-    <label><input type="radio" name="sexo" data-bind="sexo" value="F" checked /> Femenino</label> <label><input type="radio" name="sexo" data-bind="sexo" value="M"> Masculino</label>
-    <input type="password" data-bind="password" />
-    <input type="file" data-bind="file" />
-    <input type="button" value="Click me inside" class="click-me" />
-    <input type="button" value="Fill data" class="fill" />
+    <input type="text" name="select" data-bind="select"><br/>
+    <label><input type="radio" name="sexo" data-bind="sexo" value="F" checked /> Femenino</label> <label><input type="radio" name="sexo" data-bind="sexo" value="M"> Masculino</label><br/>
+    <input type="password" data-bind="password" /> <input type="text" data-bind="password" /><br/>
+    <input type="file" data-bind="file" /><br/>
+    <input type="submit" />
+    <input type="reset" /><br/>
+    <input type="button" value="Fill data inside" class="fill" />
   </form>
-  <input type="button" value="Click me outside" class="click-me" />
+  <input type="button" value="Fill data outside" class="fill" />
   <script src="../dist/app.min.js"></script>
 </body>
 </html>

@@ -7,9 +7,13 @@ export class HelloWorld extends Component {
 
   listen() {
     return {
-      'submit': (e) => e.preventDefault(),
-      '.click-me': {
-        'click': () => this.show ? alert(this.file) : console.log(this)
+      'submit': (e) => {
+        e.preventDefault();
+        this.show ? alert(this.toJSON()) : console.log(this);
+      },
+      'reset': (e) => {
+        e.preventDefault();
+        this.reset();
       },
       '.fill': {
         'click': () => {

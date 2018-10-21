@@ -1,11 +1,18 @@
+body {
+  font-family: arial, helvetica, verdana;
+}
+
 #square {
   width: 200px;
   height: 200px;
   background-color: #000;
+  position: relative;
+  margin: auto;
 }
 
 #square table {
   color: #FFF;
+  width: 100%;
 }
 
 #square .open {
@@ -13,6 +20,11 @@
   height: 15px;
   background-color: #FFF;
   display: block;
-  float: right;
+  cursor: pointer;
+  position: absolute;
+  right: 0;
+}
+
+#square .first {
   cursor: pointer;
 }

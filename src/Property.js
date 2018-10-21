@@ -7,12 +7,15 @@ const privy = new Wrapper();
 function changeContent(property, value) {
   const privateProperties = privy.get(property);
   privateProperties.value = value;
+  for (let i = 0, listener; listener = property.listeners[i]; i++) {
+    listener(property);
+  }
   for (let i = 0, node; node = property.nodes[i]; i++) {
     const complexType = privateProperties.complexType;
     let attr = isInput(node) ? 'value': 'innerHTML';
-    if (complexType && attr === 'innerHTML') {
+    if (complexType && value && attr === 'innerHTML') {
       node[attr] = complexType.render(value);
-      addListeners(property, node, privateProperties.events);
+      addListeners(property, node, privateProperties.events, false);
       return;
     }
     if (node.type === 'file') return;
@@ -24,8 +27,9 @@ function changeContent(property, value) {
 
 export class Property {
   constructor (events) {
-    privy.set(this, {events: events});
+    privy.set(this, {events: events, value: ''});
     this.nodes = [];
+    this.listeners = [];
   }
 
   get() {
@@ -33,7 +37,7 @@ export class Property {
   }
 
   set(value) {
-    value.then ?
+    typeof value.then === 'function' ?
       value.then((data) => changeContent(this, data)) :
       changeContent(this, value);
     return this;
