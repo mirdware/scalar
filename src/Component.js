@@ -54,6 +54,9 @@ function bindAttributes(observer, domElement) {
     if (!properties[value]) {
       properties[value] = getProperty(observer, value);
     }
+    if (!properties[value].get()) {
+      properties[value].set(domElement[key]);
+    }
     properties[value].listeners
     .push((property) => domElement[key] = property.get());
   }

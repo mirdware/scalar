@@ -12,6 +12,11 @@ function sendRequest(e) {
   this.name = user.get();
 }
 
+function reset(e) {
+  e.preventDefault();
+  this.reset();
+}
+
 function renderTable(addr) {
   return Template.html`
     <tr>
@@ -21,28 +26,23 @@ function renderTable(addr) {
   `;
 }
 
+function paint(e) {
+  this.perform((node) => node.style.backgroundColor = e.target.innerHTML);
+}
+
 export class Test extends Component {
   constructor() {
     super('#square');
   }
 
   listen() {
-    return {
-      'mousemove': track,
-      '.open': {
-        'click': sendRequest
-      },
-      '.first': {
-        'click': (e) => this.perform((node) => node.style.backgroundColor = e.target.innerHTML)
-      },
-      '.reset': {
-        'click': (e) => {
-          e.preventDefault();
-          this.reset();
-          this.open = 'open';
-        }
-      }
+    const events = {
+      mousemove: track,
+      '.open': {click: sendRequest},
+      '.first': {click: paint},
+      '.reset': {click: reset}
     };
+    return events;
   }
 
   init(properties) {
