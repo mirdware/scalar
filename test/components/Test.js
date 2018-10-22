@@ -8,7 +8,7 @@ function track(e) {
 
 function sendRequest(e) {
   let element = e.target;
-  this.open = '';
+  this.action = 'reset';
   this.name = user.get();
 }
 

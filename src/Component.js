@@ -1,11 +1,11 @@
 import { Property } from './Property';
-import { addListeners, isInput } from './scUtils';
+import { addListeners, isInput, setValue } from './scUtils';
 import { Wrapper } from './Wrapper';
 
 const privy = new Wrapper();
 
 function getProperty(observer, name) {
-  const property = new Property(observer.listen());
+  const property = new Property(observer);
   Object.defineProperty(observer, name, {
     get: () => property.get(),
     set: (value) => property.set(value)
@@ -21,7 +21,10 @@ function evalValue(e) {
   if (target.type === 'file' && target.files) {
     return target.files;
   }
-  return target.type === 'checkbox' ? target.checked : target.value;
+  if (target.type === 'checkbox') {
+    return target.checked;
+  }
+  return target.value ? target.value : null;
 }
 
 function bindData(observer, domElement) {
@@ -37,7 +40,11 @@ function bindData(observer, domElement) {
       change: (e) => property.set(evalValue(e)),
       mount: (e) => {
         const value = evalValue(e);
-        property.set(value == null ? property.get() : value);
+        if (value !== null) {
+          property.set(value);
+        } else {
+          setValue(property, domElement, property.get());
+        }
       }
     });
   }
@@ -58,7 +65,16 @@ function bindAttributes(observer, domElement) {
       properties[value].set(domElement[key]);
     }
     properties[value].listeners
-    .push((property) => domElement[key] = property.get());
+    .push((property) => {
+      const nodes = privy.get(observer).nodes;
+      const domClone = domElement.cloneNode(true);
+      domClone[key] = property.get();
+      domElement.parentNode.replaceChild(domClone, domElement);
+      domElement = domClone;
+      for (let i = 0, node; node = nodes[i]; i++) {
+        addListeners(observer, node, observer.listen());
+      }
+    });
   }
 }
 

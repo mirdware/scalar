@@ -1,33 +1,30 @@
 import { Template } from './Template';
-import { addListeners, isInput } from './scUtils';
+import { addListeners, isInput, setValue } from './scUtils';
 import { Wrapper } from './Wrapper';
 
 const privy = new Wrapper();
 
 function changeContent(property, value) {
-  const privateProperties = privy.get(property);
-  privateProperties.value = value;
+  const properties = privy.get(property);
+  properties.value = value;
   for (let i = 0, listener; listener = property.listeners[i]; i++) {
     listener(property);
   }
   for (let i = 0, node; node = property.nodes[i]; i++) {
-    const complexType = privateProperties.complexType;
+    const complexType = properties.complexType;
     let attr = isInput(node) ? 'value': 'innerHTML';
     if (complexType && value && attr === 'innerHTML') {
       node[attr] = complexType.render(value);
-      addListeners(property, node, privateProperties.events, false);
+      addListeners(properties.parent, node, properties.parent.listen(), false);
       return;
     }
-    if (node.type === 'file') return;
-    if (node.type === 'checkbox' || node.type === 'radio') attr = 'checked';
-    if (node.type === 'radio') value = node.value === property.get();
-    node[attr] = value;
+    setValue(property, node, value, attr);
   }
 }
 
 export class Property {
-  constructor (events) {
-    privy.set(this, {events: events, value: ''});
+  constructor (component) {
+    privy.set(this, {parent: component, value: ''});
     this.nodes = [];
     this.listeners = [];
   }

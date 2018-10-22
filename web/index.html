@@ -8,7 +8,7 @@
 </head>
 <body>
   <div id="square">
-    <span data-attr="className: open" class="open"></span>
+    <span data-attr="className: action" class="open"></span>
     <table>
       <thead>
         <tr>
@@ -17,11 +17,10 @@
         </tr>
       </thead>
       <tbody data-bind="name"></tbody>
-      <tfoot><a href="#" class="reset">Reset</a></tfoot>
     </table>
   </div>
   <form id="hello-world">
-    <input type="text" data-bind="name" disabled />
+    <input type="text" data-bind="name" value="init" disabled />
     <label><input type="checkbox" data-bind="show" checked /> ¿Mostrar alert?</label>
     <div data-bind="show"></div>
     <textarea data-bind="name"></textarea><br/>

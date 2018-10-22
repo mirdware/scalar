@@ -25,6 +25,16 @@ body {
   right: 0;
 }
 
+#square .reset {
+  width: 15px;
+  height: 15px;
+  background-color: #FF0;
+  display: block;
+  cursor: pointer;
+  position: absolute;
+  right: 0;
+}
+
 #square .first {
   cursor: pointer;
 }
