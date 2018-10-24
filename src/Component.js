@@ -13,8 +13,32 @@ function getProperty(observer, name) {
   return property;
 }
 
-function evalValue(e) {
-  const target = e.target;
+function setAttribute(attribute, property, key) {
+  if (property.constructor === Object) {
+    for (let k in property) {
+      setAttribute(attribute[key], property[k], k);
+    }
+  } else if (attribute[key] !== property) {
+    attribute[key] = property;
+  }
+}
+
+function changeProperty(observer, key, attribute, domElement, property) {
+  const nodes = privy.get(observer).nodes;
+  const eventListenerList = domElement.eventListenerList;
+  setAttribute(attribute, property, key);
+  if (eventListenerList) {
+    while (eventListenerList.length) {
+      const listener = eventListenerList.shift();
+      domElement.removeEventListener(listener.name, listener.fn, true);
+    }
+  }
+  for (let i = 0, node; node = nodes[i]; i++) {
+    addListeners(observer, node, observer.listen());
+  }
+}
+
+function evalValue(target) {
   if (target.type === 'radio') {
     return target.checked ? target.value : null;
   }
@@ -35,18 +59,14 @@ function bindData(observer, domElement) {
   }
   const property = properties[name];
   if (isInput(domElement)) {
-    addListeners(observer, domElement, {
-      keyup: (e) => property.set(e.target.value),
-      change: (e) => property.set(evalValue(e)),
-      mount: (e) => {
-        const value = evalValue(e);
-        if (value !== null) {
-          property.set(value);
-        } else {
-          setValue(property, domElement, property.get());
-        }
-      }
-    });
+    domElement.addEventListener('keyup', (e) => property.set(e.target.value));
+    domElement.addEventListener('cahnge', (e) => property.set(evalValue(e.target)));
+    const value = evalValue(domElement);
+    if (value !== null) {
+      property.set(value);
+    } else {
+      setValue(property, domElement, property.get());
+    }
   }
   property.nodes.push(domElement);
 }
@@ -56,63 +76,57 @@ function bindAttributes(observer, domElement) {
   const properties = privy.get(observer).properties;
   for (let i=0, attribute; attribute = attributes[i]; i++) {
     attribute = attribute.split(':');
-    const key = attribute[0].trim();
+    const keys = attribute[0].trim().split('.');
+    const key = keys.pop();
     const value = attribute[1].trim();
+    attribute = domElement;
+    keys.forEach((k) => attribute = attribute[k]);
     if (!properties[value]) {
       properties[value] = getProperty(observer, value);
     }
-    if (!properties[value].get()) {
-      properties[value].set(domElement[key]);
+    if (!properties[value].get() && attribute[key]) {
+      properties[value].set(attribute[key]);
     }
     properties[value].listeners
-    .push((property) => {
-      const nodes = privy.get(observer).nodes;
-      const domClone = domElement.cloneNode(true);
-      domClone[key] = property.get();
-      domElement.parentNode.replaceChild(domClone, domElement);
-      domElement = domClone;
-      for (let i = 0, node; node = nodes[i]; i++) {
-        addListeners(observer, node, observer.listen());
-      }
-    });
+    .push((property) => changeProperty(observer, key, attribute, domElement, property.get()));
   }
 }
 
 function watch(observer) {
   const nodes = privy.get(observer).nodes;
   for (let i = 0, node; node = nodes[i]; i++) {
-    const dataBinds = node.querySelectorAll('[data-bind]');
-    const dataAttributes = node.querySelectorAll('[data-attr]');
-    for (let j = 0, bind; bind = dataBinds[j]; j++) {
-      bindData(observer, bind);
+    const dataBinds = Array.from(node.querySelectorAll('[data-bind]'));
+    const dataAttributes = Array.from(node.querySelectorAll('[data-attr]'));
+    if (node.getAttribute('data-bind')) {
+      dataBinds.push(node);
     }
-    for (let j = 0, attr; attr = dataAttributes[j]; j++) {
-      bindAttributes(observer, attr);
+    if (node.getAttribute('data-attr')) {
+      dataAttributes.push(node);
     }
+    dataBinds.forEach((bind) => bindData(observer, bind));
+    dataAttributes.forEach((attr) => bindAttributes(observer, attr));
   }
 }
 
-function saveInitState(observer) {
-  const initState = {};
-  const properties = privy.get(observer).properties;
+function getState(properties) {
+  const state = {};
   for (let name in properties) {
-    initState[name] = properties[name].get();
+    state[name] = properties[name].get();
   }
-  privy.get(observer).initState = initState;
+  return state;
 }
 
 export class Component {
   constructor(selector) {
-    const properties = {};
-    const nodes = document.querySelectorAll(selector);
-    privy.set(this, {
-      properties: properties,
-      nodes: nodes
-    });
+    const properties = {
+      properties: {},
+      nodes: document.querySelectorAll(selector)
+    };
+    privy.set(this, properties);
     watch(this);
-    this.init(properties);
-    saveInitState(this);
-    for (let i = 0, node; node = nodes[i]; i++) {
+    this.init(properties.properties);
+    properties.initState = getState(properties.properties);
+    for (let i = 0, node; node = properties.nodes[i]; i++) {
       addListeners(this, node, this.listen());
     }
   }

@@ -1,11 +1,25 @@
-const mount = new Event('mount');
+function bindFunction(eventName, element, fn, func) {
+  func.uuid = fn.uuid;
+  element.addEventListener(eventName, func, true);
+  element.eventListenerList.push({name: eventName, fn: func});
+}
 
 export function addListeners(observer, element, events, root = true) {
   for (let selector in events) {
     const fn = events[selector];
     if (root && typeof fn === 'function') {
-      element.addEventListener(selector, fn.bind(observer), true);
-      element.dispatchEvent(mount);
+      if (!element.eventListenerList) {
+        element.eventListenerList = [];
+      }
+      if (fn.uuid) {
+        const search = element.eventListenerList.find((listener) => listener.fn.uuid === fn.uuid);
+        if (!search) {
+          bindFunction(selector, element, fn, fn.bind(observer));
+        }
+      } else {
+        fn.uuid = generateUUID();
+        bindFunction(selector, element, fn, fn.bind(observer));
+      }
     }
     const nodeList = element.querySelectorAll(selector);
     for (let i = 0, node; node = nodeList[i]; i++) {
