@@ -96,7 +96,7 @@ function saveInitState(observer) {
   const initState = {};
   const properties = privy.get(observer).properties;
   for (let name in properties) {
-    initState[name] = properties[name].get();
+    initState[name] =  properties[name].get();
   }
   privy.get(observer).initState = initState;
 }

@@ -29,8 +29,11 @@ export function isInput(node) {
 }
 
 export function setValue(property, node, value, attr = 'value') {
-  if (node.type === 'file') return;
-  if (node.type === 'checkbox' || node.type === 'radio') attr = 'checked';
-  if (node.type === 'radio') value = node.value === property.get();
-  node[attr] = value;
+  if (node.type === 'checkbox' || node.type === 'radio') {
+    attr = 'checked';
+    if (node.type === 'radio') {
+      value = node.value === property.get();
+    }
+  } else if (node.type === 'file') attr = 'files';
+  if (node[attr] !== value) node[attr] = value;
 }
