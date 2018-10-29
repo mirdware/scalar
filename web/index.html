@@ -7,7 +7,7 @@
    <link rel="shortcut icon" type="image/x-icon" href="favicon.ico" />
 </head>
 <body>
-  <div id="square">
+  <div id="square" data-attr="style: squareStyle">
     <span data-attr="className: action" class="open"></span>
     <table>
       <thead>
@@ -22,7 +22,7 @@
   <form id="hello-world">
     <input type="text" data-bind="name" value="init" disabled />
     <label><input type="checkbox" data-bind="show" checked /> ¿Mostrar alert?</label>
-    <div data-bind="show"></div>
+    <div data-bind="name"></div>
     <textarea data-bind="name"></textarea><br/>
     <select data-bind="select">
       <option value="h">Hola</option>

@@ -3,11 +3,10 @@ import { Component, Template, Resource } from '../../scalar';
 const user = new Resource('response.json');
 
 function track(e) {
-  console.log(this, e.clientX + ',' + e.clientY);
+  //console.log(this, e.clientX + ',' + e.clientY);
 }
 
 function sendRequest(e) {
-  let element = e.target;
   this.action = 'reset';
   this.name = user.get();
 }
@@ -27,7 +26,7 @@ function renderTable(addr) {
 }
 
 function paint(e) {
-  this.perform((node) => node.style.backgroundColor = e.target.innerHTML);
+  this.squareStyle = {backgroundColor: e.target.innerHTML, borderRadius: '.5em'};
 }
 
 export class Test extends Component {
