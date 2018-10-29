@@ -13,10 +13,10 @@ function getProperty(observer, name) {
   return property;
 }
 
-function setAttribute(attribute, property, key) {
+function setAttribute(attribute, key, property) {
   if (property.constructor === Object) {
     for (let k in property) {
-      setAttribute(attribute[key], property[k], k);
+      setAttribute(attribute[key], k, property[k]);
     }
   } else if (attribute[key] !== property) {
     attribute[key] = property;
@@ -26,7 +26,7 @@ function setAttribute(attribute, property, key) {
 function changeProperty(observer, key, attribute, domElement, property) {
   const nodes = privy.get(observer).nodes;
   const eventListenerList = domElement.eventListenerList;
-  setAttribute(attribute, property, key);
+  setAttribute(attribute, key, property);
   if (eventListenerList) {
     while (eventListenerList.length) {
       const listener = eventListenerList.shift();
@@ -60,7 +60,7 @@ function bindData(observer, domElement) {
   const property = properties[name];
   if (isInput(domElement)) {
     domElement.addEventListener('keyup', (e) => property.set(e.target.value));
-    domElement.addEventListener('cahnge', (e) => property.set(evalValue(e.target)));
+    domElement.addEventListener('change', (e) => property.set(evalValue(e.target)));
     const value = evalValue(domElement);
     if (value !== null) {
       property.set(value);
@@ -74,7 +74,7 @@ function bindData(observer, domElement) {
 function bindAttributes(observer, domElement) {
   const attributes = domElement.getAttribute("data-attr").split(',');
   const properties = privy.get(observer).properties;
-  for (let i=0, attribute; attribute = attributes[i]; i++) {
+  for (let i = 0, attribute; attribute = attributes[i]; i++) {
     attribute = attribute.split(':');
     const keys = attribute[0].trim().split('.');
     const key = keys.pop();
@@ -84,11 +84,13 @@ function bindAttributes(observer, domElement) {
     if (!properties[value]) {
       properties[value] = getProperty(observer, value);
     }
-    if (!properties[value].get() && attribute[key]) {
-      properties[value].set(attribute[key]);
+    const property = properties[value];
+    const attr = attribute[key];
+    if (attr && !(attr instanceof Object) && !property.get()) {
+      property.set(attr);
     }
-    properties[value].listeners
-    .push((property) => changeProperty(observer, key, attribute, domElement, property.get()));
+    property.listeners
+    .push(() => changeProperty(observer, key, attribute, domElement, property.get()));
   }
 }
 
@@ -111,7 +113,10 @@ function watch(observer) {
 function getState(properties) {
   const state = {};
   for (let name in properties) {
-    state[name] = properties[name].get();
+    const property = properties[name].get();
+    state[name] =  (property instanceof Object) ?
+      Object.assign({}, property) :
+      property;
   }
   return state;
 }
@@ -146,8 +151,8 @@ export class Component {
 
   perform(fn) {
     const nodes = privy.get(this).nodes;
-    for (let i=0, node; node = nodes[i]; i++) {
-        fn(node);
+    for (let i = 0, node; node = nodes[i]; i++) {
+      fn(node);
     }
   }
 
