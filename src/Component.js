@@ -13,6 +13,24 @@ function getProperty(observer, name) {
   return property;
 }
 
+function addProperty(domElement, property) {
+  if (isInput(domElement)) {
+    domElement.addEventListener('keyup', (e) => property.set(e.target.value));
+    domElement.addEventListener('change', (e) => property.set(evalValue(e.target)));
+    const value = evalValue(domElement);
+    if (value !== null) {
+      property.set(value);
+    } else {
+      setValue(property, domElement, property.get());
+    }
+  } else if (domElement.innerHTML) {
+    property.setTemplate(domElement);
+  } else {
+    setValue(property, domElement, property.get(), 'innerHTML');
+  }
+  property.nodes.push(domElement);
+}
+
 function setAttribute(attribute, key, property) {
   if (property.constructor === Object) {
     for (let k in property) {
@@ -57,18 +75,7 @@ function bindData(observer, domElement) {
   if (!properties[name]) {
     properties[name] = getProperty(observer, name);
   }
-  const property = properties[name];
-  if (isInput(domElement)) {
-    domElement.addEventListener('keyup', (e) => property.set(e.target.value));
-    domElement.addEventListener('change', (e) => property.set(evalValue(e.target)));
-    const value = evalValue(domElement);
-    if (value !== null) {
-      property.set(value);
-    } else {
-      setValue(property, domElement, property.get());
-    }
-  }
-  property.nodes.push(domElement);
+  addProperty(domElement, properties[name]);
 }
 
 function bindAttributes(observer, domElement) {
@@ -114,7 +121,7 @@ function getState(properties) {
   const state = {};
   for (let name in properties) {
     const property = properties[name].get();
-    state[name] =  (property instanceof Object) ?
+    state[name] =  (property.constructor === Object) ?
       Object.assign({}, property) :
       property;
   }
@@ -129,14 +136,11 @@ export class Component {
     };
     privy.set(this, properties);
     watch(this);
-    this.init(properties.properties);
     properties.initState = getState(properties.properties);
     for (let i = 0, node; node = properties.nodes[i]; i++) {
       addListeners(this, node, this.listen());
     }
   }
-
-  init() {}
 
   listen() {
     return {};

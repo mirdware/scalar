@@ -40,8 +40,8 @@ export class Property {
     return this;
   }
 
-  setTemplate(templateFn) {
-    privy.get(this).complexType = new Template(templateFn);
+  setTemplate(node) {
+    privy.get(this).complexType = new Template(node);
     return this;
   }
 }

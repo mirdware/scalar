@@ -16,13 +16,20 @@
           <th>Meta</th>
         </tr>
       </thead>
-      <tbody data-bind="name"></tbody>
+      <tbody data-bind="name">
+        <template>
+          <tr>
+            <td class="first">$${first}</td>
+            <td>$${last}</td>
+          </tr>
+        </template>
+      </tbody>
     </table>
   </div>
   <form id="hello-world">
     <input type="text" data-bind="name" value="init" disabled />
     <label><input type="checkbox" data-bind="show" checked /> ¿Mostrar alert?</label>
-    <div data-bind="show"></div>
+    <div data-bind="name"></div>
     <textarea data-bind="name"></textarea><br/>
     <select data-bind="select">
       <option value="h">Hola</option>

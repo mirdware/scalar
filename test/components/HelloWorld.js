@@ -10,11 +10,6 @@ function assignValues(e) {
   });
 }
 
-function reset(e) {
-  e.preventDefault();
-  this.reset();
-}
-
 function submit (e) {
   e.preventDefault();
   this.show ? alert(this.toJSON()) : console.log(this);
@@ -28,7 +23,7 @@ export class HelloWorld extends Component {
   listen() {
     const events = {
       submit: submit,
-      reset: reset,
+      reset: () => setTimeout(() => this.reset(), 0),
       '.fill': {click: assignValues}
     };
     return events;

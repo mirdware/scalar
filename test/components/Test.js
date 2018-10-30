@@ -3,7 +3,7 @@ import { Component, Template, Resource } from '../../scalar';
 const user = new Resource('response.json');
 
 function track(e) {
-  //console.log(this, e.clientX + ',' + e.clientY);
+  console.log(this, e.clientX + ',' + e.clientY);
 }
 
 function sendRequest(e) {
@@ -14,15 +14,6 @@ function sendRequest(e) {
 function reset(e) {
   e.preventDefault();
   this.reset();
-}
-
-function renderTable(addr) {
-  return Template.html`
-    <tr>
-      <td class="first">$${addr.first}</td>
-      <td>$${addr.last}</td>
-    </tr>
-  `;
 }
 
 function paint(e) {
@@ -42,9 +33,5 @@ export class Test extends Component {
       '.reset': {click: reset}
     };
     return events;
-  }
-
-  init(properties) {
-    properties.name.setTemplate(renderTable);
   }
 }

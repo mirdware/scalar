@@ -1,6 +1,5 @@
 const path = require('path');
 const config = require('./package.json');
-const webpack = require('webpack');
 
 module.exports = {
   entry: {
@@ -15,30 +14,22 @@ module.exports = {
     umdNamedDefine: true
   },
   module: {
-    loaders: [
+    rules: [
       {
-        'test': path.join(__dirname, ''),
-        'loader': 'babel-loader',
-        query: {
-          'presets': ['env'],
+        test: /\.js$/,
+        exclude: /node_modules/,
+        use: {
+          loader: 'babel-loader',
+          options: {
+            presets: ['@babel/preset-env']
+          }
         }
       }
     ]
   },
   devServer: {
-    host: '0.0.0.0',
+    host: 'localhost',
     port: 6969,
     inline: true
-  },
-  plugins: [
-    new webpack.optimize.UglifyJsPlugin({
-      compressor: {screw_ie8: true, keep_fnames: true, warnings: false},
-      mangle: {screw_ie8: true, keep_fnames: true},
-      sourcemap: true
-    }),
-    new webpack.DefinePlugin({
-      __DEV__: JSON.stringify(JSON.parse(process.env.BUILD_DEV || 'true')),
-      __PRERELEASE__: JSON.stringify(JSON.parse(process.env.BUILD_PRERELEASE || 'false'))
-    })
-  ]
+  }
 };
