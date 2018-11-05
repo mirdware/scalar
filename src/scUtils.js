@@ -45,7 +45,7 @@ export function isInput(node) {
 }
 
 export function setValue(property, node, value, attr = 'value') {
-  if (attr === 'innerHTML') {
+  if (attr === 'innerHTML' && typeof value == 'string') {
     value = escapeHTML(value);
   } else if (node.type === 'checkbox' || node.type === 'radio') {
     attr = 'checked';

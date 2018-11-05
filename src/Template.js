@@ -42,18 +42,21 @@ function generateTemplate(template) {
 
 export class Template {
   constructor(node) {
-    const template = node.getElementsByTagName('template')[0].innerHTML;
-    this.fn = generateTemplate(template);
+    let template = node.getElementsByTagName('template');
+    if (template.length) {
+      template = template[0].innerHTML;
+      this.fn = generateTemplate(template);
+    }
   }
 
   render(param) {
-    let fn = this.fn;
-    if (Array.isArray(param)) {
-      fn = (data) => data.map(this.fn);
-    }
-    let template = fn(param);
-    if (Array.isArray(template)) {
-      template = template.join('');
+    let template = '';
+    if (this.fn) {
+      const fn = Array.isArray(param) ? (data) => data.map(this.fn) : this.fn;
+      template = fn(param);
+      if (Array.isArray(template)) {
+        template = template.join('');
+      }
     }
     return template;
   }
