@@ -1,6 +1,7 @@
 import { Template } from './Template';
 import { addListeners, isInput, setValue } from './scUtils';
 import { Wrapper } from './Wrapper';
+import { ObservableArray } from './ObservableArray';
 
 const privy = new Wrapper();
 
@@ -23,14 +24,22 @@ function changeContent(property, value) {
 }
 
 export class Property {
-  constructor (component) {
-    privy.set(this, {parent: component, value: ''});
+  constructor(component) {
+    privy.set(this, {parent: component, value: '', observable: {}});
     this.nodes = [];
     this.listeners = [];
   }
 
   get() {
-    return privy.get(this).value;
+    const properties = privy.get(this);
+    let value = properties.value;
+    if (Array.isArray(properties.value)) {
+      if (!properties.observable.array) {
+        properties.observable = new ObservableArray(this, value);
+      }
+      value = properties.observable;
+    }
+    return value;
   }
 
   set(value) {

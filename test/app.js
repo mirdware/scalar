@@ -1,8 +1,10 @@
-import { HelloWorld } from './components/HelloWorld';
+import { Form } from './components/Form';
 import { Test } from './components/Test';
+import { ToDo } from './components/ToDo';
 import { IoC } from '../scalar';
 
 IoC.provide(
-  HelloWorld,
-  Test
+  Form,
+  Test,
+  ToDo
 );

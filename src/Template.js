@@ -35,7 +35,7 @@ function generateTemplate(template) {
         return `\$\{map.${match.trim()}\}`;
       })
       .replace(/(\$\{(?!map\.)[^}]+\})/g, '');
-    fn = cache[template] = Function('map', `${escapeHTML} return ${html}\`${sanitized}\``);
+    fn = cache[template] = Function('map, index', `${escapeHTML} map = {index: index, data: map}; return ${html}\`${sanitized}\``);
   }
   return fn;
 }

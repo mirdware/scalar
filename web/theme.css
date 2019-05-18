@@ -2,6 +2,16 @@ body {
   font-family: arial, helvetica, verdana;
 }
 
+h1 {
+  color: #777;
+}
+
+section {
+  margin: 1em;
+  display: inline-block;
+  vertical-align: top;
+}
+
 #square {
   width: 200px;
   height: 200px;

@@ -152,7 +152,7 @@ Una plantilla scalar debe contener atributos `data-bind` y `data-attr`, los prim
 </div>
 ```
 
-Como se puede observar data-bind es simplemente un enlace a una propiedad del componente, por lo tanto debe tener el formato de una [propiedad javascript](https://developer.mozilla.org/es/docs/Web/JavaScript/Data_structures#Objetos), mientras el data-attr puede tener tantos atributos como se definan, estos se hayan separados por coma (,) y dentro un para clave valor en donde la clave es el atributo a ser modificado y el valor una propiedad del componente que tendrá el control para modificar el atributo en cuestión.
+Como se puede observar data-bind es simplemente un enlace a una propiedad del componente, por lo tanto debe tener el formato de una [propiedad javascript](https://developer.mozilla.org/es/docs/Web/JavaScript/Data_structures#Objetos), mientras el data-attr puede tener tantos atributos como se definan, estos se hayan separados por coma `,` y dentro un para clave valor en donde la clave es el atributo a ser modificado y el valor una propiedad del componente que tendrá el control para modificar el atributo en cuestión.
 
 Por otra parte se encuentran las plantillas JIT las hacen uso de características como [template string](https://developer.mozilla.org/es/docs/Web/JavaScript/Referencia/template_strings) y [template tag](https://developer.mozilla.org/es/docs/Web/HTML/Elemento/template) y su función es generar código HTML de manera dinámica.
 

@@ -17,7 +17,8 @@ function reset(e) {
 }
 
 function paint(e) {
-  this.squareStyle = {backgroundColor: e.target.innerHTML, borderRadius: '.5em'};
+  const color = e.target.innerHTML;
+  this.squareStyle = {backgroundColor: color, borderRadius: color != 'blue' ? '.5em': '0'};
 }
 
 export class Test extends Component {

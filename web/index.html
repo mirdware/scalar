@@ -7,6 +7,7 @@
    <link rel="shortcut icon" type="image/x-icon" href="favicon.ico" />
 </head>
 <body>
+  <h1>Scalar</h1>
   <div id="square" data-attr="style: squareStyle">
     <span data-attr="className: action" class="open"></span>
     <table>
@@ -19,31 +20,48 @@
       <tbody data-bind="name">
         <template>
           <tr>
-            <td class="first">$${first}</td>
-            <td>$${last}</td>
+            <td class="first">$${data.first}</td>
+            <td>$${data.last}</td>
           </tr>
         </template>
       </tbody>
     </table>
   </div>
-  <form id="hello-world">
-    <input type="text" data-bind="name" value="init" disabled />
-    <label><input type="checkbox" data-bind="show" checked /> ¿Mostrar alert?</label>
-    <div data-bind="name"></div>
-    <textarea data-bind="name"></textarea><br/>
-    <select data-bind="select">
-      <option value="h">Hola</option>
-      <option value="m">Mundo</option>
-    </select>
-    <input type="text" name="select" data-bind="select"><br/>
-    <label><input type="radio" name="sexo" data-bind="sexo" value="F" checked /> Femenino</label> <label><input type="radio" name="sexo" data-bind="sexo" value="M"> Masculino</label><br/>
-    <input type="password" data-bind="password" /> <input type="text" data-bind="password" /><br/>
-    <input type="file" data-bind="file" /><br/>
-    <input type="submit" />
-    <input type="reset" /><br/>
-    <input type="button" value="Fill data inside" class="fill" />
-  </form>
-  <input type="button" value="Fill data outside" class="fill" />
+
+  <section>
+    <h1>Formularios</h1>
+    <form id="hello-world">
+      <input type="text" data-bind="name" value="init" disabled />
+      <label><input type="checkbox" data-bind="show" checked /> ¿Mostrar alert?</label>
+      <div data-bind="name"></div>
+      <textarea data-bind="name"></textarea><br/>
+      <select data-bind="select">
+        <option value="h">Hola</option>
+        <option value="m">Mundo</option>
+      </select>
+      <input type="text" name="select" data-bind="select"><br/>
+      <label><input type="radio" name="sexo" data-bind="sexo" value="F" checked /> Femenino</label> <label><input type="radio" name="sexo" data-bind="sexo" value="M"> Masculino</label><br/>
+      <input type="password" data-bind="password" /> <input type="text" data-bind="password" /><br/>
+      <input type="file" data-bind="file" /><br/>
+      <input type="submit" />
+      <input type="reset" /><br/>
+      <input type="button" value="Fill data inside" class="fill" />
+    </form>
+    <input type="button" value="Fill data outside" class="fill" />
+  </section>
+
+  <section>
+    <h1>To do</h1>
+    <form id="todo">
+      <input type="text" data-bind="task" />
+      <input type="submit" />
+      <ul data-bind="tasks">
+        <template>
+          <li>${data} <a href="javascript:void(0)" class="close" data-index="${index}">[x]</a></li>
+        </template>
+      </ul>
+    </form>
+  </section>
   <script src="../dist/app.min.js"></script>
 </body>
 </html>

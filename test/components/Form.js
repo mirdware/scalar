@@ -15,7 +15,7 @@ function submit (e) {
   this.show ? alert(this.toJSON()) : console.log(this);
 }
 
-export class HelloWorld extends Component {
+export class Form extends Component {
   constructor() {
     super('#hello-world');
   }
