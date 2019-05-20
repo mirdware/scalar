@@ -1,9 +1,10 @@
-import { escapeHTML } from './Template';
+import { escapeHTML } from '../view/Template';
 
-function bindFunction(eventName, element, fn, func) {
-  func.uuid = fn.uuid;
-  element.addEventListener(eventName, func, true);
-  element.eventListenerList.push({name: eventName, fn: func});
+function bindFunction(observer, eventName, element, fn) {
+  const method = fn.bind(observer);
+  method.uuid = fn.uuid;
+  element.addEventListener(eventName, method, true);
+  element.eventListenerList.push({name: eventName, fn: method});
 }
 
 export function addListeners(observer, element, events, root = true) {
@@ -16,11 +17,11 @@ export function addListeners(observer, element, events, root = true) {
       if (fn.uuid) {
         const search = element.eventListenerList.find((listener) => listener.fn.uuid === fn.uuid);
         if (!search) {
-          bindFunction(selector, element, fn, fn.bind(observer));
+          bindFunction(observer, selector, element, fn);
         }
       } else {
         fn.uuid = generateUUID();
-        bindFunction(selector, element, fn, fn.bind(observer));
+        bindFunction(observer, selector, element, fn);
       }
     }
     const nodeList = element.querySelectorAll(selector);

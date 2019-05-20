@@ -27,12 +27,11 @@ export class Test extends Component {
   }
 
   listen() {
-    const events = {
+    return {
       mousemove: track,
       '.open': {click: sendRequest},
       '.first': {click: paint},
       '.reset': {click: reset}
     };
-    return events;
   }
 }

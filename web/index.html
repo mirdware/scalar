@@ -54,10 +54,11 @@
     <h1>To do</h1>
     <form id="todo">
       <input type="text" data-bind="task" />
-      <input type="submit" />
+      <input type="submit" value="Agregar" />
+      <input type="button" value="Limpiar" id="clean" />
       <ul data-bind="tasks">
         <template>
-          <li>${data} <a href="javascript:void(0)" class="close" data-index="${index}">[x]</a></li>
+          <li data-index="${index}">${data} <a href="javascript:void(0)" class="close">[x]</a></li>
         </template>
       </ul>
     </form>

@@ -73,7 +73,7 @@ function solve(xmlHttp, resolve, reject) {
   }
 }
 
-export class Resource {
+export default class Resource {
   constructor(url) {
     this.url = url;
     this.xhr = new XMLHttpRequest();

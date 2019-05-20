@@ -1,13 +1,6 @@
-const cache = {};
+import { addListeners } from "../util/Helper";
 
-export function escapeHTML(str) {
-  return str.replace(/&/g, '&amp;')
-    .replace(/>/g, '&gt;')
-    .replace(/</g, '&lt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;')
-    .replace(/`/g, '&#96;');
-}
+const cache = {};
 
 function html(literalSections, ...substs) {
   const raw = literalSections.raw;
@@ -40,13 +33,24 @@ function generateTemplate(template) {
   return fn;
 }
 
-export class Template {
-  constructor(node) {
+export function escapeHTML(str) {
+  return str.replace(/&/g, '&amp;')
+    .replace(/>/g, '&gt;')
+    .replace(/</g, '&lt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+    .replace(/`/g, '&#96;');
+}
+
+export default class Template {
+  constructor(component, node) {
     let template = node.getElementsByTagName('template');
     if (template.length) {
       template = template[0].innerHTML;
       this.fn = generateTemplate(template);
     }
+    this.node = node;
+    this.component = component;
   }
 
   render(param) {
@@ -58,6 +62,7 @@ export class Template {
         template = template.join('');
       }
     }
-    return template;
+    this.node.innerHTML = template;
+    addListeners(this.component, this.node, this.component.listen(), false);
   }
 }

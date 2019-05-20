@@ -1,5 +1,5 @@
-import { generateUUID } from './scUtils';
-import { Component } from './Component';
+import { generateUUID } from './util/Helper';
+import Component from './Component';
 
 const classes = {};
 const instances = {};
@@ -15,7 +15,7 @@ function instance(provider) {
   classes[uuid] = provider;
 }
 
-export class IoC {
+export default class IoC {
   static provide(...providers) {
     for (let i = 0, provider; provider = providers[i]; i++) {
       if (!provider.uuid) instance(provider);

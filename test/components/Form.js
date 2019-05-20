@@ -21,11 +21,10 @@ export class Form extends Component {
   }
 
   listen() {
-    const events = {
+    return {
       submit: submit,
       reset: () => setTimeout(() => this.reset(), 0),
       '.fill': {click: assignValues}
     };
-    return events;
   }
 }

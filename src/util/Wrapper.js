@@ -1,8 +1,8 @@
-import { generateUUID } from './scUtils';
+import { generateUUID } from './Helper';
 
 const correlation = {};
 
-export class Wrapper {
+export default class Wrapper {
   set(obj, props) {
     if (!obj.uuid) {
       Object.defineProperty(obj, 'uuid', {value: generateUUID()});

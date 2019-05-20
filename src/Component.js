@@ -1,6 +1,6 @@
-import { Property } from './Property';
-import { addListeners, isInput, setValue } from './scUtils';
-import { Wrapper } from './Wrapper';
+import { addListeners, isInput, setValue } from './util/Helper';
+import Property from './observable/Property';
+import Wrapper from './util/Wrapper';
 
 const privy = new Wrapper();
 
@@ -128,7 +128,7 @@ function getState(properties) {
   return state;
 }
 
-export class Component {
+export default class Component {
   constructor(selector) {
     const properties = {
       properties: {},
