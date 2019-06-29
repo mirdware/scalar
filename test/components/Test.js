@@ -1,37 +1,43 @@
-import { Component, Template, Resource } from '../../scalar';
+import { Resource } from '../../scalar';
+import Message from '../services/Message';
 
-const user = new Resource('response.json');
+export default (module) => {
+  const user = new Resource('response.json');
+  const message = module.inject(Message);
 
-function track(e) {
-  console.log(this, e.clientX + ',' + e.clientY);
-}
-
-function sendRequest(e) {
-  this.action = 'reset';
-  this.name = user.get();
-}
-
-function reset(e) {
-  e.preventDefault();
-  this.reset();
-}
-
-function paint(e) {
-  const color = e.target.innerHTML;
-  this.squareStyle = {backgroundColor: color, borderRadius: color != 'blue' ? '.5em': '0'};
-}
-
-export class Test extends Component {
-  constructor() {
-    super('#square');
+  function track(e) {
+    console.log(this, e.clientX + ',' + e.clientY);
   }
 
-  listen() {
-    return {
-      mousemove: track,
-      '.open': {click: sendRequest},
-      '.first': {click: paint},
-      '.reset': {click: reset}
+  function sendRequest(e) {
+    this.action = 'reset';
+    this.name = user.get();
+    console.log(message.msg);
+  }
+
+  function reset(e) {
+    e.preventDefault();
+    this.reset();
+  }
+
+  function paint(e) {
+    const color = e.target.innerHTML;
+    this.squareStyle = {
+      backgroundColor: color,
+      borderRadius: color !== 'blue' ? '.5em': '0'
     };
   }
-}
+
+  return {
+    mousemove: track,
+    '.open': {
+      click: sendRequest
+    },
+    '.first': {
+      click: paint
+    },  
+    '.reset': {
+      click: reset
+    }
+  };
+};

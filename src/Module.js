@@ -15,14 +15,14 @@ function instance(provider) {
   classes[uuid] = provider;
 }
 
-export default class IoC {
-  static provide(...providers) {
+export default class Module {
+  constructor(...providers) {
     for (let i = 0, provider; provider = providers[i]; i++) {
       if (!provider.uuid) instance(provider);
     }
   }
 
-  static inject(component) {
+  inject(component) {
     const uuid = component.uuid;
     if (classes[uuid] && !instances[uuid]) {
       const component = new classes[uuid]();
@@ -30,5 +30,13 @@ export default class IoC {
       instances[uuid] = component;
     }
     return instances[uuid];
+  }
+
+  compose(selector, events) {
+    const nodes = document.querySelectorAll(selector);
+    for (let i = 0, node; node = nodes[i]; i++) {
+      new Component(node, events, this);
+    }
+    return this;
   }
 }

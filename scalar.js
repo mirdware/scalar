@@ -1,5 +1,5 @@
 import Component from './src/Component';
 import Resource from './src/Resource';
-import IoC from './src/IoC';
+import Module from './src/Module';
 
-export { Component, Resource, IoC };
+export { Component, Resource, Module };

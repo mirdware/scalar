@@ -7,6 +7,9 @@ const privy = new Wrapper();
 
 function changeContent(property, value) {
   const _this = privy.get(property);
+  if (value instanceof Collection) {
+    value = value.array;
+  }
   _this.value = value;
   for (let i = 0, listener; listener = property.listeners[i]; i++) {
     listener(property);
@@ -49,6 +52,7 @@ export default class Property {
 
   setTemplate(node) {
     const _this = privy.get(this);
+    _this.value = [];
     _this.complexType = new Template(_this.parent, node);
     return this;
   }

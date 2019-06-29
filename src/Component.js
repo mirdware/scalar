@@ -52,7 +52,7 @@ function changeProperty(observer, key, attribute, domElement, property) {
     }
   }
   for (let i = 0, node; node = nodes[i]; i++) {
-    addListeners(observer, node, observer.listen());
+    addListeners(observer, node, observer.events);
   }
 }
 
@@ -101,20 +101,17 @@ function bindAttributes(observer, domElement) {
   }
 }
 
-function watch(observer) {
-  const nodes = privy.get(observer).nodes;
-  for (let i = 0, node; node = nodes[i]; i++) {
-    const dataBinds = Array.from(node.querySelectorAll('[data-bind]'));
-    const dataAttributes = Array.from(node.querySelectorAll('[data-attr]'));
-    if (node.getAttribute('data-bind')) {
-      dataBinds.push(node);
-    }
-    if (node.getAttribute('data-attr')) {
-      dataAttributes.push(node);
-    }
-    dataBinds.forEach((bind) => bindData(observer, bind));
-    dataAttributes.forEach((attr) => bindAttributes(observer, attr));
+function watch(observer, node) {
+  const dataBinds = Array.from(node.querySelectorAll('[data-bind]'));
+  const dataAttributes = Array.from(node.querySelectorAll('[data-attr]'));
+  if (node.getAttribute('data-bind')) {
+    dataBinds.push(node);
   }
+  if (node.getAttribute('data-attr')) {
+    dataAttributes.push(node);
+  }
+  dataBinds.forEach((bind) => bindData(observer, bind));
+  dataAttributes.forEach((attr) => bindAttributes(observer, attr));
 }
 
 function getState(properties) {
@@ -129,21 +126,16 @@ function getState(properties) {
 }
 
 export default class Component {
-  constructor(selector) {
+  constructor(node, listener, module) {
     const properties = {
       properties: {},
-      nodes: document.querySelectorAll(selector)
+      nodes: [node]
     };
     privy.set(this, properties);
-    watch(this);
+    watch(this, node);
     properties.initState = getState(properties.properties);
-    for (let i = 0, node; node = properties.nodes[i]; i++) {
-      addListeners(this, node, this.listen());
-    }
-  }
-
-  listen() {
-    return {};
+    this.events = listener(module);
+    addListeners(this, node, this.events);
   }
 
   reset() {
@@ -154,10 +146,8 @@ export default class Component {
   }
 
   perform(fn) {
-    const nodes = privy.get(this).nodes;
-    for (let i = 0, node; node = nodes[i]; i++) {
-      fn(node);
-    }
+    const node = privy.get(this).nodes[0];
+    fn(node);
   }
 
   toJSON() {

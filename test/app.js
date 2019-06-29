@@ -1,10 +1,10 @@
-import { Form } from './components/Form';
-import { Test } from './components/Test';
-import { ToDo } from './components/ToDo';
-import { IoC } from '../scalar';
+import { Module } from '../scalar';
+import Form from './components/Form';
+import Test from './components/Test';
+import ToDo from './components/ToDo';
+import Message from './services/Message';
 
-IoC.provide(
-  Form,
-  Test,
-  ToDo
-);
+new Module(Message)
+.compose('#square', Test)
+.compose('#hello-world', Form)
+.compose('#todo', ToDo);

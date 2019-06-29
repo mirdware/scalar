@@ -43,14 +43,16 @@ export function escapeHTML(str) {
 }
 
 export default class Template {
-  constructor(component, node) {
+  constructor(component, node, events) {
     let template = node.getElementsByTagName('template');
     if (template.length) {
       template = template[0].innerHTML;
       this.fn = generateTemplate(template);
     }
-    this.node = node;
-    this.component = component;
+    this.executeTemplate = (tpl) => {
+      node.innerHTML = tpl;
+      addListeners(component, node, component.events, false);
+    }
   }
 
   render(param) {
@@ -62,7 +64,6 @@ export default class Template {
         template = template.join('');
       }
     }
-    this.node.innerHTML = template;
-    addListeners(this.component, this.node, this.component.listen(), false);
+    this.executeTemplate(template);
   }
 }
