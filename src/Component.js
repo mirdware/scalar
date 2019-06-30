@@ -52,7 +52,7 @@ function changeProperty(observer, key, attribute, domElement, property) {
     }
   }
   for (let i = 0, node; node = nodes[i]; i++) {
-    addListeners(observer, node, observer.events);
+    addListeners(node, observer.events);
   }
 }
 
@@ -129,13 +129,19 @@ export default class Component {
   constructor(node, listener, module) {
     const properties = {
       properties: {},
-      nodes: [node]
+      nodes: [node],
+      module: module
     };
     privy.set(this, properties);
     watch(this, node);
     properties.initState = getState(properties.properties);
-    this.events = listener(module);
-    addListeners(this, node, this.events);
+    const events = listener(this);
+    if (events.observe) {
+      module.observers.push(events.observe);
+      delete events.observe;
+    }
+    this.events = events;
+    addListeners(node, events);
   }
 
   reset() {
@@ -145,9 +151,8 @@ export default class Component {
     }
   }
 
-  perform(fn) {
-    const node = privy.get(this).nodes[0];
-    fn(node);
+  inject(provider) {
+    return privy.get(this).module.inject(provider);
   }
 
   toJSON() {

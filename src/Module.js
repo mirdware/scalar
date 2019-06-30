@@ -1,35 +1,38 @@
 import { generateUUID } from './util/Helper';
 import Component from './Component';
 
-const classes = {};
-const instances = {};
+function execute(obj, prop, value, observers) {
+  obj[prop] = value;
+  observers.forEach((fn) => fn());
+  return true;
+}
 
-function instance(provider) {
-  if (provider.prototype instanceof Component) {
-    const component = new provider();
-    provider.uuid = component.uuid;
-    return instances[component.uuid] = component;
+function provide(provider, classes) {
+  if (!provider.uuid) {
+    const uuid = generateUUID();
+    provider.uuid = uuid;
+    classes[uuid] = provider;
   }
-  const uuid = generateUUID();
-  provider.uuid = uuid;
-  classes[uuid] = provider;
 }
 
 export default class Module {
   constructor(...providers) {
-    for (let i = 0, provider; provider = providers[i]; i++) {
-      if (!provider.uuid) instance(provider);
-    }
+    this.observers = [];
+    this.classes = {};
+    this.instances = {};
+    providers.forEach((provider) => provide(provider, this.classes));
   }
 
   inject(component) {
     const uuid = component.uuid;
-    if (classes[uuid] && !instances[uuid]) {
-      const component = new classes[uuid]();
+    if (this.classes[uuid] && !this.instances[uuid]) {
+      const component = new this.classes[uuid]();
       component.uuid = uuid;
-      instances[uuid] = component;
+      this.instances[uuid] = new Proxy(component, {
+        set: (obj, prop, value) => execute(obj, prop, value, this.observers)
+      });
     }
-    return instances[uuid];
+    return this.instances[uuid];
   }
 
   compose(selector, events) {

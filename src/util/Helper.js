@@ -1,13 +1,12 @@
 import { escapeHTML } from '../view/Template';
 
-function bindFunction(observer, eventName, element, fn) {
-  const method = fn.bind(observer);
-  method.uuid = fn.uuid;
-  element.addEventListener(eventName, method, true);
-  element.eventListenerList.push({name: eventName, fn: method});
+function bindFunction(eventName, element, fn) {
+  fn.uuid = fn.uuid;
+  element.addEventListener(eventName, fn, true);
+  element.eventListenerList.push({name: eventName, fn: fn});
 }
 
-export function addListeners(observer, element, events, root = true) {
+export function addListeners(element, events, root = true) {
   for (let selector in events) {
     const fn = events[selector];
     if (root && typeof fn === 'function') {
@@ -17,16 +16,16 @@ export function addListeners(observer, element, events, root = true) {
       if (fn.uuid) {
         const search = element.eventListenerList.find((listener) => listener.fn.uuid === fn.uuid);
         if (!search) {
-          bindFunction(observer, selector, element, fn);
+          bindFunction(selector, element, fn);
         }
       } else {
         fn.uuid = generateUUID();
-        bindFunction(observer, selector, element, fn);
+        bindFunction(selector, element, fn);
       }
     }
     const nodeList = element.querySelectorAll(selector);
     for (let i = 0, node; node = nodeList[i]; i++) {
-      addListeners(observer, node, fn);
+      addListeners(node, fn);
     }
   }
 }

@@ -43,7 +43,7 @@ export default class Property {
     return value;
   }
 
-  set(value) {
+  set(value = '') {
     typeof value.then === 'function' ?
       value.then((data) => changeContent(this, data)) :
       changeContent(this, value);

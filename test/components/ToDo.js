@@ -1,27 +1,22 @@
-export default () => {
-  function clean() {
-    this.tasks = [];
-  }
 
-  function remove(e) {
-      const index = e.target.parentNode.dataset.index;
-      this.tasks.splice(index, 1);
-  }
+function remove($, e) {
+    const index = e.target.parentNode.dataset.index;
+    $.tasks.splice(index, 1);
+}
 
-  function add(e) {
-      e.preventDefault();
-      if (!this.task) return;
-      this.tasks.push(this.task);
-      this.task = "";
-  }
+function add($, e) {
+    e.preventDefault();
+    if (!$.task) return;
+    $.tasks.push($.task);
+    $.task = "";
+}
 
-  return {
-    submit: add,
-    '.close': {
-      click: remove
-    },
-    '#clean': {
-      click: clean
-    }
-  };
-};
+export default ($) => ({
+  submit: (e) => add($, e),
+  '.close': {
+    click: (e) => remove($, e)
+  },
+  '#clean': {
+    click: () => $.tasks = []
+  }
+});
