@@ -1,18 +1,16 @@
-
 function remove($, e) {
     const index = e.target.parentNode.dataset.index;
     $.tasks.splice(index, 1);
 }
 
-function add($, e) {
-    e.preventDefault();
+function add($) {
     if (!$.task) return;
     $.tasks.push($.task);
     $.task = "";
 }
 
 export default ($) => ({
-  submit: (e) => add($, e),
+  submit: () => add($),
   '.close': {
     click: (e) => remove($, e)
   },

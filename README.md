@@ -1,26 +1,25 @@
-Scalar
-======
+# Scalar
 Scalar nace de la necesidad de crear sistemas escalables, de alto rendimiento y no obstructivos usando los últimos estándares de programación web, lo cual incluye el uso de las ultimas características basadas en [ECMAScript](https://www.ecma-international.org/ecma-262/8.0/index.html).
 
-El desarrollo de aplicaciones con scalar se basa en una arquitectura _CRT_ (Components Resources and Templates).
+El desarrollo de aplicaciones con scalar se basa en una arquitectura _CTR_ (Components Templates and Resources).
 
-Componentes
------------
-Los componentes (Components) son los artefactos más importantes en el uso de scalar, son los encargados de renderizar y conectar los diferentes elementos del sistema, se podría pensar en ellos como los controladores en un sistema _MVC_ (Models, Views and Controllers) clásico.
-
-El uso de componentes se logra extendiendo la clase Component que provee la librería y mediante el constructor del padre se pasa el selector del nodo que se va a componer.
+## Módulos
+Un módulo es un objeto javascript que se instancia de la clase Module de scalar, se deben pasar por constructor las dependencias del módulo para luego hacer llamados al método compose.
 
 ```javascript
-import { Component } from 'scalar';
+import { Module } from '../scalar';
+import Form from './components/Form';
+import Test from './components/Test';
+import ToDo from './components/ToDo';
+import Message from './services/Message';
 
-export class HelloWorld extends Component {
-  constructor() {
-    super('#hello-world');
-  }
-}
+new Module(Message)
+.compose('#square', Test)
+.compose('#hello-world', Form)
+.compose('#todo', ToDo);
 ```
 
-Con esto se crea un componente con las propiedades definidas según los `data-bind` que se encuentran en la plantilla, si un data-bind no se encuentra definido pero si es el valor de un `data-attr` este también se creara como propiedad del componente.
+Con el uso de `compose` se crea un componente con las propiedades definidas según los `data-bind` que se encuentran en la plantilla, si un data-bind no se encuentra definido pero si es el valor de un `data-attr` este también se creara como propiedad del componente.
 
 ```html
 <form id="hello-world">
@@ -43,46 +42,43 @@ Con esto se crea un componente con las propiedades definidas según los `data-bi
 </form>
 ```
 
-Para comenzar a escuchar los eventos que pueden enlazar al componente se debe hacer uso del método `listen`.
+## Componentes
+Los componentes (Components) son los artefactos más importantes en el uso de scalar, son los encargados de renderizar y conectar los diferentes elementos del sistema, se podría pensar en ellos como los controladores en un sistema _MVC_ (Models, Views and Controllers) clásico.
+
+Un componente en scalar es basicamente una función pura la cual recibe como parámetro la referencia del objeto compuesto dentro de un módulo.
 
 ```javascript
-...
-listen() {
-  return {
-    'submit': (e) => e.preventDefault()
-  };
-}
-...
+export default ($) => ({
+  submit: (e) => {
+    if (!$.task) return;
+    $.tasks.push($.task);
+    $.task = "";
+  },
+  '.close': {
+    click: (e) => {
+      const index = e.target.parentNode.dataset.index;
+      $.tasks.splice(index, 1);
+    }
+  },
+  '#clean': {
+    click: () => $.tasks = []
+  }
+});
 ```
 
-Se debe retornar un objeto en donde la llave debe ser un selector CSS o el nombre de un evento, en el primer caso su valor deberá ser otro objeto que cumpla con las mismas características acá descritas, cuando la llave sea el nombre del evento su valor será representado por la función o método que se ejecutara al disparar dicho evento.
+Se debe retornar un objeto en donde la llave debe ser un selector CSS o el nombre de un evento, en el primer caso su valor deberá ser otro objeto que cumpla con las mismas características, cuando la llave sea el nombre del evento (click, submit, reset, blur, focus, etc) su valor será representado por la función o método que se ejecutara al lanzar dicho evento. Todo evento lanzado previente su comportamiento por defecto.
+
+### Métodos del objeto componentizado
 
 Es posible reiniciar cualquier componente a un estado inicial mediante el método `reset`.
 
 ```javascript
 ...
-listen() {
-  return {
-    'reset': (e) => {
-      e.preventDefault();
-      this.reset();
-    }
-  };
-}
-...
-```
-
-El método `perform` permite ejecutar código directamente sobre el nodo padre del componente, esta modificación no modificara el estado del componente.
-
-```javascript
-...
-listen() {
-  return {
-    '.first': {
-      'click': (e) => this.perform((node) => node.style.backgroundColor = e.target.innerHTML)
-    }
-  };
-}
+return {
+  '.reset': {
+    click: () => $.reset()
+  }
+};
 ...
 ```
 
@@ -90,19 +86,79 @@ El método `toJSON` convierte todas las propiedades del elemento en un formato J
 
 ```javascript
 ...
-listen() {
-  return {
-    'submit': (e) => {
-      e.preventDefault();
-      this.show ? alert(this.toJSON()) : console.log(this);
-    }
-  };
+return {
+  submit: () => ($.show ? alert($.toJSON()) : console.log($))
+};
+...
+```
+
+Un componente se puede comunicar con otros mediante el uso de servicios, estos son inyectados al componente mediante el uso de la función `inject` del objeto componentizado.
+
+```javascript
+...
+return {
+  mount: () => $.header = $.inject(Message).msg
 }
 ...
 ```
 
-Repositorios
-------------
+Acá podemos ver el uso del evento `mount` este es ejecutado tan pronto inicia el componente y al momento que alguno de los servicias sufra una modificación, por esta razón cualquier escucha sobre los servicios se debe realizar sobre dicho evento.
+
+### Estilos de declaración
+
+Al ser una función javascript pura, es posible usar un componente con varios estilos de programación, al inicio vimos un retorno directo del objeto, pero tambien se puede usar como una función módulo.
+
+```javascript
+export default ($) => {
+  function remove(e) {
+    const index = e.target.parentNode.dataset.index;
+    $.tasks.splice(index, 1);
+  }
+
+  function add() {
+    if (!$.task) return;
+    $.tasks.push($.task);
+    $.task = "";
+  }
+
+  return {
+    submit: (e) => add,
+    '.close': {
+      click: (e) => remove
+    },
+    '#clean': {
+      click: () => $.tasks = []
+    }
+  };
+};
+```
+
+Incluso es posible usar el mismo módulo de EcmaScript 6.
+
+```javascript
+function remove($, e) {
+    const index = e.target.parentNode.dataset.index;
+    $.tasks.splice(index, 1);
+}
+
+function add($) {
+    if (!$.task) return;
+    $.tasks.push($.task);
+    $.task = "";
+}
+
+export default ($) => ({
+  submit: (e) => add($),
+  '.close': {
+    click: (e) => remove($, e)
+  },
+  '#clean': {
+    click: () => $.tasks = []
+  }
+});
+```
+
+## Repositorios
 El uso de los repositorios se liga usualmente a los recursos (Resources), pues estos artefactos se encargan de obtener información desde el servidor, claro que se puede usar como origen de datos cualquier cosa, incluso el mismo [localStorage](https://developer.mozilla.org/es/docs/Web/API/Storage/LocalStorage), pero lo normal es que se use una API Rest o GraphQL. Para utilizar un recurso basta con instanciar un objeto de la clase Resource que provee la librería.
 
 ```javascript
@@ -128,8 +184,7 @@ class ServerConnection extends Resource {
 
 A parte de sobrescribir propiedades como observamos en el ejemplo anterior con los headers, también es posible utilizar del sistema de inversión para usar un solo objeto durante todo el ciclo de vida de la aplicación, solo basta con proveer esta clase y scalar se encarga del resto.
 
-Plantillas
-----------
+## Plantillas
 Las plantillas (Templates) representan la parte más básica del sistema y se divide en dos: plantillas prerenderizadas y plantillas JIT (Just In Time).
 
 Las plantillas prerenderizadas son aquellas que nos son suministradas por el servidor desde el principio, de esta manera se puede garantizar el funcionamiento de la aplicación aun si el cliente no activa JavaScript; en parte scalar debe su nombre a esto, pues la idea es ir escalando la aplicación según las limitantes del cliente (accesibilidad).
@@ -170,21 +225,3 @@ El soporte para plantillas JIT está aún en una etapa bastante temprana, pero s
 ```
 
 La forma de especificar propiedades dentro de la propiedad compleja es mediante `${}` y no mediante data-bind, otra manera de realizar esta relación es mediante `$${}` la diferencia es que el uso del doble signo escapa html, mientras que el tag de signo sencillo no lo hace.
-
-Inversión de control
-------------------------------------------
-
-A parte de los artefactos principales de la librería existen funciones como provide o inject que nos permiten manejar un sistema de inversión de control muy básico pero funcional dentro del contexto de scalar. Para hacer uso de estas características es necesario importar la clase IoC de la librería.
-
-```javascript
-import { HelloWorld } from './components/HelloWorld';
-import { Test } from './components/Test';
-import { IoC } from '../scalar';
-
-IoC.provide(
-  HelloWorld,
-  Test
-);
-```
-
-Para finalizar un provider puede ser inyectado a cualquier clase mediante el uso de `let test = IoC.inject(Test)`, esto implica la importación de la clase, por lo cual se garantiza la traza de la aplicación.

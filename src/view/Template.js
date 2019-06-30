@@ -24,11 +24,12 @@ function generateTemplate(template) {
   let fn = cache[template];
   if (!fn){
     const sanitized = template
-      .replace(/\$\{([\s]*[^;\s\{]+[\s]*)\}/g, function(_, match){
-        return `\$\{map.${match.trim()}\}`;
-      })
-      .replace(/(\$\{(?!map\.)[^}]+\})/g, '');
-    fn = cache[template] = Function('map, index', `${escapeHTML} map = {index: index, data: map}; return ${html}\`${sanitized}\``);
+    .replace(/\$\{([\s]*[^;\s\{]+[\s]*)\}/g, (_, match) => `\$\{map.${match.trim()}\}`)
+    .replace(/(\$\{(?!map\.)[^}]+\})/g, '');
+    fn = cache[template] = Function(
+      'data, index',
+      `${escapeHTML}map={index, data};return ${html}\`${sanitized}\``
+    );
   }
   return fn;
 }
@@ -55,7 +56,7 @@ export default class Template {
     }
   }
 
-  render(param) {
+  render = (param) => {
     let template = '';
     if (this.fn) {
       const fn = Array.isArray(param) ? (data) => data.map(this.fn) : this.fn;
@@ -65,5 +66,5 @@ export default class Template {
       }
     }
     this.executeTemplate(template);
-  }
+  };
 }

@@ -10,18 +10,13 @@ export default ($) => {
     console.log($, e.clientX + ',' + e.clientY);
   }
 
-  function sendRequest(e) {
+  function sendRequest() {
     $.action = 'reset';
     $.name = user.get();
   }
 
-  function reset(e) {
-    e.preventDefault();
-    $.reset();
-  }
-
-  function paint(e) {
-    const color = e.target.innerHTML;
+  function paint() {
+    const color = this.innerHTML;
     $.squareStyle = {
       backgroundColor: color,
       borderRadius: color !== 'blue' ? '.5em': '0'
@@ -29,16 +24,16 @@ export default ($) => {
   }
 
   return {
-    observe: () => $.header = message.msg,
+    mount: () => $.header = message.msg,
     mousemove: track,
     '.open': {
       click: sendRequest
     },
     '.first': {
       click: paint
-    },  
+    },
     '.reset': {
-      click: reset
+      click: $.reset
     }
   };
 };

@@ -125,42 +125,51 @@ function getState(properties) {
   return state;
 }
 
+function getEvents(observers, events) {
+  if (events.mount) {
+    events.mount();
+    observers.push(events.mount);
+    delete events.mount;
+  }
+  return events;
+}
+
+function getPrivateProperties(component, node, module) {
+  const properties = {
+    properties: {},
+    nodes: [node],
+    module: module
+  };
+  privy.set(component, properties);
+  watch(component, node);
+  return properties
+}
+
 export default class Component {
   constructor(node, listener, module) {
-    const properties = {
-      properties: {},
-      nodes: [node],
-      module: module
-    };
-    privy.set(this, properties);
-    watch(this, node);
+    const properties = getPrivateProperties(this, node, module);
+    this.events = getEvents(module.observers, listener(this));
     properties.initState = getState(properties.properties);
-    const events = listener(this);
-    if (events.observe) {
-      module.observers.push(events.observe);
-      delete events.observe;
-    }
-    this.events = events;
-    addListeners(node, events);
+    addListeners(node, this.events);
   }
 
-  reset() {
+  reset = () => {
     const initState = privy.get(this).initState;
     for (let name in initState) {
       this[name] = initState[name];
     }
-  }
+  };
 
-  inject(provider) {
+  inject = (provider) => {
     return privy.get(this).module.inject(provider);
-  }
+  };
 
-  toJSON() {
+  toJSON = () => {
     const json = {};
     const properties = privy.get(this).properties;
     for (let key in properties) {
       json[key] = properties[key].get();
     }
     return JSON.stringify(json);
-  }
+  };
 }

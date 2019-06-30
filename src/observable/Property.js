@@ -31,7 +31,7 @@ export default class Property {
     this.listeners = [];
   }
 
-  get() {
+  get = () => {
     const _this = privy.get(this);
     let value = _this.value;
     if (Array.isArray(value)) {
@@ -41,19 +41,19 @@ export default class Property {
       value = _this.observable;
     }
     return value;
-  }
+  };
 
-  set(value = '') {
+  set = (value = '') => {
     typeof value.then === 'function' ?
       value.then((data) => changeContent(this, data)) :
       changeContent(this, value);
     return this;
-  }
+  };
 
-  setTemplate(node) {
+  setTemplate = (node) => {
     const _this = privy.get(this);
     _this.value = [];
     _this.complexType = new Template(_this.parent, node);
     return this;
-  }
+  };
 }

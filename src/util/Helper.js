@@ -1,9 +1,13 @@
 import { escapeHTML } from '../view/Template';
 
 function bindFunction(eventName, element, fn) {
-  fn.uuid = fn.uuid;
-  element.addEventListener(eventName, fn, true);
-  element.eventListenerList.push({name: eventName, fn: fn});
+  const method = (e) => {
+    e.preventDefault();
+    return fn.bind(element)(e);
+  };
+  method.uuid = fn.uuid;
+  element.addEventListener(eventName, method, true);
+  element.eventListenerList.push({name: eventName, fn: method});
 }
 
 export function addListeners(element, events, root = true) {

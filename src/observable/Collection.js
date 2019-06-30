@@ -8,42 +8,40 @@ export default class Collection {
     this.array = array;
   }
 
-  push(element) {
+  push = (element) => {
     const res = this.array.push(element);
     privy.get(this).property.set(this.array);
     return res;
-  }
+  };
 
-  pop() {
+  pop = () => {
     const res = this.array.pop();
     privy.get(this).property.set(this.array);
     return res;
-  }
+  };
 
-  unshift(element) {
+  unshift = (element) => {
     const res = this.array.unshift(element);
     privy.get(this).property.set(this.array);
     return res;
-  }
+  };
 
-  shift() {
+  shift = () => {
     const res = this.array.shift();
     privy.get(this).property.set(this.array);
     return res;
-  }
+  };
 
-  splice(index, length) {
+  splice = (index, length) => {
     const res = this.array.splice(index, length);
     privy.get(this).property.set(this.array);
     return res;
-  }
+  };
 
-  map(fn, index) {
-    return this.array.map(fn, index);
-  }
+  map = (fn, index) => this.array.map(fn, index);
 
-  forEach(fn, index) {
+  forEach = (fn, index) => {
     this.array.forEach(fn, index);
     privy.get(this).property.set(this.array);
-  }
+  };
 }

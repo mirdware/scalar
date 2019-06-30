@@ -84,23 +84,13 @@ export default class Resource {
     };
   }
 
-  get(queryString) {
-    return manage(this, 'GET', null, queryString);
-  }
+  get = (queryString) => manage(this, 'GET', null, queryString);
 
-  post(dataBody, queryString) {
-    return manage(this, 'POST', dataBody, queryString);
-  }
+  post = (dataBody, queryString) =>  manage(this, 'POST', dataBody, queryString);
 
-  put(dataBody, queryString) {
-    return manage(this, 'PUT', dataBody, queryString);
-  }
+  put = (dataBody, queryString) => manage(this, 'PUT', dataBody, queryString);
 
-  delete(queryString) {
-    return manage(this, 'DELETE', null, queryString);
-  }
+  delete = (queryString) => manage(this, 'DELETE', null, queryString);
 
-  request(method, opt) {
-    return manage(this, method, opt.dataBody, opt.queryString);
-  }
+  request = (method, opt) => manage(this, method, opt.dataBody, opt.queryString);
 }

@@ -144,11 +144,11 @@ export default class VirtualDom {
     this.patch(node);
   }
 
-  static get(type, props = {}, children = []) {
+  static get = (type, props = {}, children = []) => {
     return { type, props, children };
-  }
+  };
 
-  patch(node) {
+  patch = (node) => {
     if (Array.isArray(node)) {
       console.log(this.element, node, this.node);
       updateNodes(this.element, node, this.node);
@@ -156,5 +156,5 @@ export default class VirtualDom {
       updateElement(this.element, node, this.node);
     }
     this.node = node;
-  }
+  };
 }
