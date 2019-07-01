@@ -1,12 +1,12 @@
 function remove($, e) {
-    const index = e.target.parentNode.dataset.index;
-    $.tasks.splice(index, 1);
+  const index = e.target.parentNode.dataset.index;
+  $.tasks.splice(index, 1);
 }
 
 function add($) {
-    if (!$.task) return;
-    $.tasks.push($.task);
-    $.task = "";
+  if (!$.task) return;
+  $.tasks.push($.task);
+  $.task = "";
 }
 
 export default ($) => ({

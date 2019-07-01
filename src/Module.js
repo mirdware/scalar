@@ -6,11 +6,6 @@ const getHandler = (observers) => ({
     const execution = Reflect.set(obj, prop, value);
     observers.forEach((fn) => fn());
     return execution;
-  },
-  apply: (target, thisArg, argumentsList) => {
-    const execution = Reflect.apply(target, thisArg, argumentsList);
-    observers.forEach((fn) => fn());
-    return execution;
   }
 });
 
@@ -32,10 +27,11 @@ export default class Module {
 
   inject(component) {
     const uuid = component.uuid;
-    if (this.classes[uuid] && !this.instances[uuid]) {
+    if (this.classes[uuid]) {
       const component = new this.classes[uuid]();
       component.uuid = uuid;
       this.instances[uuid] = new Proxy(component, getHandler(this.observers));
+      delete this.classes[uuid];
     }
     return this.instances[uuid];
   }

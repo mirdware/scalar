@@ -14,7 +14,7 @@ function manage(resource, method, data, queryString) {
   }
   xmlHttp.send(data);
   return new Promise((resolve, reject) => {
-    xmlHttp.onreadystatechange = (res) => solve(xmlHttp, resolve, reject);
+    xmlHttp.onreadystatechange = () => solve(xmlHttp, resolve, reject);
   });
 }
 
@@ -101,6 +101,6 @@ export default class Resource {
   }
 
   request (method, opt) {
-    manage(this, method, opt.dataBody, opt.queryString);
+    return manage(this, method, opt.dataBody, opt.queryString);
   }
 }

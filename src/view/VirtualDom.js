@@ -25,21 +25,19 @@ function isCustomProp(name) {
 }
 
 function setProp($target, name, value) {
-  if (isCustomProp(name)) {
-    return;
-  } else if (name === 'className') {
+  if (isCustomProp(name)) return;
+  if (name === 'className') {
     $target.setAttribute('class', value);
   } else if (typeof value === 'boolean') {
     setBooleanProp($target, name, value);
   } else {
     $target.setAttribute(name, value);
-  }
+  } 
 }
 
 function removeProp($target, name, value) {
-  if (isCustomProp(name)) {
-    return;
-  } else if (name === 'className') {
+  if (isCustomProp(name)) return;
+  if (name === 'className') {
     $target.removeAttribute('class');
   } else if (typeof value === 'boolean') {
     removeBooleanProp($target, name);
@@ -49,9 +47,9 @@ function removeProp($target, name, value) {
 }
 
 function setProps($target, props) {
-  Object.keys(props).forEach(name => {
+  for (let name in props) {
     setProp($target, name, props[name]);
-  });
+  }
 }
 
 function updateProp($target, name, newVal, oldVal) {
@@ -64,20 +62,20 @@ function updateProp($target, name, newVal, oldVal) {
 
 function updateProps($target, newProps, oldProps = {}) {
   const props = Object.assign({}, newProps, oldProps);
-  Object.keys(props).forEach(name => {
+  for (let name in props) {
     updateProp($target, name, newProps[name], oldProps[name]);
-  });
+  }
 }
 
 function addEventListeners($target, props) {
-  Object.keys(props).forEach(name => {
+  for (let name in props) {
     if (isEventProp(name)) {
       $target.addEventListener(
         extractEventName(name),
         props[name]
       );
     }
-  });
+  }
 }
 
 function createElement(node) {
@@ -88,16 +86,16 @@ function createElement(node) {
   setProps($el, node.props);
   addEventListeners($el, node.props);
   node.children
-    .map(createElement)
-    .forEach($el.appendChild.bind($el));
+  .map(createElement)
+  .forEach($el.appendChild.bind($el));
   return $el;
 }
 
 function changed(node1, node2) {
   return typeof node1 !== typeof node2 ||
-          typeof node1 === 'string' && node1 !== node2 ||
-          node1.type !== node2.type ||
-          node1.props && node1.props.forceUpdate;
+  typeof node1 === 'string' && node1 !== node2 ||
+  node1.type !== node2.type ||
+  node1.props && node1.props.forceUpdate;
 }
 
 function updateElement($parent, newNode, oldNode, index = 0) {
@@ -127,7 +125,6 @@ function updateElement($parent, newNode, oldNode, index = 0) {
 function updateNodes($parent, newNodes, oldNodes = []) {
   const newLength = newNodes.length;
   const oldLength = oldNodes.length;
-  console.log(newNodes, oldNodes);
   for (let i = 0; i < newLength || i < oldLength; i++) {
     updateElement(
       $parent,
@@ -144,13 +141,12 @@ export default class VirtualDom {
     this.patch(node);
   }
 
-  static get (type, props = {}, children = []) {
-    return { type, props, children };
+  static create(type, props = {}, ...children) {
+    return {type, props, children};
   }
 
   patch(node) {
     if (Array.isArray(node)) {
-      console.log(this.element, node, this.node);
       updateNodes(this.element, node, this.node);
     } else {
       updateElement(this.element, node, this.node);

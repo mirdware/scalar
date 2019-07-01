@@ -48,3 +48,18 @@ section {
 #square .first {
   cursor: pointer;
 }
+
+#root {
+  border: 1px solid black;
+  padding: 10px;
+  margin: 30px 0 0 0;
+}
+
+.item {
+  background: yellow;
+  margin: 10px 0;
+}
+
+.item2 {
+  background: green;
+}

@@ -2,7 +2,7 @@ import Message from '../services/Message';
 
 export default ($) => ({
   submit: () => {
-    $.inject(Message).msg = $.name;
+    $.inject(Message).set($.name);
     $.show ? alert($.toJSON()) : console.log($);
   },
   reset: () => $.reset(),
