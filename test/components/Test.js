@@ -33,7 +33,7 @@ export default ($) => {
       click: paint
     },
     '.reset': {
-      click: $.reset
+      click: () => $.reset()
     }
   };
 };

@@ -1,13 +1,13 @@
 import Message from '../services/Message';
 
 export default ($) => ({
-  submit: (e) => {
+  submit: () => {
     $.inject(Message).msg = $.name;
     $.show ? alert($.toJSON()) : console.log($);
   },
-  reset: $.reset,
+  reset: () => $.reset(),
   '.fill': {
-    click: (e) => Object.assign($, {
+    click: () => Object.assign($, {
       name: 'Marlon Ramírez',
       password: 'MySecretPassword',
       sexo: 'M',

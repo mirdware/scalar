@@ -66,7 +66,7 @@ export default ($) => ({
 });
 ```
 
-Se debe retornar un objeto en donde la llave debe ser un selector CSS o el nombre de un evento, en el primer caso su valor deberá ser otro objeto que cumpla con las mismas características, cuando la llave sea el nombre del evento (click, submit, reset, blur, focus, etc) su valor será representado por la función o método que se ejecutara al lanzar dicho evento. Todo evento lanzado previente su comportamiento por defecto.
+Se debe retornar un objeto en donde la llave sea un selector CSS o el nombre de un evento (click, submit, reset, blur, focus, etc), en el primer caso su valor deberá ser otro objeto que cumpla con las mismas características, pero en caso que la llave referencie al nombre de un evento su valor será la función o método a disparar. Todo evento lanzado previene su comportamiento por defecto.
 
 ### Métodos del objeto componentizado
 
@@ -133,7 +133,7 @@ export default ($) => {
 };
 ```
 
-Incluso es posible usar el mismo módulo de EcmaScript 6.
+Incluso es posible usar las últimas características de ECMAScript para encapsular llamadas a otras funciones.
 
 ```javascript
 function remove($, e) {

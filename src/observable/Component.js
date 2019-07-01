@@ -1,6 +1,6 @@
-import { addListeners, isInput, setValue } from './util/Helper';
-import Property from './observable/Property';
-import Wrapper from './util/Wrapper';
+import { addListeners, isInput, setValue } from '../util/stdlib';
+import Property from './Property';
+import Wrapper from '../util/Wrapper';
 
 const privy = new Wrapper();
 
@@ -153,23 +153,23 @@ export default class Component {
     addListeners(node, this.events);
   }
 
-  reset = () => {
+  reset() {
     const initState = privy.get(this).initState;
     for (let name in initState) {
       this[name] = initState[name];
     }
-  };
+  }
 
-  inject = (provider) => {
+  inject(provider) {
     return privy.get(this).module.inject(provider);
-  };
+  }
 
-  toJSON = () => {
+  toJSON() {
     const json = {};
     const properties = privy.get(this).properties;
     for (let key in properties) {
       json[key] = properties[key].get();
     }
     return JSON.stringify(json);
-  };
+  }
 }

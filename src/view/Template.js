@@ -1,4 +1,4 @@
-import { addListeners } from "../util/Helper";
+import { addListeners } from "../util/stdlib";
 
 const cache = {};
 
@@ -56,7 +56,7 @@ export default class Template {
     }
   }
 
-  render = (param) => {
+  render(param) {
     let template = '';
     if (this.fn) {
       const fn = Array.isArray(param) ? (data) => data.map(this.fn) : this.fn;
@@ -66,5 +66,5 @@ export default class Template {
       }
     }
     this.executeTemplate(template);
-  };
+  }
 }
