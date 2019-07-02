@@ -19,7 +19,7 @@ new Module(Message)
 .compose('#todo', ToDo);
 ```
 
-Con el uso de `compose` se crea un componente con las propiedades definidas según los `data-bind` que se encuentran en la plantilla, si un data-bind no se encuentra definido pero si es el valor de un `data-attr` este también se creara como propiedad del componente.
+Con el uso de `compose` se crea un objeto compuesto cuyas propiedades corresponden a los `data-bind` hayados en la plantilla, de igual manera se generara un propiedad del objeto si esta hace parte de algún `data-attr`.
 
 ```html
 <form id="hello-world">
@@ -66,11 +66,11 @@ export default ($) => ({
 });
 ```
 
-Se debe retornar un objeto en donde la llave sea un selector CSS o el nombre de un evento (click, submit, reset, blur, focus, etc), en el primer caso su valor deberá ser otro objeto que cumpla con las mismas características, pero en caso que la llave referencie al nombre de un evento su valor será la función o método a disparar. Todo evento lanzado previene su comportamiento por defecto.
+La función deberá retornar un objeto en donde la llave sea un selector CSS o el nombre de un evento (click, submit, reset, blur, focus, etc), en el primer caso su valor deberá ser otro objeto que cumpla con las mismas características, pero en caso que la llave referencie al nombre de un evento su valor será la función o método a disparar. Todo evento lanzado previene su comportamiento por defecto.
 
-### Métodos del objeto componentizado
+### Métodos del objeto compuesto
 
-Es posible reiniciar cualquier componente a un estado inicial mediante el método `reset`, se debe tener en cuenta que los objetos no pueden ser restablecidos a su estado inicial dado su valor por referencia.
+Es posible reiniciar cualquier componente a un estado inicial mediante el método `reset`, se debe tener en cuenta que las propiedades representadas por un objeto no pueden ser restablecidos a su estado inicial ya que su valor es referenciado.
 
 ```javascript
 ...
@@ -82,7 +82,7 @@ return {
 ...
 ```
 
-El método `toJSON` convierte todas las propiedades del elemento en un formato JSON valido para él envió de datos a través de repositorios o cualquier otro medio.
+El método `toJSON` convierte todas las propiedades del objeto a un formato JSON valido para el envió de datos a través de repositorios o cualquier otro medio.
 
 ```javascript
 ...
@@ -92,7 +92,7 @@ return {
 ...
 ```
 
-Un componente se puede comunicar con otros mediante el uso de servicios, estos son inyectados al componente mediante el uso de la función `inject` del objeto componentizado.
+Un componente se puede comunicar con otros mediante el uso de servicios, estos son inyectados mediante el uso de la función `inject` del objeto compuesto.
 
 ```javascript
 ...
@@ -106,7 +106,7 @@ Acá podemos ver el uso del evento `mount` este es ejecutado tan pronto inicia e
 
 ### Estilos de declaración
 
-Al ser una función javascript pura, es posible usar un componente con varios estilos de programación, al inicio vimos un retorno directo del objeto, pero tambien se puede usar como una función módulo.
+Al ser una función javascript pura es posible usar un componente con varios estilos de programación, al inicio vimos un retorno directo del objeto, pero tambien se puede usar como una función módulo.
 
 ```javascript
 export default ($) => {
@@ -185,11 +185,13 @@ class ServerConnection extends Resource {
 A parte de sobrescribir propiedades como observamos en el ejemplo anterior con los headers, también es posible utilizar del sistema de inversión para usar un solo objeto durante todo el ciclo de vida de la aplicación, solo basta con proveer esta clase y scalar se encarga del resto.
 
 ## Plantillas
-Las plantillas (Templates) representan la parte más básica del sistema y se divide en dos: plantillas prerenderizadas y plantillas JIT (Just In Time).
+Las plantillas (Templates) representan la parte más básica del sistema y se pueden clasificar en: prerenderizadas y JIT (Just In Time).
 
-Las plantillas prerenderizadas son aquellas que nos son suministradas por el servidor desde el principio, de esta manera se puede garantizar el funcionamiento de la aplicación aun si el cliente no activa JavaScript; en parte scalar debe su nombre a esto, pues la idea es ir escalando la aplicación según las limitantes del cliente (accesibilidad).
+### Prerenderizadas
 
-Una plantilla scalar debe contener atributos `data-bind` y `data-attr`, los primeros generan un data binding en dos direcciones entre el componente y la plantilla, mientras el segundo setea los atributos del elemento según modificaciones en el componente, por defecto un data-bind se impone (más no sobrescribe el estado inicial) ante un data-attr; pero si existe un data-attr que no exista como data-bind este generara una propiedad dentro del componente para manejar el atributo del elemento.
+Las plantillas prerenderizadas son aquellas suministradas por el servidor y hacen parte integral del cuerpo de la petición, de esta manera se puede garantizar el funcionamiento de la aplicación aún si el cliente no activa JavaScript; en parte la idea de la libreria es ir _"escalando"_ la aplicación según las limitantes del cliente (accesibilidad).
+
+Una plantilla scalar debe contener atributos `data-bind` y `data-attr`, los primeros generan un elnace en dos direcciones entre el componente y la plantilla, mientras el segundo setea los atributos del elemento según modificaciones en el componente, por defecto un data-bind se impone (más no sobrescribe el estado inicial) ante un data-attr; pero si existe un data-attr que no exista como data-bind este generara una propiedad dentro del componente el cual manejara el atributo del elemento.
 
 ```html
 <div id="square">
@@ -207,21 +209,29 @@ Una plantilla scalar debe contener atributos `data-bind` y `data-attr`, los prim
 </div>
 ```
 
-Como se puede observar data-bind es simplemente un enlace a una propiedad del componente, por lo tanto debe tener el formato de una [propiedad javascript](https://developer.mozilla.org/es/docs/Web/JavaScript/Data_structures#Objetos), mientras el data-attr puede tener tantos atributos como se definan, estos se hayan separados por coma `,` y dentro un para clave valor en donde la clave es el atributo a ser modificado y el valor una propiedad del componente que tendrá el control para modificar el atributo en cuestión.
+Como se puede observar data-bind es simplemente un enlace a una propiedad del componente, por lo tanto debe tener el formato de una [propiedad javascript](https://developer.mozilla.org/es/docs/Web/JavaScript/Data_structures#Objetos), mientras el data-attr puede tener tantos atributos separados por `,` como se desee, un atributo es un para clave valor en donde la clave es el nombre del atributo y el valor una propiedad del componente que manejará los cambios de estados.
 
-Por otra parte se encuentran las plantillas JIT las hacen uso de características como [template string](https://developer.mozilla.org/es/docs/Web/JavaScript/Referencia/template_strings) y [template tag](https://developer.mozilla.org/es/docs/Web/HTML/Elemento/template) y su función es generar código HTML de manera dinámica.
+Cuando se desea declarar un objeto desde el sistema de plantillas este debe incluirse con separación de `.`.
 
-El soporte para plantillas JIT está aún en una etapa bastante temprana, pero se están haciendo progresos. Su principal uso se encuentra restringido al binding de datos cuando la propiedad de un componente es compleja (principalmente arrays). Para definir cuando una propiedad es compleja se debe definir una etiqueta template dentro del elemento que se está bindiando.
+```html
+<h2 data-bind="my.msg" style="color: #fff">Mensaje inicial</h2>
+```
+
+### JIT
+
+Las plantillas JIT hacen uso de características como [template string](https://developer.mozilla.org/es/docs/Web/JavaScript/Referencia/template_strings) y [template tag](https://developer.mozilla.org/es/docs/Web/HTML/Elemento/template) y su función es generar código HTML de manera dinámica.
+
+El soporte para plantillas JIT está aún en una etapa bastante temprana, pero se están haciendo progresos. Su principal uso se encuentra restringido al enlace de datos cuando la propiedad de un componente es compleja (principalmente arrays). Una propiedad es definida como compleja cuando dentro se haya una etiqueta template.
 
 ```html
 <tbody data-bind="name">
   <template>
     <tr>
-      <td class="first">$${first}</td>
-      <td>$${last}</td>
+      <td class="first">$${data.first}</td>
+      <td>$${data.last}</td>
     </tr>
   </template>
 </tbody>
 ```
 
-La forma de especificar propiedades dentro de la propiedad compleja es mediante `${}` y no mediante data-bind, otra manera de realizar esta relación es mediante `$${}` la diferencia es que el uso del doble signo escapa html, mientras que el tag de signo sencillo no lo hace.
+Es posible escapar código javaScript mediante el uso de la notación template string `${}`, si se usa el simbolo `$${}` se escapan las etiquetas que se viasualizan en pantalla; dentro del template es posible acceder a dos propiedades `index` y `data`, la primera indica el indice del array y la segunda la información contenida en el mismo, esto puede cambiar cuando se implemente virtual DOM en proximas versiones.

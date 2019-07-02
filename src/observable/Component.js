@@ -6,7 +6,7 @@ import Template from '../view/Template';
 const privy = new Wrapper();
 
 function getProperty(observer, name) {
-  const property = new Property();
+  const property = new Property(observer);
   Object.defineProperty(observer, name, {
     get: () => property.get(),
     set: (value) => property.set(value)
@@ -34,7 +34,7 @@ function getValue(domElement, property) {
     return value;
   }
   if (domElement.innerHTML) {
-    return isDiferentText(domElement) ? new Template(property, domElement) : domElement.innerHTML;
+    return isDiferentText(domElement) ? new Template(property.parent, domElement) : domElement.innerHTML;
   }
   property.setValue(domElement, property.get(), 'innerHTML');
 }
@@ -59,18 +59,13 @@ function setAttribute(attribute, key, property) {
 }
 
 function changeProperty(observer, key, attribute, domElement, property) {
-  const nodes = privy.get(observer).nodes;
   const eventListenerList = domElement.eventListenerList;
   setAttribute(attribute, key, property);
-  if (eventListenerList) {
-    while (eventListenerList.length) {
-      const listener = eventListenerList.shift();
-      domElement.removeEventListener(listener.name, listener.fn, true);
-    }
+  while (eventListenerList.length) {
+    const listener = eventListenerList.shift();
+    domElement.removeEventListener(listener.name, listener.fn, true);
   }
-  for (let i = 0, node; node = nodes[i]; i++) {
-    addListeners(node, observer.events);
-  }
+  addListeners(privy.get(observer).node, observer.events);
 }
 
 function evalValue(target) {
@@ -100,7 +95,7 @@ function bindData(observer, domElement) {
 function bindAttributes(observer, domElement) {
   const attributes = domElement.getAttribute("data-attr").split(',');
   const properties = privy.get(observer).properties;
-  for (let i = 0, attribute; attribute = attributes[i]; i++) {
+  attributes.forEach((attribute) => {
     attribute = attribute.split(':');
     const keys = attribute[0].trim().split('.');
     const key = keys.pop();
@@ -118,7 +113,7 @@ function bindAttributes(observer, domElement) {
     property.addListener(
       () => changeProperty(observer, key, attribute, domElement, property.get())
     );
-  }
+  });
 }
 
 function watch(observer, node) {
@@ -153,11 +148,7 @@ function getEvents(component, listener) {
 }
 
 function getPrivateProperties(component, node, module) {
-  const properties = {
-    properties: {},
-    nodes: [node],
-    module: module
-  };
+  const properties = { node, module, properties: {} };
   privy.set(component, properties);
   watch(component, node);
   return properties

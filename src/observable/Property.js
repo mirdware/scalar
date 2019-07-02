@@ -3,10 +3,16 @@ import { escapeHTML } from '../view/Template';
 import Wrapper from '../util/Wrapper';
 
 const privy = new Wrapper();
-const getArrayHandler = (property) => ({
-  set: (obj, prop, value) => {
-    const execution = Reflect.set(obj, prop, value);
-    property.set(obj);
+const getHandler = (property) => ({
+  set: (target, prop, value) => {
+    if (value instanceof Promise) {
+      return value.then((data) => {
+        Reflect.set(target, prop, data);
+        property.set(target);
+      });
+    }
+    const execution = Reflect.set(target, prop, value);
+    property.set(target);
     return execution;
   }
 });
@@ -35,12 +41,13 @@ function getObject(obj, property, value, i = 0) {
 }
 
 export default class Property {
-  constructor() {
+  constructor(parent) {
     privy.set(this, {
       value: '',
       nodes: [],
       listeners: []
     });
+    this.parent = parent;
   }
 
   get() {
@@ -49,7 +56,7 @@ export default class Property {
     let value = _this.value;
     if (constructor === Array || constructor === Object) {
       if (_this.observable !== value) {
-        _this.proxy = new Proxy(value, getArrayHandler(this));
+        _this.proxy = new Proxy(value, getHandler(this));
         _this.observable = value;
       }
       value = _this.proxy;
@@ -58,9 +65,9 @@ export default class Property {
   }
 
   set(value = '') {
-    typeof value.then === 'function' ?
-      value.then((data) => changeContent(this, data)) :
-      changeContent(this, value);
+    (value instanceof Promise) ?
+    value.then((data) => changeContent(this, data)) :
+    changeContent(this, value);
   }
 
   setValue(node, value, attr = 'value') {
@@ -79,14 +86,13 @@ export default class Property {
 
   addNode(prop, node, complexType, value) {
     const _this = privy.get(this);
-    _this.nodes.push({prop, node, complexType});
+    _this.nodes.push({ prop, node, complexType });
     if (prop.length) {
       if (!_this.value) {
         _this.value = {};
       }
-      return Object.assign(_this.value, getObject({}, prop, value));
-    }
-    if (value) {
+      Object.assign(_this.value, getObject({}, prop, value));
+    } else if (value) {
       _this.value = value;
     }
   }
