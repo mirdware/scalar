@@ -56,6 +56,10 @@ export default class Template {
     }
   }
 
+  getValue() {
+    return [];
+  }
+
   render(param) {
     let template = '';
     if (this.fn) {

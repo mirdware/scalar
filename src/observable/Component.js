@@ -1,11 +1,12 @@
 import { addListeners, isInput } from '../util/stdlib';
 import Property from './Property';
 import Wrapper from '../util/Wrapper';
+import Template from '../view/Template';
 
 const privy = new Wrapper();
 
 function getProperty(observer, name) {
-  const property = new Property(observer);
+  const property = new Property();
   Object.defineProperty(observer, name, {
     get: () => property.get(),
     set: (value) => property.set(value)
@@ -13,23 +14,38 @@ function getProperty(observer, name) {
   return property;
 }
 
-function addProperty(domElement, property, prop) {
-  let template;
+function isDiferentText(element) {
+  for (let i = 0, node; node = element.childNodes[i]; i++) {
+    if (node.nodeType !== 3) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function getValue(domElement, property) {
   if (isInput(domElement)) {
     const value = evalValue(domElement);
     domElement.addEventListener('keyup', (e) => property.set(e.target.value));
     domElement.addEventListener('change', (e) => property.set(evalValue(e.target)));
-    if (value !== null) {
-      property.set(value);
-    } else {
+    if (value === null) {
       property.setValue(domElement, property.get());
     }
-  } else if (domElement.innerHTML) {
-    template = property.getTemplate(domElement);
-  } else {
-    property.setValue(domElement, property.get(), 'innerHTML');
+    return value;
   }
-  property.addNode(prop, domElement, template);
+  if (domElement.innerHTML) {
+    return isDiferentText(domElement) ? new Template(property, domElement) : domElement.innerHTML;
+  }
+  property.setValue(domElement, property.get(), 'innerHTML');
+}
+
+function addProperty(domElement, property, prop) {
+  const value = getValue(domElement, property);
+  if (value instanceof Template) {
+    property.addNode(prop, domElement, value, value.getValue());
+  } else {
+    property.addNode(prop, domElement, null, value);
+  }
 }
 
 function setAttribute(attribute, key, property) {

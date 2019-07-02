@@ -13,7 +13,7 @@ export default class Module {
   constructor(...providers) {
     this.classes = {};
     this.instances = {};
-    providers.forEach((provider) => provide(provider, this.classes));0
+    providers.forEach((provider) => provide(provider, this.classes));
   }
 
   inject(component) {

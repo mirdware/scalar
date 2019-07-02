@@ -1,5 +1,5 @@
 import { isInput } from '../util/stdlib';
-import Template, { escapeHTML } from '../view/Template';
+import { escapeHTML } from '../view/Template';
 import Wrapper from '../util/Wrapper';
 
 const privy = new Wrapper();
@@ -27,17 +27,16 @@ function changeContent(property, value) {
   _this.nodes.forEach((node) => executeNode(property, value, node));
 }
 
-function getObject(obj, property, isTemplate, i = 0) {
+function getObject(obj, property, value, i = 0) {
   obj[property[i]] = ++i < property.length ?
   getObject({}, property, isTemplate, i) :
-  isTemplate ? [] : '';
+  value;
   return obj;
 }
 
 export default class Property {
-  constructor(parent) {
+  constructor() {
     privy.set(this, {
-      parent,
       value: '',
       nodes: [],
       listeners: []
@@ -78,21 +77,17 @@ export default class Property {
     if (node[attr] !== value) node[attr] = value;
   }
 
-  getTemplate(element) {
-    return new Template(privy.get(this).parent, element);
-  }
-
-  addNode(prop, node, complexType) {
+  addNode(prop, node, complexType, value) {
     const _this = privy.get(this);
     _this.nodes.push({prop, node, complexType});
     if (prop.length) {
       if (!_this.value) {
         _this.value = {};
       }
-      return Object.assign(_this.value, getObject({}, prop, complexType));
+      return Object.assign(_this.value, getObject({}, prop, value));
     }
-    if (complexType) {
-      _this.value = [];
+    if (value) {
+      _this.value = value;
     }
   }
 
