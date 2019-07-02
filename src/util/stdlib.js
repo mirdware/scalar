@@ -1,5 +1,3 @@
-import { escapeHTML } from '../view/Template';
-
 function bindFunction(eventName, element, fn) {
   const method = (e) => {
     e.preventDefault();
@@ -46,18 +44,4 @@ export function generateUUID() {
 export function isInput(node) {
   const nodeName = node.nodeName;
   return nodeName === 'INPUT' || nodeName === 'TEXTAREA' || nodeName === 'SELECT';
-}
-
-export function setValue(property, node, value, attr = 'value') {
-  if (attr === 'innerHTML' && typeof value == 'string') {
-    value = escapeHTML(value);
-  } else if (node.type === 'checkbox' || node.type === 'radio') {
-    attr = 'checked';
-    if (node.type === 'radio') {
-      value = node.value === property.get();
-    }
-  } else if (node.type === 'file') {
-    attr = 'files';
-  }
-  if (node[attr] !== value) node[attr] = value;
 }

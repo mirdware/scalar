@@ -1,5 +1,5 @@
-import { isInput, setValue } from '../util/stdlib';
-import Template from '../view/Template';
+import { isInput } from '../util/stdlib';
+import Template, { escapeHTML } from '../view/Template';
 import Wrapper from '../util/Wrapper';
 
 const privy = new Wrapper();
@@ -11,33 +11,44 @@ const getArrayHandler = (property) => ({
   }
 });
 
+function executeNode(property, value, node) {
+  const attr = isInput(node.node) ? 'value': 'innerHTML';
+  node.prop.forEach((prop) => value = value[prop]);
+  if (node.complexType && value && attr === 'innerHTML') {
+    return node.complexType.render(value);
+  }
+  property.setValue(node.node, value, attr);
+}
+
 function changeContent(property, value) {
   const _this = privy.get(property);
   _this.value = value;
-  for (let i = 0, listener; listener = property.listeners[i]; i++) {
-    listener(property);
-  }
-  for (let i = 0, node; node = property.nodes[i]; i++) {
-    const complexType = _this.complexType;
-    const attr = isInput(node) ? 'value': 'innerHTML';
-    if (complexType && value && attr === 'innerHTML') {
-      return complexType.render(value);
-    }
-    setValue(property, node, value, attr);
-  }
+  _this.listeners.forEach((listener) => listener(property));
+  _this.nodes.forEach((node) => executeNode(property, value, node));
+}
+
+function getObject(obj, property, isTemplate, i = 0) {
+  obj[property[i]] = ++i < property.length ?
+  getObject({}, property, isTemplate, i) :
+  isTemplate ? [] : '';
+  return obj;
 }
 
 export default class Property {
-  constructor(component) {
-    privy.set(this, {parent: component, value: ''});
-    this.nodes = [];
-    this.listeners = [];
+  constructor(parent) {
+    privy.set(this, {
+      parent,
+      value: '',
+      nodes: [],
+      listeners: []
+    });
   }
 
   get() {
     const _this = privy.get(this);
+    const constructor = _this.value.constructor
     let value = _this.value;
-    if (Array.isArray(value)) {
+    if (constructor === Array || constructor === Object) {
       if (_this.observable !== value) {
         _this.proxy = new Proxy(value, getArrayHandler(this));
         _this.observable = value;
@@ -51,13 +62,41 @@ export default class Property {
     typeof value.then === 'function' ?
       value.then((data) => changeContent(this, data)) :
       changeContent(this, value);
-    return this;
   }
 
-  setTemplate(node) {
+  setValue(node, value, attr = 'value') {
+    if (attr === 'innerHTML' && typeof value == 'string') {
+      value = escapeHTML(value);
+    } else if (node.type === 'checkbox' || node.type === 'radio') {
+      attr = 'checked';
+      if (node.type === 'radio') {
+        value = node.value === this.get();
+      }
+    } else if (node.type === 'file') {
+      attr = 'files';
+    }
+    if (node[attr] !== value) node[attr] = value;
+  }
+
+  getTemplate(element) {
+    return new Template(privy.get(this).parent, element);
+  }
+
+  addNode(prop, node, complexType) {
     const _this = privy.get(this);
-    _this.value = [];
-    _this.complexType = new Template(_this.parent, node);
-    return this;
+    _this.nodes.push({prop, node, complexType});
+    if (prop.length) {
+      if (!_this.value) {
+        _this.value = {};
+      }
+      return Object.assign(_this.value, getObject({}, prop, complexType));
+    }
+    if (complexType) {
+      _this.value = [];
+    }
+  }
+
+  addListener(listener) {
+    privy.get(this).listeners.push(listener);
   }
 }

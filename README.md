@@ -70,7 +70,7 @@ Se debe retornar un objeto en donde la llave sea un selector CSS o el nombre de 
 
 ### Métodos del objeto componentizado
 
-Es posible reiniciar cualquier componente a un estado inicial mediante el método `reset`.
+Es posible reiniciar cualquier componente a un estado inicial mediante el método `reset`, se debe tener en cuenta que los objetos no pueden ser restablecidos a su estado inicial dado su valor por referencia.
 
 ```javascript
 ...
@@ -102,7 +102,7 @@ return {
 ...
 ```
 
-Acá podemos ver el uso del evento `mount` este es ejecutado tan pronto inicia el componente y al momento que alguno de los servicias sufra una modificación, por esta razón cualquier escucha sobre los servicios se debe realizar sobre dicho evento.
+Acá podemos ver el uso del evento `mount` este es ejecutado tan pronto inicia el componente, es ideal para asignar objetos a servicios, al pasar por referencia cualquier modificación a estos objetos se ve reflejado en el componente.
 
 ### Estilos de declaración
 

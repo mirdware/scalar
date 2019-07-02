@@ -1,14 +1,6 @@
 import { generateUUID } from './util/stdlib';
 import Component from './observable/Component';
 
-const getHandler = (observers) => ({
-  set: (obj, prop, value) => {
-    const execution = Reflect.set(obj, prop, value);
-    observers.forEach((fn) => fn());
-    return execution;
-  }
-});
-
 function provide(provider, classes) {
   if (!provider.uuid) {
     const uuid = generateUUID();
@@ -19,10 +11,9 @@ function provide(provider, classes) {
 
 export default class Module {
   constructor(...providers) {
-    this.observers = [];
     this.classes = {};
     this.instances = {};
-    providers.forEach((provider) => provide(provider, this.classes));
+    providers.forEach((provider) => provide(provider, this.classes));0
   }
 
   inject(component) {
@@ -30,7 +21,7 @@ export default class Module {
     if (this.classes[uuid]) {
       const component = new this.classes[uuid]();
       component.uuid = uuid;
-      this.instances[uuid] = new Proxy(component, getHandler(this.observers));
+      this.instances[uuid] = component;
       delete this.classes[uuid];
     }
     return this.instances[uuid];

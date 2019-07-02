@@ -1,4 +1,4 @@
-import { addListeners, isInput, setValue } from '../util/stdlib';
+import { addListeners, isInput } from '../util/stdlib';
 import Property from './Property';
 import Wrapper from '../util/Wrapper';
 
@@ -13,22 +13,23 @@ function getProperty(observer, name) {
   return property;
 }
 
-function addProperty(domElement, property) {
+function addProperty(domElement, property, prop) {
+  let template;
   if (isInput(domElement)) {
+    const value = evalValue(domElement);
     domElement.addEventListener('keyup', (e) => property.set(e.target.value));
     domElement.addEventListener('change', (e) => property.set(evalValue(e.target)));
-    const value = evalValue(domElement);
     if (value !== null) {
       property.set(value);
     } else {
-      setValue(property, domElement, property.get());
+      property.setValue(domElement, property.get());
     }
   } else if (domElement.innerHTML) {
-    property.setTemplate(domElement);
+    template = property.getTemplate(domElement);
   } else {
-    setValue(property, domElement, property.get(), 'innerHTML');
+    property.setValue(domElement, property.get(), 'innerHTML');
   }
-  property.nodes.push(domElement);
+  property.addNode(prop, domElement, template);
 }
 
 function setAttribute(attribute, key, property) {
@@ -70,12 +71,14 @@ function evalValue(target) {
 }
 
 function bindData(observer, domElement) {
-  const name = domElement.getAttribute("data-bind");
+  let name = domElement.getAttribute("data-bind");
   const properties = privy.get(observer).properties;
+  const propertyObj = name.split('.');
+  name = propertyObj.shift();
   if (!properties[name]) {
     properties[name] = getProperty(observer, name);
   }
-  addProperty(domElement, properties[name]);
+  addProperty(domElement, properties[name], propertyObj);
 }
 
 function bindAttributes(observer, domElement) {
@@ -96,8 +99,9 @@ function bindAttributes(observer, domElement) {
     if (attr && !(attr instanceof Object) && !property.get()) {
       property.set(attr);
     }
-    property.listeners
-    .push(() => changeProperty(observer, key, attribute, domElement, property.get()));
+    property.addListener(
+      () => changeProperty(observer, key, attribute, domElement, property.get())
+    );
   }
 }
 
@@ -118,17 +122,15 @@ function getState(properties) {
   const state = {};
   for (let name in properties) {
     const property = properties[name].get();
-    state[name] =  (property.constructor === Object) ?
-      Object.assign({}, property) :
-      property;
+    state[name] = property;
   }
   return state;
 }
 
-function getEvents(observers, events) {
+function getEvents(component, listener) {
+  const events = listener(component);
   if (events.mount) {
     events.mount();
-    observers.push(events.mount);
     delete events.mount;
   }
   return events;
@@ -147,14 +149,15 @@ function getPrivateProperties(component, node, module) {
 
 export default class Component {
   constructor(node, listener, module) {
-    const properties = getPrivateProperties(this, node, module);
-    this.events = getEvents(module.observers, listener(this));
-    properties.initState = getState(properties.properties);
+    const props = getPrivateProperties(this, node, module);
+    this.events = getEvents(this, listener);
+    props.initState = getState(props.properties);
     addListeners(node, this.events);
   }
 
   reset() {
-    const initState = privy.get(this).initState;
+    const _this = privy.get(this);
+    const initState = _this.initState;
     for (let name in initState) {
       this[name] = initState[name];
     }

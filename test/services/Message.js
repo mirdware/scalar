@@ -1,9 +1,5 @@
 export default class Message {
-    constructor() {
-        this.msg = "Prueba inicial";
-    }
-
     set(msg) {
-        this.msg = msg;
+        this.my.msg = msg;
     }
 }

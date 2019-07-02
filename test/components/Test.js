@@ -24,7 +24,7 @@ export default ($) => {
   }
 
   return {
-    mount: () => $.header = message.msg,
+    mount: () => message.my = $.my,
     mousemove: track,
     '.open': {
       click: sendRequest
