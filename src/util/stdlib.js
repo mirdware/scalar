@@ -1,33 +1,33 @@
-function bindFunction(eventName, element, fn) {
+function bindFunction(eventName, $element, fn) {
   const method = (e) => {
     e.preventDefault();
-    return fn.bind(element)(e);
+    return fn.bind($element)(e);
   };
   method.uuid = fn.uuid;
-  element.addEventListener(eventName, method, true);
-  element.eventListenerList.push({name: eventName, fn: method});
+  $element.addEventListener(eventName, method, true);
+  $element.eventListenerList.push({name: eventName, fn: method});
 }
 
-export function addListeners(element, events, root = true) {
+export function addListeners($element, events, root = true) {
   for (let selector in events) {
     const fn = events[selector];
     if (root && typeof fn === 'function') {
-      if (!element.eventListenerList) {
-        element.eventListenerList = [];
+      if (!$element.eventListenerList) {
+        $element.eventListenerList = [];
       }
       if (fn.uuid) {
-        const search = element.eventListenerList.find((listener) => listener.fn.uuid === fn.uuid);
+        const search = $element.eventListenerList.find((listener) => listener.fn.uuid === fn.uuid);
         if (!search) {
-          bindFunction(selector, element, fn);
+          bindFunction(selector, $element, fn);
         }
       } else {
         fn.uuid = generateUUID();
-        bindFunction(selector, element, fn);
+        bindFunction(selector, $element, fn);
       }
     }
-    const nodeList = element.querySelectorAll(selector);
-    for (let i = 0, node; node = nodeList[i]; i++) {
-      addListeners(node, fn);
+    const $nodeList = $element.querySelectorAll(selector);
+    for (let i = 0, $node; $node = $nodeList[i]; i++) {
+      addListeners($node, fn);
     }
   }
 }
@@ -41,7 +41,7 @@ export function generateUUID() {
   });
 }
 
-export function isInput(node) {
-  const nodeName = node.nodeName;
+export function isInput($node) {
+  const nodeName = $node.nodeName;
   return nodeName === 'INPUT' || nodeName === 'TEXTAREA' || nodeName === 'SELECT';
 }

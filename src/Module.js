@@ -28,9 +28,9 @@ export default class Module {
   }
 
   compose(selector, events) {
-    const nodes = document.querySelectorAll(selector);
-    for (let i = 0, node; node = nodes[i]; i++) {
-      new Component(node, events, this);
+    const $nodes = document.querySelectorAll(selector);
+    for (let i = 0, $node; $node = $nodes[i]; i++) {
+      new Component($node, events, this);
     }
     return this;
   }

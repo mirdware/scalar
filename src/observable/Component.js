@@ -4,6 +4,7 @@ import Wrapper from '../util/Wrapper';
 import Template from '../view/Template';
 
 const privy = new Wrapper();
+const event = new Event('mount');
 
 function getProperty(observer, name) {
   const property = new Property(observer);
@@ -23,28 +24,28 @@ function isDiferentText(element) {
   return false;
 }
 
-function getValue(domElement, property) {
-  if (isInput(domElement)) {
-    const value = evalValue(domElement);
-    domElement.addEventListener('keyup', (e) => property.set(e.target.value));
-    domElement.addEventListener('change', (e) => property.set(evalValue(e.target)));
+function getValue($domElement, property) {
+  if (isInput($domElement)) {
+    const value = evalValue($domElement);
+    $domElement.addEventListener('keyup', (e) => property.set(e.target.value));
+    $domElement.addEventListener('change', (e) => property.set(evalValue(e.target)));
     if (value === null) {
-      property.setValue(domElement, property.get());
+      property.setValue($domElement, property.get());
     }
     return value;
   }
-  if (domElement.innerHTML) {
-    return isDiferentText(domElement) ? new Template(property.parent, domElement) : domElement.innerHTML;
+  if ($domElement.innerHTML) {
+    return isDiferentText($domElement) ? new Template(property.parent, $domElement) : $domElement.innerHTML;
   }
-  property.setValue(domElement, property.get(), 'innerHTML');
+  property.setValue($domElement, property.get(), 'innerHTML');
 }
 
-function addProperty(domElement, property, prop) {
-  const value = getValue(domElement, property);
+function addProperty($domElement, property, prop) {
+  const value = getValue($domElement, property);
   if (value instanceof Template) {
-    property.addNode(prop, domElement, value, value.getValue());
+    property.addNode(prop, $domElement, value, value.getValue());
   } else {
-    property.addNode(prop, domElement, null, value);
+    property.addNode(prop, $domElement, null, value);
   }
 }
 
@@ -58,14 +59,14 @@ function setAttribute(attribute, key, property) {
   }
 }
 
-function changeProperty(observer, key, attribute, domElement, property) {
-  const eventListenerList = domElement.eventListenerList;
+function changeProperty(observer, key, attribute, $domElement, property) {
+  const eventListenerList = $domElement.eventListenerList;
   setAttribute(attribute, key, property);
   while (eventListenerList.length) {
     const listener = eventListenerList.shift();
-    domElement.removeEventListener(listener.name, listener.fn, true);
+    $domElement.removeEventListener(listener.name, listener.fn, true);
   }
-  addListeners(privy.get(observer).node, observer.events);
+  addListeners(privy.get(observer).$node, observer.events);
 }
 
 function evalValue(target) {
@@ -81,26 +82,26 @@ function evalValue(target) {
   return target.value ? target.value : null;
 }
 
-function bindData(observer, domElement) {
-  let name = domElement.getAttribute("data-bind");
+function bindData(observer, $domElement) {
+  let name = $domElement.getAttribute("data-bind");
   const properties = privy.get(observer).properties;
   const propertyObj = name.split('.');
   name = propertyObj.shift();
   if (!properties[name]) {
     properties[name] = getProperty(observer, name);
   }
-  addProperty(domElement, properties[name], propertyObj);
+  addProperty($domElement, properties[name], propertyObj);
 }
 
-function bindAttributes(observer, domElement) {
-  const attributes = domElement.getAttribute("data-attr").split(',');
+function bindAttributes(observer, $domElement) {
+  const attributes = $domElement.getAttribute("data-attr").split(',');
   const properties = privy.get(observer).properties;
   attributes.forEach((attribute) => {
     attribute = attribute.split(':');
     const keys = attribute[0].trim().split('.');
     const key = keys.pop();
     const value = attribute[1].trim();
-    attribute = domElement;
+    attribute = $domElement;
     keys.forEach((k) => attribute = attribute[k]);
     if (!properties[value]) {
       properties[value] = getProperty(observer, value);
@@ -111,55 +112,46 @@ function bindAttributes(observer, domElement) {
       property.set(attr);
     }
     property.addListener(
-      () => changeProperty(observer, key, attribute, domElement, property.get())
+      () => changeProperty(observer, key, attribute, $domElement, property.get())
     );
   });
 }
 
-function watch(observer, node) {
-  const dataBinds = Array.from(node.querySelectorAll('[data-bind]'));
-  const dataAttributes = Array.from(node.querySelectorAll('[data-attr]'));
-  if (node.getAttribute('data-bind')) {
-    dataBinds.push(node);
+function watch(observer, $node) {
+  const dataBinds = Array.from($node.querySelectorAll('[data-bind]'));
+  const dataAttributes = Array.from($node.querySelectorAll('[data-attr]'));
+  if ($node.getAttribute('data-bind')) {
+    dataBinds.push($node);
   }
-  if (node.getAttribute('data-attr')) {
-    dataAttributes.push(node);
+  if ($node.getAttribute('data-attr')) {
+    dataAttributes.push($node);
   }
-  dataBinds.forEach((bind) => bindData(observer, bind));
-  dataAttributes.forEach((attr) => bindAttributes(observer, attr));
+  dataBinds.forEach(($bind) => bindData(observer, $bind));
+  dataAttributes.forEach(($attr) => bindAttributes(observer, $attr));
 }
 
 function getState(properties) {
   const state = {};
   for (let name in properties) {
-    const property = properties[name].get();
-    state[name] = property;
+    state[name] = properties[name].get();
   }
   return state;
 }
 
-function getEvents(component, listener) {
-  const events = listener(component);
-  if (events.mount) {
-    events.mount();
-    delete events.mount;
-  }
-  return events;
-}
-
-function getPrivateProperties(component, node, module) {
-  const properties = { node, module, properties: {} };
+function getPrivateProperties(component, $node, module) {
+  const properties = { $node, module, properties: {} };
   privy.set(component, properties);
-  watch(component, node);
+  watch(component, $node);
   return properties
 }
 
 export default class Component {
-  constructor(node, listener, module) {
-    const props = getPrivateProperties(this, node, module);
-    this.events = getEvents(this, listener);
+  constructor($node, listener, module) {
+    const props = getPrivateProperties(this, $node, module);
+    this.events = listener(this);
     props.initState = getState(props.properties);
-    addListeners(node, this.events);
+    addListeners($node, this.events);
+    $node.dispatchEvent(event);
   }
 
   reset() {

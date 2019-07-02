@@ -1,9 +1,9 @@
-const CompressionPlugin = require("compression-webpack-plugin");
+const CompressionPlugin = require('compression-webpack-plugin');
 const config = require('./package.json');
 
 module.exports = {
   plugins: [
-    new CompressionPlugin(),
+    new CompressionPlugin()
   ],
   entry: {
     scalar: ['./' + config.name + '.js'],

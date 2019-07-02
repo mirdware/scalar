@@ -44,15 +44,15 @@ export function escapeHTML(str) {
 }
 
 export default class Template {
-  constructor(component, node) {
-    let template = node.getElementsByTagName('template');
+  constructor(component, $node) {
+    let template = $node.getElementsByTagName('template');
     if (template.length) {
       template = template[0].innerHTML;
       this.fn = generateTemplate(template);
     }
     this.executeTemplate = (tpl) => {
-      node.innerHTML = tpl;
-      addListeners(node, component.events, false);
+      $node.innerHTML = tpl;
+      addListeners($node, component.events, false);
     }
   }
 

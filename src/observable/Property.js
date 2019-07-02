@@ -18,12 +18,13 @@ const getHandler = (property) => ({
 });
 
 function executeNode(property, value, node) {
-  const attr = isInput(node.node) ? 'value': 'innerHTML';
+  const { $node, complexType } = node;
+  const attr = isInput($node) ? 'value': 'innerHTML';
   node.prop.forEach((prop) => value = value[prop]);
-  if (node.complexType && value && attr === 'innerHTML') {
-    return node.complexType.render(value);
+  if (complexType && value && attr === 'innerHTML') {
+    return complexType.render(value);
   }
-  property.setValue(node.node, value, attr);
+  property.setValue($node, value, attr);
 }
 
 function changeContent(property, value) {
@@ -70,23 +71,23 @@ export default class Property {
     changeContent(this, value);
   }
 
-  setValue(node, value, attr = 'value') {
+  setValue($node, value, attr = 'value') {
     if (attr === 'innerHTML' && typeof value == 'string') {
       value = escapeHTML(value);
-    } else if (node.type === 'checkbox' || node.type === 'radio') {
+    } else if ($node.type === 'checkbox' || $node.type === 'radio') {
       attr = 'checked';
-      if (node.type === 'radio') {
-        value = node.value === this.get();
+      if ($node.type === 'radio') {
+        value = $node.value === this.get();
       }
-    } else if (node.type === 'file') {
+    } else if ($node.type === 'file') {
       attr = 'files';
     }
-    if (node[attr] !== value) node[attr] = value;
+    if ($node[attr] !== value) $node[attr] = value;
   }
 
-  addNode(prop, node, complexType, value) {
+  addNode(prop, $node, complexType, value) {
     const _this = privy.get(this);
-    _this.nodes.push({ prop, node, complexType });
+    _this.nodes.push({ prop, $node, complexType });
     if (prop.length) {
       if (!_this.value) {
         _this.value = {};
