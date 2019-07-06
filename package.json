@@ -1,7 +1,7 @@
 {
   "name": "scalar",
-  "version": "0.2.0",
-  "description": "Javascript not intrusive",
+  "version": "0.2.1",
+  "description": "Javascript scalable and not intrusive",
   "main": "dist/scalar.min.js",
   "scripts": {
     "build": "./node_modules/.bin/webpack  --mode production",

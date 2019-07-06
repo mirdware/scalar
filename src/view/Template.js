@@ -1,5 +1,7 @@
 import { addListeners } from "../util/stdlib";
+import Wrapper from "../util/Wrapper";
 
+const privy = new Wrapper();
 const cache = {};
 
 function html(literalSections, ...substs) {
@@ -34,6 +36,15 @@ function generateTemplate(template) {
   return fn;
 }
 
+function parseTemplate(fn, param) {
+  if (fn) {
+    const template = Array.isArray(param) ? param.map(fn) : fn(param);
+    if (Array.isArray(template)) return template.join('');
+    return template;
+  }
+  return '';
+}
+
 export function escapeHTML(str) {
   return str.replace(/&/g, '&amp;')
     .replace(/>/g, '&gt;')
@@ -45,14 +56,11 @@ export function escapeHTML(str) {
 
 export default class Template {
   constructor(component, $node) {
-    let template = $node.getElementsByTagName('template');
-    if (template.length) {
-      template = template[0].innerHTML;
-      this.fn = generateTemplate(template);
-    }
-    this.executeTemplate = (tpl) => {
-      $node.innerHTML = tpl;
-      addListeners($node, component.events, false);
+    const $template = $node.getElementsByTagName('template');
+    const properties = { $node, component };
+    privy.set(this, properties);
+    if ($template.length) {
+      properties.fn = generateTemplate($template[0].innerHTML);
     }
   }
 
@@ -61,14 +69,8 @@ export default class Template {
   }
 
   render(param) {
-    let template = '';
-    if (this.fn) {
-      const fn = Array.isArray(param) ? (data) => data.map(this.fn) : this.fn;
-      template = fn(param);
-      if (Array.isArray(template)) {
-        template = template.join('');
-      }
-    }
-    this.executeTemplate(template);
+    const _this = privy.get(this);
+    _this.$node.innerHTML = parseTemplate(_this.fn, param);
+    addListeners(_this.$node, _this.component.events, false);
   }
 }

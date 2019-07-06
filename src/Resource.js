@@ -1,20 +1,17 @@
-const encodeURIComponent = window.encodeURIComponent;
-
 function manage(resource, method, data, queryString) {
-  const xmlHttp = resource.xhr;
-  const headers = resource.headers;
+  const { xhr, headers } = resource;
   data = formatData(data, headers);
-  xmlHttp.open(
+  xhr.open(
     method,
     formatURL(resource.url, queryString) + formatQueryString(queryString),
     resource.async
   );
   for (let header in headers) {
-    xmlHttp.setRequestHeader(header, headers[header]);
+    xhr.setRequestHeader(header, headers[header]);
   }
-  xmlHttp.send(data);
+  xhr.send(data);
   return new Promise((resolve, reject) => {
-    xmlHttp.onreadystatechange = () => solve(xmlHttp, resolve, reject);
+    xhr.onreadystatechange = () => solve(xhr, resolve, reject);
   });
 }
 
@@ -57,13 +54,13 @@ function serialize(data) {
   return res.join('&');
 }
 
-function solve(xmlHttp, resolve, reject) {
-  if (xmlHttp.readyState === 4) {
-    const status = xmlHttp.status;
-    const content = xmlHttp.getResponseHeader('Content-Type').split(';');
+function solve(xhr, resolve, reject) {
+  if (xhr.readyState === 4) {
+    const { status } = xhr;
+    const content = xhr.getResponseHeader('Content-Type').split(';');
     let response = /(aplication|text)\/xml/.test(content)?
-      xmlHttp.responseXML:
-      xmlHttp.responseText;
+      xhr.responseXML:
+      xhr.responseText;
     if (content[0] === 'application/json') {
       response = JSON.parse(response);
     }
@@ -100,7 +97,7 @@ export default class Resource {
     return manage(this, 'DELETE', null, queryString);
   }
 
-  request (method, opt) {
+  request (method, opt = {}) {
     return manage(this, method, opt.dataBody, opt.queryString);
   }
 }

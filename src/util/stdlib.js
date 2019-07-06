@@ -21,7 +21,7 @@ export function addListeners($element, events, root = true) {
           bindFunction(selector, $element, fn);
         }
       } else {
-        fn.uuid = generateUUID();
+        generateUUID(fn);
         bindFunction(selector, $element, fn);
       }
     }
@@ -32,13 +32,19 @@ export function addListeners($element, events, root = true) {
   }
 }
 
-export function generateUUID() {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'
+export function generateUUID(obj) {
+  const uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'
   .replace(/[xy]/g, (c) => {
     const r = Math.random() * 16 | 0;
     const v = c == 'x' ? r : (r & 0x3 | 0x8);
     return v.toString(16);
   });
+  Object.defineProperty(obj, 'uuid', {
+    value: uuid,
+    configurable: false,
+    writable: false
+  });
+  return uuid;
 }
 
 export function isInput($node) {

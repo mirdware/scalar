@@ -4,17 +4,19 @@ const correlation = {};
 
 export default class Wrapper {
   set(obj, props) {
-    if (!obj.uuid) {
-      Object.defineProperty(obj, 'uuid', {value: generateUUID()});
+    let { uuid } = obj;
+    if (!uuid) {
+      uuid = generateUUID(obj);
     }
-    correlation[obj.uuid] = props;
+    correlation[uuid] = props;
+    return uuid;
   }
 
   get(obj) {
-    const uuid = obj.uuid;
-    if (uuid) {
-      return correlation[uuid];
+    let { uuid } = obj;
+    if (!uuid) {
+      uuid = this.set(obj, {});
     }
-    return {};
+    return correlation[uuid];
   }
 }

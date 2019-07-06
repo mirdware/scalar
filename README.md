@@ -69,7 +69,6 @@ export default ($) => ({
 La función deberá retornar un objeto en donde la llave sea un selector CSS o el nombre de un evento (click, submit, reset, blur, focus, etc), en el primer caso su valor deberá ser otro objeto que cumpla con las mismas características, pero en caso que la llave referencie al nombre de un evento su valor será la función o método a disparar. Todo evento lanzado previene su comportamiento por defecto.
 
 ### Métodos del objeto compuesto
-
 Es posible reiniciar cualquier componente a un estado inicial mediante el método `reset`, se debe tener en cuenta que las propiedades representadas por un objeto no pueden ser restablecidos a su estado inicial ya que su valor es referenciado.
 
 ```javascript
@@ -105,7 +104,6 @@ return {
 Acá podemos ver el uso del evento `mount` este es ejecutado tan pronto inicia el componente, es ideal para asignar objetos a servicios, al pasar por referencia cualquier modificación a estos objetos se ve reflejado en el componente.
 
 ### Estilos de declaración
-
 Al ser una función javascript pura es posible usar un componente con varios estilos de programación, al inicio vimos un retorno directo del objeto, pero tambien se puede usar como una función módulo.
 
 ```javascript
@@ -188,7 +186,6 @@ A parte de sobrescribir propiedades como observamos en el ejemplo anterior con l
 Las plantillas (Templates) representan la parte más básica del sistema y se pueden clasificar en: prerenderizadas y JIT (Just In Time).
 
 ### Prerenderizadas
-
 Las plantillas prerenderizadas son aquellas suministradas por el servidor y hacen parte integral del cuerpo de la petición, de esta manera se puede garantizar el funcionamiento de la aplicación aún si el cliente no activa JavaScript; en parte la idea de la libreria es ir _"escalando"_ la aplicación según las limitantes del cliente (accesibilidad).
 
 Una plantilla scalar debe contener atributos `data-bind` y `data-attr`, los primeros generan un elnace en dos direcciones entre el componente y la plantilla, mientras el segundo setea los atributos del elemento según modificaciones en el componente, por defecto un data-bind se impone (más no sobrescribe el estado inicial) ante un data-attr; pero si existe un data-attr que no exista como data-bind este generara una propiedad dentro del componente el cual manejara el atributo del elemento.
@@ -218,7 +215,6 @@ Cuando se desea declarar un objeto desde el sistema de plantillas este debe incl
 ```
 
 ### JIT
-
 Las plantillas JIT hacen uso de características como [template string](https://developer.mozilla.org/es/docs/Web/JavaScript/Referencia/template_strings) y [template tag](https://developer.mozilla.org/es/docs/Web/HTML/Elemento/template) y su función es generar código HTML de manera dinámica.
 
 El soporte para plantillas JIT está aún en una etapa bastante temprana, pero se están haciendo progresos. Su principal uso se encuentra restringido al enlace de datos cuando la propiedad de un componente es compleja (principalmente arrays). Una propiedad es definida como compleja cuando dentro se haya una etiqueta template.

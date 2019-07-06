@@ -3,9 +3,7 @@ import Component from './observable/Component';
 
 function provide(provider, classes) {
   if (!provider.uuid) {
-    const uuid = generateUUID();
-    provider.uuid = uuid;
-    classes[uuid] = provider;
+    classes[generateUUID(provider)] = provider;
   }
 }
 

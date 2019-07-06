@@ -15,11 +15,9 @@ function getProperty(observer, name) {
   return property;
 }
 
-function isDiferentText(element) {
-  for (let i = 0, node; node = element.childNodes[i]; i++) {
-    if (node.nodeType !== 3) {
-      return true;
-    }
+function isDiferentText($element) {
+  for (let i = 0, $child; $child = $element.childNodes[i]; i++) {
+    if ($child.nodeType !== 3) return true;
   }
   return false;
 }
@@ -130,8 +128,7 @@ function watch(observer, $node) {
   dataAttributes.forEach(($attr) => bindAttributes(observer, $attr));
 }
 
-function getState(properties) {
-  const state = {};
+function getState(state, properties) {
   for (let name in properties) {
     state[name] = properties[name].get();
   }
@@ -149,14 +146,13 @@ export default class Component {
   constructor($node, listener, module) {
     const props = getPrivateProperties(this, $node, module);
     this.events = listener(this);
-    props.initState = getState(props.properties);
+    props.initState = getState({}, props.properties);
     addListeners($node, this.events);
     $node.dispatchEvent(event);
   }
 
   reset() {
-    const _this = privy.get(this);
-    const initState = _this.initState;
+    const { initState } = privy.get(this);
     for (let name in initState) {
       this[name] = initState[name];
     }
