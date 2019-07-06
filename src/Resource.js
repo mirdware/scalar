@@ -58,14 +58,14 @@ function solve(xhr, resolve, reject) {
   if (xhr.readyState === 4) {
     const { status } = xhr;
     const content = xhr.getResponseHeader('Content-Type').split(';');
-    let response = /(aplication|text)\/xml/.test(content)?
-      xhr.responseXML:
+    let response = /(aplication|text)\/xml/.test(content) ?
+      xhr.responseXML :
       xhr.responseText;
     if (content[0] === 'application/json') {
       response = JSON.parse(response);
     }
-    (status >= 200 && status <= 299)?
-      resolve(response):
+    (status >= 200 && status <= 299) ?
+      resolve(response) :
       reject(response, status);
   }
 }

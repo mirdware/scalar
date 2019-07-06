@@ -3,17 +3,26 @@ import { escapeHTML } from '../view/Template';
 import Wrapper from '../util/Wrapper';
 
 const privy = new Wrapper();
-const getHandler = (property) => ({
+const getHandler = (property, root) => ({
   set: (target, prop, value) => {
+    root = root || target;
     if (value instanceof Promise) {
       return value.then((data) => {
-        Reflect.set(target, prop, data);
-        property.set(target);
+        if (Reflect.set(target, prop, data)) {
+          property.set(root);
+        }
       });
     }
-    const execution = Reflect.set(target, prop, value);
-    property.set(target);
-    return execution;
+    if (Reflect.set(target, prop, value)) {
+      return property.set(root);
+    }
+    return false;
+  },
+  get: (target, prop, receiver) => {
+    if (target[prop].constructor === Object) {
+      return new Proxy(target[prop], getHandler(property, root || target));
+    }
+    return Reflect.get(target, prop, receiver);
   }
 });
 
@@ -32,11 +41,13 @@ function changeContent(property, value) {
   _this.value = value;
   _this.listeners.forEach((listener) => listener(property));
   _this.nodes.forEach((node) => executeNode(property, value, node));
+  return true;
 }
 
-function getObject(obj, property, value, i = 0) {
-  obj[property[i]] = ++i < property.length ?
-  getObject({}, property, isTemplate, i) :
+function getObject(obj, props, value, i = 0) {
+  const prop = obj[props[i]];
+  obj[props[i]] = ++i < props.length ?
+  getObject(prop || {}, props, value, i) :
   value;
   return obj;
 }
@@ -53,8 +64,8 @@ export default class Property {
 
   get() {
     const _this = privy.get(this);
-    const constructor = _this.value.constructor
     let value = _this.value;
+    const constructor = value.constructor;
     if (constructor === Array || constructor === Object) {
       if (_this.observable !== value) {
         _this.proxy = new Proxy(value, getHandler(this));
@@ -66,7 +77,7 @@ export default class Property {
   }
 
   set(value = '') {
-    (value instanceof Promise) ?
+    return value instanceof Promise ?
     value.then((data) => changeContent(this, data)) :
     changeContent(this, value);
   }
@@ -92,7 +103,7 @@ export default class Property {
       if (!_this.value) {
         _this.value = {};
       }
-      Object.assign(_this.value, getObject({}, prop, value));
+      getObject(_this.value, prop, value);
     } else if (value) {
       _this.value = value;
     }

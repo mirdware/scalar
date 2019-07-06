@@ -77,7 +77,7 @@ function evalValue(target) {
   if (target.type === 'checkbox') {
     return target.checked;
   }
-  return target.value ? target.value : null;
+  return target.value || null;
 }
 
 function bindData(observer, $domElement) {

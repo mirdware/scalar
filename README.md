@@ -96,7 +96,7 @@ Un componente se puede comunicar con otros mediante el uso de servicios, estos s
 ```javascript
 ...
 return {
-  mount: () => $.header = $.inject(Message).msg
+  mount: () => $.inject(Message).my = $.my
 }
 ...
 ```
@@ -215,9 +215,7 @@ Cuando se desea declarar un objeto desde el sistema de plantillas este debe incl
 ```
 
 ### JIT
-Las plantillas JIT hacen uso de características como [template string](https://developer.mozilla.org/es/docs/Web/JavaScript/Referencia/template_strings) y [template tag](https://developer.mozilla.org/es/docs/Web/HTML/Elemento/template) y su función es generar código HTML de manera dinámica.
-
-El soporte para plantillas JIT está aún en una etapa bastante temprana, pero se están haciendo progresos. Su principal uso se encuentra restringido al enlace de datos cuando la propiedad de un componente es compleja (principalmente arrays). Una propiedad es definida como compleja cuando dentro se haya una etiqueta template.
+El soporte para plantillas JIT está aún en una etapa bastante temprana, pero se están haciendo progresos. Su principal uso se encuentra restringido al enlace de datos cuando la propiedad de un componente es compleja (principalmente arrays) y su función es generar código HTML de manera dinámica. Una propiedad es definida como compleja cuando dentro se haya una [template tag](https://developer.mozilla.org/es/docs/Web/HTML/Elemento/template).
 
 ```html
 <tbody data-bind="name">
@@ -230,4 +228,4 @@ El soporte para plantillas JIT está aún en una etapa bastante temprana, pero s
 </tbody>
 ```
 
-Es posible escapar código javaScript mediante el uso de la notación template string `${}`, si se usa el simbolo `$${}` se escapan las etiquetas que se viasualizan en pantalla; dentro del template es posible acceder a dos propiedades `index` y `data`, la primera indica el indice del array y la segunda la información contenida en el mismo, esto puede cambiar cuando se implemente virtual DOM en proximas versiones.
+Es posible interpolar código javaScript mediante el uso de la notación [template string](https://developer.mozilla.org/es/docs/Web/JavaScript/Referencia/template_strings) `${}`, si se usa el simbolo `$${}` se escapan las etiquetas que se viasualizan en pantalla; dentro del template es posible acceder a dos propiedades `index` y `data`, la primera indica el indice del array y la segunda la información contenida en el mismo, esto puede cambiar cuando se implemente virtual DOM en proximas versiones.
