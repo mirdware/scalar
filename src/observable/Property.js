@@ -3,6 +3,7 @@ import { escapeHTML } from '../view/Template';
 import Wrapper from '../util/Wrapper';
 
 const privy = new Wrapper();
+const proxies = [];
 const getHandler = (property, root) => ({
   set: (target, prop, value) => {
     root = root || target;
@@ -19,8 +20,14 @@ const getHandler = (property, root) => ({
     return false;
   },
   get: (target, prop, receiver) => {
-    if (target[prop].constructor === Object) {
-      return new Proxy(target[prop], getHandler(property, root || target));
+    const obj = target[prop];
+    if (obj && obj.constructor === Object) {
+      let proxy = proxies.find((p) => p.obj === obj);
+      if (!proxy) {
+        proxy = { obj, prox: new Proxy(obj, getHandler(property, root || target)) };
+        proxies.push(proxy);
+      }
+      return proxy.prox;
     }
     return Reflect.get(target, prop, receiver);
   }

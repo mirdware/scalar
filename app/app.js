@@ -1,3 +1,4 @@
+import './styles/theme.css';
 import { Module } from '../scalar';
 import Form from './components/Form';
 import Test from './components/Test';
