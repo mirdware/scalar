@@ -2,7 +2,7 @@
   "name": "scalar",
   "version": "0.2.1",
   "description": "Javascript scalable and not intrusive",
-  "main": "dist/scalar.min.js",
+  "main": "./dist/js/scalar.min.js",
   "scripts": {
     "build": "rimraf dist && webpack --config config/webpack.js  -p",
     "serve": "webpack-dev-server --config config/webpack.js --open --d",
