@@ -188,7 +188,7 @@ Las plantillas (Templates) representan la parte más básica del sistema y se pu
 ### Prerenderizadas
 Las plantillas prerenderizadas son aquellas suministradas por el servidor y hacen parte integral del cuerpo de la petición, de esta manera se puede garantizar el funcionamiento de la aplicación aún si el cliente no activa JavaScript; en parte la idea de la libreria es ir _"escalando"_ la aplicación según las limitantes del cliente (accesibilidad).
 
-Una plantilla scalar debe contener atributos `data-bind` y `data-attr`, los primeros generan un elnace en dos direcciones entre el componente y la plantilla, mientras el segundo setea los atributos del elemento según modificaciones en el componente, por defecto un data-bind se impone (más no sobrescribe el estado inicial) ante un data-attr; pero si existe un data-attr que no exista como data-bind este generara una propiedad dentro del componente el cual manejara el atributo del elemento.
+Una plantilla scalar debe contener atributos `data-bind` y `data-attr`, los primeros generan un enlace en dos direcciones entre el componente y la plantilla, mientras el segundo modifica los atributos del elemento según sean manipuladas las propiedades del componente, por defecto un data-bind se impone (más no sobrescribe el estado inicial) ante un data-attr; pero si existe un data-attr que no exista como data-bind este generara una propiedad dentro del componente el cual manejara el atributo del elemento.
 
 ```html
 <div id="square">

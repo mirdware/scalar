@@ -17,7 +17,9 @@ module.exports = {
   module: require('./module'),
   optimization: require('./optimization'),
   devServer: {
-    host: 'localhost',
+    host: '0.0.0.0',
+    public: 'localhost:6969',
+    open: true,
     port: 6969,
     inline: true
   },

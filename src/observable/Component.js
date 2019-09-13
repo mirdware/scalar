@@ -47,26 +47,6 @@ function addProperty($domElement, property, prop) {
   }
 }
 
-function setAttribute(attribute, key, property) {
-  if (property.constructor === Object) {
-    for (let k in property) {
-      setAttribute(attribute[key], k, property[k]);
-    }
-  } else if (attribute[key] !== property) {
-    attribute[key] = property;
-  }
-}
-
-function changeProperty(observer, key, attribute, $domElement, property) {
-  const eventListenerList = $domElement.eventListenerList;
-  setAttribute(attribute, key, property);
-  while (eventListenerList.length) {
-    const listener = eventListenerList.shift();
-    $domElement.removeEventListener(listener.name, listener.fn, true);
-  }
-  addListeners(privy.get(observer).$node, observer.events);
-}
-
 function evalValue(target) {
   if (target.type === 'radio') {
     return target.checked ? target.value : null;
@@ -96,22 +76,13 @@ function bindAttributes(observer, $domElement) {
   const properties = privy.get(observer).properties;
   attributes.forEach((attribute) => {
     attribute = attribute.split(':');
-    const keys = attribute[0].trim().split('.');
-    const key = keys.pop();
+    const name = attribute[0].trim();
     const value = attribute[1].trim();
-    attribute = $domElement;
-    keys.forEach((k) => attribute = attribute[k]);
     if (!properties[value]) {
       properties[value] = getProperty(observer, value);
     }
     const property = properties[value];
-    const attr = attribute[key];
-    if (attr && !(attr instanceof Object) && !property.get()) {
-      property.set(attr);
-    }
-    property.addListener(
-      () => changeProperty(observer, key, attribute, $domElement, property.get())
-    );
+    property.addAttribute(name, $domElement);
   });
 }
 
@@ -163,8 +134,8 @@ export default class Component {
   }
 
   toJSON() {
+    const { properties } = privy.get(this);
     const json = {};
-    const properties = privy.get(this).properties;
     for (let key in properties) {
       json[key] = properties[key].get();
     }

@@ -5,7 +5,7 @@
   "main": "./dist/js/scalar.min.js",
   "scripts": {
     "build": "rimraf dist && webpack --config config/webpack.js  -p",
-    "serve": "webpack-dev-server --config config/webpack.js --open --d",
+    "serve": "webpack-dev-server --config config/webpack.js -d",
     "prepare": "npm run build",
     "start": "npm run build & npm run serve"
   },

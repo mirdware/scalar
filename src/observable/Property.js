@@ -1,4 +1,4 @@
-import { isInput } from '../util/stdlib';
+import { isInput, addListeners } from '../util/stdlib';
 import { escapeHTML } from '../view/Template';
 import Wrapper from '../util/Wrapper';
 
@@ -43,10 +43,35 @@ function executeNode(property, value, node) {
   property.setValue($node, value, attr);
 }
 
+function setAttribute($attribute, name, property) {
+  if (property.constructor === Object) {
+    for (let k in property) {
+      setAttribute($attribute[name], k, property[k]);
+    }
+  } else if ($attribute[name] !== property) {
+    $attribute[name] = property;
+  }
+}
+
+function changeProperty(property, attribute) {
+  const { $element, $attribute, name } = attribute;
+  const eventListenerList = $element.eventListenerList;
+  setAttribute($attribute, name, property.get());
+  while (eventListenerList.length) {
+    const listener = eventListenerList.shift();
+    $element.removeEventListener(listener.name, listener.fn, true);
+  }
+  addListeners(privy.get(property.parent).$node, property.parent.events);
+}
+
+function formatInitAttribute(attr) {
+  return (attr instanceof CSSStyleDeclaration) ? attr.cssText : attr;
+}
+
 function changeContent(property, value) {
   const _this = privy.get(property);
   _this.value = value;
-  _this.listeners.forEach((listener) => listener(property));
+  _this.attributes.forEach((attr) => changeProperty(property, attr));
   _this.nodes.forEach((node) => executeNode(property, value, node));
   return true;
 }
@@ -64,7 +89,7 @@ export default class Property {
     privy.set(this, {
       value: '',
       nodes: [],
-      listeners: []
+      attributes: []
     });
     this.parent = parent;
   }
@@ -116,7 +141,14 @@ export default class Property {
     }
   }
 
-  addListener(listener) {
-    privy.get(this).listeners.push(listener);
+  addAttribute(name, $element) {
+    const keys = name.split('.');
+    let $attribute = $element;
+    name = keys.pop();
+    keys.forEach((k) => $attribute = $attribute[k]);
+    if ($attribute[name] && !this.get()) {
+      this.set(formatInitAttribute($attribute[name]));
+    }
+    privy.get(this).attributes.push({ name, $attribute, $element });
   }
 }
