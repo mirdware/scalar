@@ -1,7 +1,5 @@
 import { addListeners } from "../util/stdlib";
-import Wrapper from "../util/Wrapper";
 
-const privy = new Wrapper();
 const cache = {};
 
 function html(literalSections, ...substs) {
@@ -57,10 +55,10 @@ export function escapeHTML(str) {
 export default class Template {
   constructor(component, $node) {
     const $template = $node.getElementsByTagName('template');
-    const properties = { $node, component };
-    privy.set(this, properties);
+    this.component = component;
+    this.$node = $node;
     if ($template.length) {
-      properties.fn = generateTemplate($template[0].innerHTML);
+      this.fn = generateTemplate($template[0].innerHTML);
     }
   }
 
@@ -69,8 +67,8 @@ export default class Template {
   }
 
   render(param) {
-    const _this = privy.get(this);
-    _this.$node.innerHTML = parseTemplate(_this.fn, param);
-    addListeners(_this.$node, _this.component.events, false);
+    const { $node, component, fn } = this;
+    $node.innerHTML = parseTemplate(fn, param);
+    addListeners($node, component.events, false);
   }
 }

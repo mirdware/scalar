@@ -1,14 +1,16 @@
 import { generateUUID } from './stdlib';
 
-const correlation = {};
-
 export default class Wrapper {
+  constructor() {
+    this.correlation = {};
+  }
+
   set(obj, props) {
     let { uuid } = obj;
     if (!uuid) {
       uuid = generateUUID(obj);
     }
-    correlation[uuid] = props;
+    this.correlation[uuid] = props;
     return uuid;
   }
 
@@ -17,6 +19,6 @@ export default class Wrapper {
     if (!uuid) {
       uuid = this.set(obj, {});
     }
-    return correlation[uuid];
+    return this.correlation[uuid];
   }
 }

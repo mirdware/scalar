@@ -1,8 +1,6 @@
 import { isInput, addListeners } from '../util/stdlib';
 import { escapeHTML } from '../view/Template';
-import Wrapper from '../util/Wrapper';
 
-const privy = new Wrapper();
 const proxies = [];
 const getHandler = (property, root) => ({
   set: (target, prop, value) => {
@@ -33,7 +31,7 @@ const getHandler = (property, root) => ({
   }
 });
 
-function executeNode(property, value, node) {
+function executeNode(property, node, value) {
   const { $node, complexType } = node;
   const attr = isInput($node) ? 'value': 'innerHTML';
   node.prop.forEach((prop) => value = value[prop]);
@@ -41,6 +39,18 @@ function executeNode(property, value, node) {
     return complexType.render(value);
   }
   property.setValue($node, value, attr);
+}
+
+function executeAttribute(property, attribute, value) {
+  const { $element } = attribute;
+  const { eventListenerList } = $element;
+  const { parent } = property;
+  setAttribute(attribute.$attribute, attribute.name, value);
+  while (eventListenerList.length) {
+    const listener = eventListenerList.shift();
+    $element.removeEventListener(listener.name, listener.fn, true);
+  }
+  addListeners(parent.$node, parent.events);
 }
 
 function setAttribute($attribute, name, property) {
@@ -53,26 +63,14 @@ function setAttribute($attribute, name, property) {
   }
 }
 
-function changeProperty(property, attribute) {
-  const { $element, $attribute, name } = attribute;
-  const eventListenerList = $element.eventListenerList;
-  setAttribute($attribute, name, property.get());
-  while (eventListenerList.length) {
-    const listener = eventListenerList.shift();
-    $element.removeEventListener(listener.name, listener.fn, true);
-  }
-  addListeners(privy.get(property.parent).$node, property.parent.events);
-}
-
 function formatInitAttribute(attr) {
   return (attr instanceof CSSStyleDeclaration) ? attr.cssText : attr;
 }
 
 function changeContent(property, value) {
-  const _this = privy.get(property);
-  _this.value = value;
-  _this.attributes.forEach((attr) => changeProperty(property, attr));
-  _this.nodes.forEach((node) => executeNode(property, value, node));
+  property.value = value;
+  property.attributes.forEach((attr) => executeAttribute(property, attr, value));
+  property.nodes.forEach((node) => executeNode(property, node, value));
   return true;
 }
 
@@ -86,24 +84,21 @@ function getObject(obj, props, value, i = 0) {
 
 export default class Property {
   constructor(parent) {
-    privy.set(this, {
-      value: '',
-      nodes: [],
-      attributes: []
-    });
     this.parent = parent;
+    this.value = '';
+    this.nodes = [];
+    this.attributes = [];
   }
 
   get() {
-    const _this = privy.get(this);
-    let value = _this.value;
+    let value = this.value;
     const constructor = value.constructor;
     if (constructor === Array || constructor === Object) {
-      if (_this.observable !== value) {
-        _this.proxy = new Proxy(value, getHandler(this));
-        _this.observable = value;
+      if (this.observable !== value) {
+        this.proxy = new Proxy(value, getHandler(this));
+        this.observable = value;
       }
-      value = _this.proxy;
+      value = this.proxy;
     }
     return value;
   }
@@ -129,15 +124,14 @@ export default class Property {
   }
 
   addNode(prop, $node, complexType, value) {
-    const _this = privy.get(this);
-    _this.nodes.push({ prop, $node, complexType });
+    this.nodes.push({ prop, $node, complexType });
     if (prop.length) {
-      if (!_this.value) {
-        _this.value = {};
+      if (!this.value) {
+        this.value = {};
       }
-      getObject(_this.value, prop, value);
+      getObject(this.value, prop, value);
     } else if (value) {
-      _this.value = value;
+      this.value = value;
     }
   }
 
@@ -149,6 +143,6 @@ export default class Property {
     if ($attribute[name] && !this.get()) {
       this.set(formatInitAttribute($attribute[name]));
     }
-    privy.get(this).attributes.push({ name, $attribute, $element });
+    this.attributes.push({ name, $attribute, $element });
   }
 }

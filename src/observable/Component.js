@@ -7,7 +7,7 @@ const privy = new Wrapper();
 const event = new Event('mount');
 
 function getProperty(observer, name) {
-  const property = new Property(observer);
+  const property = new Property(privy.get(observer));
   Object.defineProperty(observer, name, {
     get: () => property.get(),
     set: (value) => property.set(value)
@@ -106,19 +106,14 @@ function getState(state, properties) {
   return state;
 }
 
-function getPrivateProperties(component, $node, module) {
-  const properties = { $node, module, properties: {} };
-  privy.set(component, properties);
-  watch(component, $node);
-  return properties
-}
-
 export default class Component {
   constructor($node, listener, module) {
-    const props = getPrivateProperties(this, $node, module);
-    this.events = listener(this);
+    const props = { $node, module, properties: {} };
+    privy.set(this, props);
+    watch(this, $node);
+    props.events = listener(this);
     props.initState = getState({}, props.properties);
-    addListeners($node, this.events);
+    addListeners($node, props.events);
     $node.dispatchEvent(event);
   }
 

@@ -1,7 +1,7 @@
 # Scalar
 Scalar nace de la necesidad de crear sistemas escalables, de alto rendimiento y no obstructivos usando los últimos estándares de programación web, lo cual incluye el uso de las ultimas características basadas en [ECMAScript](https://www.ecma-international.org/ecma-262/8.0/index.html).
 
-El desarrollo de aplicaciones con scalar se basa en una arquitectura _CTR_ (Components Templates and Resources).
+El desarrollo de aplicaciones con scalar se basa en componentes no obstructivos, lo cual quiere decir que no se generan Just In Time usando javascript si no que deben ser definidos desde el HTML y luego usados desde un módulo.
 
 ## Módulos
 Un módulo es un objeto javascript que se instancia de la clase Module de scalar, se deben pasar por constructor las dependencias del módulo para luego hacer llamados al método compose.
@@ -19,7 +19,7 @@ new Module(Message)
 .compose('#todo', ToDo);
 ```
 
-Con el uso de `compose` se crea un objeto compuesto cuyas propiedades corresponden a los `data-bind` hayados en la plantilla, de igual manera se generara un propiedad del objeto si esta hace parte de algún `data-attr`.
+Con el uso de `compose` se crea un objeto cuyas propiedades corresponden a los `data-bind` y `data-attr` hayados en la plantilla, este objeto sera inyectado directamente a la `behavioral function`.
 
 ```html
 <form id="hello-world">
@@ -43,9 +43,7 @@ Con el uso de `compose` se crea un objeto compuesto cuyas propiedades correspond
 ```
 
 ## Componentes
-Los componentes (Components) son los artefactos más importantes en el uso de scalar, son los encargados de renderizar y conectar los diferentes elementos del sistema, se podría pensar en ellos como los controladores en un sistema _MVC_ (Models, Views and Controllers) clásico.
-
-Un componente en scalar es basicamente una función pura la cual recibe como parámetro la referencia del objeto compuesto dentro de un módulo.
+Un componente puede definirse como la unión de la `behavioral function` y el `compound object`, la primera es una función pura en javascript encargada de definir las acciones y comportamientos del componente, mientras el segundo es el resultado del método compose del módulo y contiene las propiedades a manipular.
 
 ```javascript
 export default ($) => ({
@@ -91,7 +89,7 @@ return {
 ...
 ```
 
-Un componente se puede comunicar con otros mediante el uso de servicios, estos son inyectados mediante el uso de la función `inject` del objeto compuesto.
+Un componente se puede comunicar con otros mediante servicios, estos son inyectados con el uso de la función `inject`.
 
 ```javascript
 ...
@@ -101,7 +99,7 @@ return {
 ...
 ```
 
-Acá podemos ver el uso del evento `mount` este es ejecutado tan pronto inicia el componente, es ideal para asignar objetos a servicios, al pasar por referencia cualquier modificación a estos objetos se ve reflejado en el componente.
+En este último ejemplo podemos observar el uso del evento `mount`, este es ejecutado tan pronto inicia el componente y es ideal para asignar objetos a servicios, al pasar por referencia cualquier modificación a estos objetos se ve reflejado en el componente.
 
 ### Estilos de declaración
 Al ser una función javascript pura es posible usar un componente con varios estilos de programación, al inicio vimos un retorno directo del objeto, pero tambien se puede usar como una función módulo.
@@ -188,7 +186,7 @@ Las plantillas (Templates) representan la parte más básica del sistema y se pu
 ### Prerenderizadas
 Las plantillas prerenderizadas son aquellas suministradas por el servidor y hacen parte integral del cuerpo de la petición, de esta manera se puede garantizar el funcionamiento de la aplicación aún si el cliente no activa JavaScript; en parte la idea de la libreria es ir _"escalando"_ la aplicación según las limitantes del cliente (accesibilidad).
 
-Una plantilla scalar debe contener atributos `data-bind` y `data-attr`, los primeros generan un enlace en dos direcciones entre el componente y la plantilla, mientras el segundo modifica los atributos del elemento según sean manipuladas las propiedades del componente, por defecto un data-bind se impone (más no sobrescribe el estado inicial) ante un data-attr; pero si existe un data-attr que no exista como data-bind este generara una propiedad dentro del componente el cual manejara el atributo del elemento.
+Una plantilla scalar debería contener atributos `data-bind` y `data-attr`, los primeros generan un enlace en dos direcciones entre el compound object y la plantilla, mientras el segundo modifica los atributos del elemento según se modifique alguna propiedad solo en este sentido, por defecto un data-bind se impone (más no sobrescribe el estado inicial) ante un data-attr; pero si existe un data-attr que no exista como data-bind este generara una propiedad dentro del componente el cual manejara el atributo del elemento.
 
 ```html
 <div id="square">
@@ -206,7 +204,7 @@ Una plantilla scalar debe contener atributos `data-bind` y `data-attr`, los prim
 </div>
 ```
 
-Como se puede observar data-bind es simplemente un enlace a una propiedad del componente, por lo tanto debe tener el formato de una [propiedad javascript](https://developer.mozilla.org/es/docs/Web/JavaScript/Data_structures#Objetos), mientras el data-attr puede tener tantos atributos separados por `,` como se desee, un atributo es un para clave valor en donde la clave es el nombre del atributo y el valor una propiedad del componente que manejará los cambios de estados.
+Como se puede observar data-bind es simplemente un enlace a una propiedad del componente, por lo tanto debe tener el formato de una [propiedad javascript](https://developer.mozilla.org/es/docs/Web/JavaScript/Data_structures#Objetos), mientras el data-attr puede tener tantos atributos separados por `,` como se desee, un atributo es un par clave valor en donde la clave es el nombre del atributo y el valor una propiedad del componente que manejará los cambios de estado.
 
 Cuando se desea declarar un objeto desde el sistema de plantillas este debe incluirse con separación de `.`.
 
