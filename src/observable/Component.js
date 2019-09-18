@@ -1,92 +1,51 @@
-import { addListeners, isInput } from '../util/stdlib';
-import Property from './Property';
-import Wrapper from '../util/Wrapper';
-import Template from '../view/Template';
+import { addListeners } from '../util/stdlib';
+import * as Privy from '../util/Wrapper';
+import * as Property from './Property';
 
-const privy = new Wrapper();
 const event = new Event('mount');
 
-function getProperty(observer, name) {
-  const property = new Property(privy.get(observer));
-  Object.defineProperty(observer, name, {
-    get: () => property.get(),
-    set: (value) => property.set(value)
+function getProperty(component, name) {
+  const prop = {
+    parent: Privy.get(component),
+    value: '',
+    nodes: [],
+    attributes: []
+  };
+  Object.defineProperty(component, name, {
+    get: () => Property.get(prop),
+    set: (value) => Property.set(prop, value)
   });
-  return property;
+  return prop;
 }
 
-function isDiferentText($element) {
-  for (let i = 0, $child; $child = $element.childNodes[i]; i++) {
-    if ($child.nodeType !== 3) return true;
-  }
-  return false;
-}
-
-function getValue($domElement, property) {
-  if (isInput($domElement)) {
-    const value = evalValue($domElement);
-    $domElement.addEventListener('keyup', (e) => property.set(e.target.value));
-    $domElement.addEventListener('change', (e) => property.set(evalValue(e.target)));
-    if (value === null) {
-      property.setValue($domElement, property.get());
-    }
-    return value;
-  }
-  if ($domElement.innerHTML) {
-    return isDiferentText($domElement) ? new Template(property.parent, $domElement) : $domElement.innerHTML;
-  }
-  property.setValue($domElement, property.get(), 'innerHTML');
-}
-
-function addProperty($domElement, property, prop) {
-  const value = getValue($domElement, property);
-  if (value instanceof Template) {
-    property.addNode(prop, $domElement, value, value.getValue());
-  } else {
-    property.addNode(prop, $domElement, null, value);
-  }
-}
-
-function evalValue(target) {
-  if (target.type === 'radio') {
-    return target.checked ? target.value : null;
-  }
-  if (target.type === 'file' && target.files) {
-    return target.files;
-  }
-  if (target.type === 'checkbox') {
-    return target.checked;
-  }
-  return target.value || null;
-}
-
-function bindData(observer, $domElement) {
+function bindData(component, $domElement) {
   let name = $domElement.getAttribute("data-bind");
-  const properties = privy.get(observer).properties;
+  const properties = Privy.get(component).properties;
   const propertyObj = name.split('.');
   name = propertyObj.shift();
   if (!properties[name]) {
-    properties[name] = getProperty(observer, name);
+    properties[name] = getProperty(component, name);
   }
-  addProperty($domElement, properties[name], propertyObj);
+  Property.addNode(properties[name], $domElement, propertyObj);
 }
 
-function bindAttributes(observer, $domElement) {
+function bindAttributes(component, $domElement) {
   const attributes = $domElement.getAttribute("data-attr").split(',');
-  const properties = privy.get(observer).properties;
+  const properties = Privy.get(component).properties;
   attributes.forEach((attribute) => {
     attribute = attribute.split(':');
+    let value = attribute[1].trim();
     const name = attribute[0].trim();
-    const value = attribute[1].trim();
+    const propertyObj = value.split('.');
+    value = propertyObj.shift();
     if (!properties[value]) {
-      properties[value] = getProperty(observer, value);
+      properties[value] = getProperty(component, value);
     }
-    const property = properties[value];
-    property.addAttribute(name, $domElement);
+    Property.addAttribute(properties[value], name, $domElement, propertyObj);
   });
 }
 
-function watch(observer, $node) {
+function watch(component, $node) {
   const dataBinds = Array.from($node.querySelectorAll('[data-bind]'));
   const dataAttributes = Array.from($node.querySelectorAll('[data-attr]'));
   if ($node.getAttribute('data-bind')) {
@@ -95,44 +54,48 @@ function watch(observer, $node) {
   if ($node.getAttribute('data-attr')) {
     dataAttributes.push($node);
   }
-  dataBinds.forEach(($bind) => bindData(observer, $bind));
-  dataAttributes.forEach(($attr) => bindAttributes(observer, $attr));
+  dataBinds.forEach(($bind) => bindData(component, $bind));
+  dataAttributes.forEach(($attr) => bindAttributes(component, $attr));
 }
 
 function getState(state, properties) {
   for (let name in properties) {
-    state[name] = properties[name].get();
+    state[name] = properties[name].value;
   }
   return state;
 }
 
-export default class Component {
-  constructor($node, listener, module) {
-    const props = { $node, module, properties: {} };
-    privy.set(this, props);
-    watch(this, $node);
-    props.events = listener(this);
-    props.initState = getState({}, props.properties);
-    addListeners($node, props.events);
-    $node.dispatchEvent(event);
-  }
+export function compose($node, behavioral, module) {
+  const props = { $node, module, properties: {} };
+  const behavioralIsComponent = behavioral.prototype instanceof Component;
+  const component = behavioralIsComponent ? new behavioral() : new Component();
+  Privy.set(component, props);
+  watch(component, $node);
+  props.events = behavioralIsComponent ?
+  (component.listen && component.listen()) :
+  behavioral(component);
+  props.initState = getState({}, props.properties);
+  addListeners($node, props.events);
+  $node.dispatchEvent(event);
+}
 
+export default class Component {
   reset() {
-    const { initState } = privy.get(this);
+    const { initState } = Privy.get(this);
     for (let name in initState) {
       this[name] = initState[name];
     }
   }
 
   inject(provider) {
-    return privy.get(this).module.inject(provider);
+    return Privy.get(this).module.inject(provider);
   }
 
   toJSON() {
-    const { properties } = privy.get(this);
+    const { properties } = Privy.get(this);
     const json = {};
     for (let key in properties) {
-      json[key] = properties[key].get();
+      json[key] = properties[key].value;
     }
     return JSON.stringify(json);
   }

@@ -58,7 +58,11 @@
       <input type="button" value="Limpiar" id="clean" />
       <ul data-bind="tasks">
         <template>
-          <li data-index="${index}">${data} <a href="javascript:void(0)" class="close">[x]</a></li>
+          <li data-index="${index}">
+            ${data}
+            <a href="#" class="check">✔</a>
+            <a href="#" class="close">[x]</a>
+          </li>
         </template>
       </ul>
     </form>

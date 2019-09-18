@@ -1,13 +1,11 @@
 import { generateUUID } from './util/stdlib';
-import Wrapper from './util/Wrapper';
-import Component from './observable/Component';
-
-const privy = new Wrapper();
+import { compose } from './observable/Component';
+import * as Privy from './util/Wrapper';
 
 export default class Module {
   constructor(...providers) {
     const properties = { classes: {}, instances: {} };
-    privy.set(this, properties);
+    Privy.set(this, properties);
     providers.forEach((provider) => {
       if (!provider.uuid) {
         properties.classes[generateUUID(provider)] = provider;
@@ -15,22 +13,22 @@ export default class Module {
     });
   }
 
-  inject(component) {
-    const { classes, instances } = privy.get(this);
-    const { uuid } = component;
+  inject(provider) {
+    const { classes, instances } = Privy.get(this);
+    const { uuid } = provider;
     if (classes[uuid]) {
-      const component = new classes[uuid]();
-      component.uuid = uuid;
-      instances[uuid] = component;
+      provider = new classes[uuid]();
+      provider.uuid = uuid;
+      instances[uuid] = provider;
       delete classes[uuid];
     }
     return instances[uuid];
   }
 
-  compose(selector, events) {
+  compose(selector, behavioral) {
     const $nodes = document.querySelectorAll(selector);
     for (let i = 0, $node; $node = $nodes[i]; i++) {
-      new Component($node, events, this);
+      compose($node, behavioral, this);
     }
     return this;
   }

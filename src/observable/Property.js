@@ -1,5 +1,7 @@
-import { isInput, addListeners } from '../util/stdlib';
-import { escapeHTML } from '../view/Template';
+import { isInput, setValue } from '../util/stdlib';
+import Template from '../view/Template';
+import * as Node from './Node';
+import * as Attribute from './Attribute';
 
 const proxies = [];
 const getHandler = (property, root) => ({
@@ -8,12 +10,12 @@ const getHandler = (property, root) => ({
     if (value instanceof Promise) {
       return value.then((data) => {
         if (Reflect.set(target, prop, data)) {
-          property.set(root);
+          set(property, root);
         }
       });
     }
     if (Reflect.set(target, prop, value)) {
-      return property.set(root);
+      return set(property, root);
     }
     return false;
   },
@@ -31,46 +33,14 @@ const getHandler = (property, root) => ({
   }
 });
 
-function executeNode(property, node, value) {
-  const { $node, complexType } = node;
-  const attr = isInput($node) ? 'value': 'innerHTML';
-  node.prop.forEach((prop) => value = value[prop]);
-  if (complexType && value && attr === 'innerHTML') {
-    return complexType.render(value);
-  }
-  property.setValue($node, value, attr);
-}
-
-function executeAttribute(property, attribute, value) {
-  const { $element } = attribute;
-  const { eventListenerList } = $element;
-  const { parent } = property;
-  setAttribute(attribute.$attribute, attribute.name, value);
-  while (eventListenerList.length) {
-    const listener = eventListenerList.shift();
-    $element.removeEventListener(listener.name, listener.fn, true);
-  }
-  addListeners(parent.$node, parent.events);
-}
-
-function setAttribute($attribute, name, property) {
-  if (property.constructor === Object) {
-    for (let k in property) {
-      setAttribute($attribute[name], k, property[k]);
-    }
-  } else if ($attribute[name] !== property) {
-    $attribute[name] = property;
-  }
-}
-
 function formatInitAttribute(attr) {
   return (attr instanceof CSSStyleDeclaration) ? attr.cssText : attr;
 }
 
 function changeContent(property, value) {
   property.value = value;
-  property.attributes.forEach((attr) => executeAttribute(property, attr, value));
-  property.nodes.forEach((node) => executeNode(property, node, value));
+  property.attributes.forEach((attr) => Attribute.execute(property, attr, value));
+  property.nodes.forEach((node) => Node.execute(property, node, value));
   return true;
 }
 
@@ -82,67 +52,91 @@ function getObject(obj, props, value, i = 0) {
   return obj;
 }
 
-export default class Property {
-  constructor(parent) {
-    this.parent = parent;
-    this.value = '';
-    this.nodes = [];
-    this.attributes = [];
+function getValue(property, prop, value) {
+  if (prop.length) {
+    if (!property.value) {
+      property.value = {};
+    }
+    getObject(property.value, prop, value);
+  } else if (value) {
+    property.value = value;
   }
+}
 
-  get() {
-    let value = this.value;
-    const constructor = value.constructor;
-    if (constructor === Array || constructor === Object) {
-      if (this.observable !== value) {
-        this.proxy = new Proxy(value, getHandler(this));
-        this.observable = value;
-      }
-      value = this.proxy;
+function isDiferentText($element) {
+  for (let i = 0, $child; $child = $element.childNodes[i]; i++) {
+    if ($child.nodeType !== 3) return true;
+  }
+  return false;
+}
+
+function evalValue(target) {
+  if (target.type === 'radio') {
+    return target.checked ? target.value : null;
+  }
+  if (target.type === 'file' && target.files) {
+    return target.files;
+  }
+  if (target.type === 'checkbox') {
+    return target.checked;
+  }
+  return target.value || null;
+}
+
+function config(property, $domElement) {
+  if (isInput($domElement)) {
+    const value = evalValue($domElement);
+    $domElement.addEventListener('keyup', (e) => set(property, e.target.value));
+    $domElement.addEventListener('change', (e) => set(property, evalValue(e.target)));
+    if (value === null) {
+      setValue(property, $domElement, property.value);
     }
     return value;
   }
-
-  set(value = '') {
-    return value instanceof Promise ?
-    value.then((data) => changeContent(this, data)) :
-    changeContent(this, value);
+  if ($domElement.innerHTML) {
+    return isDiferentText($domElement) ? new Template(property.parent, $domElement) : $domElement.innerHTML;
   }
+  setValue(property, $domElement, property.value, 'innerHTML');
+}
 
-  setValue($node, value, attr = 'value') {
-    if (attr === 'innerHTML' && typeof value == 'string') {
-      value = escapeHTML(value);
-    } else if ($node.type === 'checkbox' || $node.type === 'radio') {
-      attr = 'checked';
-      if ($node.type === 'radio') {
-        value = $node.value === this.get();
-      }
-    } else if ($node.type === 'file') {
-      attr = 'files';
+export function addNode(property, $node, prop) {
+  let value = config(property, $node);
+  let complexType = null;
+  if (value instanceof Template) {
+    complexType = value;
+    value = value.getValue();
+  }
+  property.nodes.push({ prop, $node, complexType });
+  getValue(property, prop, value);
+}
+
+export function get(property) {
+  let value = property.value;
+  const constructor = value.constructor;
+  if (constructor === Array || constructor === Object) {
+    if (property.observable !== value) {
+      property.proxy = new Proxy(value, getHandler(property));
+      property.observable = value;
     }
-    if ($node[attr] !== value) $node[attr] = value;
+    value = property.proxy;
   }
+  return value;
+}
 
-  addNode(prop, $node, complexType, value) {
-    this.nodes.push({ prop, $node, complexType });
-    if (prop.length) {
-      if (!this.value) {
-        this.value = {};
-      }
-      getObject(this.value, prop, value);
-    } else if (value) {
-      this.value = value;
-    }
-  }
+export function set(property, value = '') {
+  return value instanceof Promise ?
+  value.then((data) => changeContent(property, data)) :
+  changeContent(property, value);
+}
 
-  addAttribute(name, $element) {
-    const keys = name.split('.');
-    let $attribute = $element;
-    name = keys.pop();
-    keys.forEach((k) => $attribute = $attribute[k]);
-    if ($attribute[name] && !this.get()) {
-      this.set(formatInitAttribute($attribute[name]));
-    }
-    this.attributes.push({ name, $attribute, $element });
+export function addAttribute(property, name, $element, prop) {
+  const keys = name.split('.');
+  let $attribute = $element;
+  name = keys.pop();
+  keys.forEach((k) => $attribute = $attribute[k]);
+  if ($attribute[name] && !property.value) {
+    set(property, formatInitAttribute($attribute[name]));
   }
+  getValue(property, prop, '');
+  property.attributes.push({ name, $attribute, $element, prop });
 }

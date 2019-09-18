@@ -63,3 +63,16 @@ section {
 .item2 {
   background: green;
 }
+
+.check, .close {
+  padding: .2em;
+  text-decoration: none;
+}
+
+.check {
+  color: green;
+}
+
+.close {
+  color: red;
+}

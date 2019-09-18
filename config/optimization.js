@@ -3,14 +3,9 @@ const TerserWebpackPlugin = require('terser-webpack-plugin');
 
 module.exports = {
   splitChunks: {
-    cacheGroups: {
-      scalar: {
-        chunks: 'initial',
-        name: 'scalar',
-        test: 'scalar',
-        enforce: true
-      }
-    }
+    chunks: 'async',
+    maxInitialRequests: Infinity,
+    minSize: 0
   },
   minimizer: [
     new OptimizeCssAssetsWebpackPlugin(),
