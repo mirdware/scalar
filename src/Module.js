@@ -13,22 +13,10 @@ export default class Module {
     });
   }
 
-  inject(provider) {
-    const { classes, instances } = Privy.get(this);
-    const { uuid } = provider;
-    if (classes[uuid]) {
-      provider = new classes[uuid]();
-      provider.uuid = uuid;
-      instances[uuid] = provider;
-      delete classes[uuid];
-    }
-    return instances[uuid];
-  }
-
   compose(selector, behavioral) {
     const $nodes = document.querySelectorAll(selector);
     for (let i = 0, $node; $node = $nodes[i]; i++) {
-      compose($node, behavioral, this);
+      compose($node, behavioral, Privy.get(this));
     }
     return this;
   }

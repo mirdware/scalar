@@ -2,11 +2,20 @@ import { escapeHTML } from '../view/Template';
 
 function bindFunction(eventName, $element, fn) {
   const method = (e) => {
-    e.preventDefault();
-    return fn.bind($element)(e);
+    try {
+      fn.bind($element)(e) || e.preventDefault();
+    } catch (ex) {
+      e.preventDefault();
+      throw ex;
+    }
   };
+  let bubble = true;
+  if (eventName.indexOf('_') === 0) {
+    bubble = false;
+    eventName = eventName.substring(1);
+  }
   method.uuid = fn.uuid;
-  $element.addEventListener(eventName, method, true);
+  $element.addEventListener(eventName, method, bubble);
   $element.eventListenerList.push({name: eventName, fn: method});
 }
 

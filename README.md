@@ -1,10 +1,10 @@
 # Scalar
 Scalar nace de la necesidad de crear sistemas escalables, de alto rendimiento y no obstructivos usando los últimos estándares de programación web, lo cual incluye el uso de las ultimas características basadas en [ECMAScript](https://www.ecma-international.org/ecma-262/8.0/index.html).
 
-El desarrollo de aplicaciones con scalar se basa en componentes no obstructivos, lo cual quiere decir que no se generan Just In Time usando javascript si no que deben ser definidos desde el HTML y luego usados desde un módulo.
+El desarrollo de aplicaciones con scalar se basa en componentes no obstructivos, lo cual quiere decir que no se generan directamente desde javascript si no que deben ser definidos en el HTML y luego usados desde un módulo.
 
 ## Módulos
-Un módulo es un objeto javascript que se instancia de la clase Module de scalar, se deben pasar por constructor las dependencias del módulo para luego hacer llamados al método compose.
+Un módulo es un objeto javascript que se instancia de la clase Module de scalar, se deben proveer por constructor las dependencias para luego crear cada uno de los componentes mediante el método `compose`, esto se logra enviando como primer parámetro el selector del elemento y como segundo la función o clase conductual.
 
 ```javascript
 import { Module } from '../scalar';
@@ -19,7 +19,7 @@ new Module(Message)
 .compose('#todo', ToDo);
 ```
 
-Con el uso de `compose` se crea un objeto cuyas propiedades corresponden a los `data-bind` y `data-attr` hayados en la plantilla, este objeto sera inyectado directamente a la `behavioral function`.
+Las clases o funciones conductuales son aquellas que tienen como propiedades las definiciones de `data-bind` y `data-attr` hayados en la plantilla, estas propiedades tienen un enlace con la plantilla que varia de uno a doble sentido según sea el caso.
 
 ```html
 <form id="hello-world">
@@ -43,7 +43,28 @@ Con el uso de `compose` se crea un objeto cuyas propiedades corresponden a los `
 ```
 
 ## Componentes
-Un componente puede definirse como la unión de la `behavioral function` y el `compound object`, la primera es una función pura en javascript encargada de definir las acciones y comportamientos del componente, mientras el segundo es el resultado del método compose del módulo y contiene las propiedades a manipular.
+Existen dos maneras de generar un componentes, la primera es extendiendo de la clase Component de escalar en la que se debe establecer el método listen, el cual retorna un `behavioral object`(Objeto conductual) con el comportamiento del componente. Cuando la clase es instanciada mediante Module::compose se genera un `compound object`(objeto compuesto) que contiene las propiedades enlazadas a la plantilla y los métodos propios del componente.
+
+```javascript
+export default class ToDo extends Component {
+  listen() {
+    return {
+      submit: () => add(this),
+      '.close': {
+        click: (e) => remove(this, e)
+      },
+      '.check': {
+        click: (e) => crossOutItem(e)
+      },
+      '#clean': {
+        click: () => this.tasks = []
+      }
+    };
+  }
+}
+```
+
+La segunda manera de definir un componente es mediante `behavioral function`(función conductual), esta es una función pura en javascript que retorna las acciones y comportamiento del componente; la función recibe como argumento un objeto compuesto y retorna un objeto conductual.
 
 ```javascript
 export default ($) => ({
@@ -64,45 +85,7 @@ export default ($) => ({
 });
 ```
 
-La función deberá retornar un objeto en donde la llave sea un selector CSS o el nombre de un evento (click, submit, reset, blur, focus, etc), en el primer caso su valor deberá ser otro objeto que cumpla con las mismas características, pero en caso que la llave referencie al nombre de un evento su valor será la función o método a disparar. Todo evento lanzado previene su comportamiento por defecto.
-
-### Métodos del objeto compuesto
-Es posible reiniciar cualquier componente a un estado inicial mediante el método `reset`, se debe tener en cuenta que las propiedades representadas por un objeto no pueden ser restablecidos a su estado inicial ya que su valor es referenciado.
-
-```javascript
-...
-return {
-  '.reset': {
-    click: () => $.reset()
-  }
-};
-...
-```
-
-El método `toJSON` convierte todas las propiedades del objeto a un formato JSON valido para el envió de datos a través de repositorios o cualquier otro medio.
-
-```javascript
-...
-return {
-  submit: () => ($.show ? alert($.toJSON()) : console.log($))
-};
-...
-```
-
-Un componente se puede comunicar con otros mediante servicios, estos son inyectados con el uso de la función `inject`.
-
-```javascript
-...
-return {
-  mount: () => $.inject(Message).my = $.my
-}
-...
-```
-
-En este último ejemplo podemos observar el uso del evento `mount`, este es ejecutado tan pronto inicia el componente y es ideal para asignar objetos a servicios, al pasar por referencia cualquier modificación a estos objetos se ve reflejado en el componente.
-
-### Estilos de declaración
-Al ser una función javascript pura es posible usar un componente con varios estilos de programación, al inicio vimos un retorno directo del objeto, pero tambien se puede usar como una función módulo.
+Al ser una función javascript pura es posible usar diferentes estilos de programación. En el ejemplo anterior vimos un retorno directo del objeto, pero tambien se puede usar como una función módulo.
 
 ```javascript
 export default ($) => {
@@ -152,6 +135,69 @@ export default ($) => ({
     click: () => $.tasks = []
   }
 });
+```
+
+### Definición del objeto conductual
+
+El resultado de un componente siempre debe ser el comportamiento del mismo, para este fin se debe proveer un objeto que contenga como llave un selector CSS o el nombre de un evento (click, submit, reset, blur, focus, etc), en el primer caso su valor deberá ser otro objeto conductual y en el segundo debera contener la función o método a ejecutar.
+
+```javascript
+{
+  submit: (e) => add($),
+  '.close': {
+    click: (e) => remove($, e)
+  },
+  '#clean': {
+    click: () => $.tasks = []
+  }
+}
+```
+Por defecto las funciones o métodos tienen un comportamiento de burbuja, si se desea forzar a la captura se debe anteponer el signo `_` al nombre del evento.
+
+```javascript
+{
+    mount: () => message.my = $.my,
+    '.first': {
+      _click: paint
+    }
+  }
+```
+
+En este último ejemplo podemos observar el uso del evento especial `mount`, este es ejecutado tan pronto inicia el componente y es ideal para asignar objetos a servicios, al pasar por referencia cualquier modificación a estos objetos se ve reflejado en el componente.
+
+Todo evento lanzado previene su comportamiento por defecto a no ser que explicitamente se defina lo contrario devolviendo `true` desde la función.
+
+### Métodos del objeto compuesto
+Es posible reiniciar cualquier componente a un estado inicial mediante el método `reset`, se debe tener en cuenta que las propiedades representadas por un objeto no pueden ser restablecidos a su estado inicial ya que su valor es referenciado.
+
+```javascript
+...
+return {
+  '.reset': {
+    click: () => $.reset()
+  }
+};
+...
+```
+
+El método `toJSON` convierte todas las propiedades del objeto a un formato JSON valido para el envió de datos a través de repositorios o cualquier otro medio.
+
+```javascript
+...
+return {
+  submit: () => ($.show ? alert($.toJSON()) : console.log($))
+};
+...
+```
+
+Un componente se puede comunicar con otros mediante servicios, estos son inyectados con el uso de la función `inject`.
+
+```javascript
+...
+return {
+  mount: () => $.inject(Message).my = $.my
+}
+...
 ```
 
 ## Repositorios

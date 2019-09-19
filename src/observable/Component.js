@@ -88,7 +88,15 @@ export default class Component {
   }
 
   inject(provider) {
-    return Privy.get(this).module.inject(provider);
+    const { classes, instances } = Privy.get(this).module;
+    const { uuid } = provider;
+    if (classes[uuid]) {
+      provider = new classes[uuid]();
+      provider.uuid = uuid;
+      instances[uuid] = provider;
+      delete classes[uuid];
+    }
+    return instances[uuid];
   }
 
   toJSON() {

@@ -30,7 +30,7 @@ export default ($) => {
       click: sendRequest
     },
     '.first': {
-      click: paint
+      _click: paint
     },
     '.reset': {
       click: () => $.reset()
