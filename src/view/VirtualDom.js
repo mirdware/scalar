@@ -47,7 +47,7 @@ function removeProp($target, name, value) {
 }
 
 function setProps($target, props) {
-  for (let name in props) {
+  for (const name in props) {
     setProp($target, name, props[name]);
   }
 }
@@ -62,13 +62,13 @@ function updateProp($target, name, newVal, oldVal) {
 
 function updateProps($target, newProps, oldProps = {}) {
   const props = Object.assign({}, newProps, oldProps);
-  for (let name in props) {
+  for (const name in props) {
     updateProp($target, name, newProps[name], oldProps[name]);
   }
 }
 
 function addEventListeners($target, props) {
-  for (let name in props) {
+  for (const name in props) {
     if (isEventProp(name)) {
       $target.addEventListener(
         extractEventName(name),

@@ -33,10 +33,6 @@ const getHandler = (property, root) => ({
   }
 });
 
-function formatInitAttribute(attr) {
-  return (attr instanceof CSSStyleDeclaration) ? attr.cssText : attr;
-}
-
 function changeContent(property, value) {
   property.value = value;
   property.attributes.forEach((attr) => Attribute.execute(property, attr, value));
@@ -135,7 +131,7 @@ export function addAttribute(property, name, $element, prop) {
   name = keys.pop();
   keys.forEach((k) => $attribute = $attribute[k]);
   if ($attribute[name] && !property.value) {
-    set(property, formatInitAttribute($attribute[name]));
+    set(property, $attribute[name]);
   }
   getValue(property, prop, '');
   property.attributes.push({ name, $attribute, $element, prop });

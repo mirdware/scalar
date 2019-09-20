@@ -1,34 +1,37 @@
 import { Component } from "../../scalar";
 
-function remove($, e) {
-  const index = e.target.parentNode.dataset.index;
-  $.tasks.splice(index, 1);
-}
-
-function add($) {
-  if (!$.task) return;
-  $.tasks.push($.task);
-  $.task = "";
-}
-
-function crossOutItem(e) {
-  const styles = e.target.parentNode.style;
-  styles.textDecoration = styles.textDecoration === 'line-through' ? 'none' : 'line-through'
-}
-
 export default class ToDo extends Component {
   listen() {
     return {
-      submit: () => add(this),
+      submit: () => this.add(),
       '.close': {
-        click: (e) => remove(this, e)
+        click: (e) => this.remove(e)
       },
       '.check': {
-        click: (e) => crossOutItem(e)
+        click: (e) => this.crossOutItem(e)
       },
       '#clean': {
         click: () => this.tasks = []
       }
     };
+  }
+
+  remove(e) {
+    const index = this.getIndex(e);
+    this.tasks.splice(index, 1);
+  }
+  
+  add() {
+    if (!this.task) return;
+    this.tasks.push({
+      content: this.task,
+      checked: ''
+    });
+    this.task = "";
+  }
+  
+  crossOutItem(e) {
+    const task = this.tasks[this.getIndex(e)];
+    task.checked = task.checked ? '' : 'checked';
   }
 }

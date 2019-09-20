@@ -6,7 +6,7 @@ function manage(resource, method, data, queryString) {
     formatURL(resource.url, queryString) + formatQueryString(queryString),
     resource.async
   );
-  for (let header in headers) {
+  for (const header in headers) {
     xhr.setRequestHeader(header, headers[header]);
   }
   xhr.send(data);
@@ -34,7 +34,7 @@ function formatQueryString(queryString) {
 }
 
 function formatURL(url, data) {
-  for (let key in data) {
+  for (const key in data) {
     const variable = '/{' + key + '}';
     if (url.indexOf(variable) !== -1) {
       url = url.replace(variable, '/' + data[key]);
@@ -46,7 +46,7 @@ function formatURL(url, data) {
 
 function serialize(data) {
   const res = [];
-  for (let key in data) {
+  for (const key in data) {
     if(typeof data[key] !== 'function') {
       res.push(encodeURIComponent(key) + '=' + encodeURIComponent(data[key]));
     }

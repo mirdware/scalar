@@ -30,7 +30,7 @@ function bindData(component, $domElement) {
 }
 
 function bindAttributes(component, $domElement) {
-  const attributes = $domElement.getAttribute("data-attr").split(',');
+  const attributes = $domElement.getAttribute("data-attr").split(';');
   const properties = Privy.get(component).properties;
   attributes.forEach((attribute) => {
     attribute = attribute.split(':');
@@ -59,8 +59,11 @@ function watch(component, $node) {
 }
 
 function getState(state, properties) {
-  for (let name in properties) {
-    state[name] = properties[name].value;
+  for (const name in properties) {
+    const prop = properties[name].value;;
+    state[name] = prop instanceof CSSStyleDeclaration ?
+    prop.cssText :
+    prop;
   }
   return state;
 }
@@ -82,7 +85,7 @@ export function compose($node, behavioral, module) {
 export default class Component {
   reset() {
     const { initState } = Privy.get(this);
-    for (let name in initState) {
+    for (const name in initState) {
       this[name] = initState[name];
     }
   }
@@ -102,9 +105,19 @@ export default class Component {
   toJSON() {
     const { properties } = Privy.get(this);
     const json = {};
-    for (let key in properties) {
+    for (const key in properties) {
       json[key] = properties[key].value;
     }
     return JSON.stringify(json);
+  }
+
+  getIndex(e) {
+    const { $node } = Privy.get(this);
+    let parent = e.target;
+    do {
+      const key = parent.dataset.key;
+      if (key) return key;
+      parent = parent.parentNode;
+    } while(parent !== $node);
   }
 }

@@ -20,7 +20,7 @@ function bindFunction(eventName, $element, fn) {
 }
 
 export function addListeners($element, events, root = true) {
-  for (let selector in events) {
+  for (const selector in events) {
     const fn = events[selector];
     if (root && typeof fn === 'function') {
       if (!$element.eventListenerList) {
