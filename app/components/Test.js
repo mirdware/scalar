@@ -11,7 +11,7 @@ export default ($) => {
   }
 
   function sendRequest() {
-    $.action = 'reset';
+    $.action.replace('open', 'reset');
     $.name = user.get();
   }
 

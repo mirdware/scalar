@@ -63,6 +63,8 @@ function getState(state, properties) {
     const prop = properties[name].value;;
     state[name] = prop instanceof CSSStyleDeclaration ?
     prop.cssText :
+    prop instanceof DOMTokenList ?
+    prop.value :
     prop;
   }
   return state;
@@ -86,7 +88,11 @@ export default class Component {
   reset() {
     const { initState } = Privy.get(this);
     for (const name in initState) {
-      this[name] = initState[name];
+      if (this[name] instanceof DOMTokenList) {
+        this[name].value = initState[name];
+      } else {
+        this[name] = initState[name];
+      }
     }
   }
 
