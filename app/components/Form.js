@@ -1,6 +1,7 @@
 import Message from '../services/Message';
 
 export default ($) => ({
+  mount: () => console.log($),
   submit: () => {
     $.inject(Message).set($.name);
     $.show ? alert($.toJSON()) : console.log($);

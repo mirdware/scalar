@@ -31,7 +31,8 @@ export default class ToDo extends Component {
   }
   
   crossOutItem(e) {
-    const task = this.tasks[this.getIndex(e)];
+    const index = this.getIndex(e);
+    const task = this.tasks[index];
     task.checked = task.checked ? '' : 'checked';
   }
 }

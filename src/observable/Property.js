@@ -3,7 +3,6 @@ import Template from '../view/Template';
 import * as Node from './Node';
 import * as Attribute from './Attribute';
 
-const proxies = {};
 const getFunctionHandler = (property, root) => ({
   apply: (target, thisArg, argumentsList) => {
     const res = Reflect.apply(target, thisArg, argumentsList);
@@ -11,48 +10,44 @@ const getFunctionHandler = (property, root) => ({
     return res;
   }
 });
-const getPropertyHandler = (property, binding, root) => ({
+const getPropertyHandler = (property, root) => ({
   set: (target, prop, value) => {
     root = root || target;
     if (value instanceof Promise) {
       return value.then((data) => {
-        if (Reflect.set(target, prop, data)) {
-          set(property, root);
-        }
+        if (Reflect.set(target, prop, data)) return set(property, root);
       });
     }
     if (Reflect.set(target, prop, value)) {
       return set(property, root);
     }
-    return false;
   },
   get: (target, prop, receiver) => {
-    let value = Reflect.get(target, prop, receiver);
+    const value = Reflect.get(target, prop, receiver);
     if (value) {
       const constructor = value.constructor;
-      const { uuid } = property;
-      if (constructor === Function && binding) {
-        const handler = getFunctionHandler(property, target);
-        value = getProxy(uuid, prop, new Proxy(value.bind(target), handler));
-      } else if (constructor === Object || constructor === Array) {
-        const handler = getPropertyHandler(property, binding, root || target);
-        value = value = getProxy(uuid, prop, new Proxy(value, handler));
+      root = root || target;
+      if (constructor === Function) {
+        return new Proxy(
+          value.bind(target),
+          getFunctionHandler(property, root)
+        );
+      }
+      if (constructor === Object || constructor === Array) {
+        return new Proxy(
+          value,
+          getPropertyHandler(property, root)
+        );
       }
     }
     return value;
   }
 });
 
-function getProxy(uuid, prop, proxyValue) {
-  proxies[uuid] = proxies[uuid] || {};
-  proxies[uuid][prop] = proxies[uuid][prop] || proxyValue;
-  return proxies[uuid][prop];
-}
-
 function changeContent(property, value) {
   property.value = value;
   property.attributes.forEach((attr) => Attribute.execute(property, attr, value));
-  property.nodes.forEach((node) => Node.execute(property, node, value));
+  property.nodes.forEach((node) => Node.execute(node, value));
   return true;
 }
 
@@ -65,11 +60,9 @@ function getObject(obj, props, value, i = 0) {
 }
 
 function setPropertyValue(property, prop, value) {
-  if (prop.length) {
-    property.value = getObject(property.value || {}, prop, value);
-  } else if (value) {
-    property.value = value;
-  }
+  property.value = prop.length ?
+  getObject(property.value || {}, prop, value) :
+  value;
 }
 
 function isDiferentText($element) {
@@ -93,21 +86,45 @@ function evalValue(target) {
 }
 
 function config(property, $domElement) {
+  let { value } = property;
   if (isInput($domElement)) {
-    const value = evalValue($domElement);
+    const inputValue = evalValue($domElement);
     $domElement.addEventListener('keyup', (e) => set(property, e.target.value));
     $domElement.addEventListener('change', (e) => set(property, evalValue(e.target)));
-    if (value === null) {
-      setValue(property, $domElement, property.value);
+    if (inputValue === null) {
+      setValue($domElement, value);
+    } else {
+      value = inputValue;
     }
-    return value;
-  }
-  if ($domElement.innerHTML) {
-    return isDiferentText($domElement) ?
+  } else if ($domElement.innerHTML) {
+    value = isDiferentText($domElement) ?
     new Template(property.parent, $domElement) :
     $domElement.innerHTML;
+  } else {
+    setValue($domElement, value, 'innerHTML');
   }
-  setValue(property, $domElement, property.value, 'innerHTML');
+  return value;
+}
+
+export function get(property) {
+  const { value } = property;
+  if (typeof value === 'object') {
+    if (property.observable !== value) {
+      property.proxy = new Proxy(
+        value,
+        getPropertyHandler(property)
+      );
+      property.observable = value;
+    }
+    return property.proxy;
+  }
+  return value;
+}
+
+export function set(property, value = '') {
+  return value instanceof Promise ?
+  value.then((data) => changeContent(property, data)) :
+  changeContent(property, value);
 }
 
 export function addNode(property, $node, prop) {
@@ -119,24 +136,6 @@ export function addNode(property, $node, prop) {
   }
   property.nodes.push({ prop, $node, complexType });
   setPropertyValue(property, prop, value);
-}
-
-export function get(property) {
-  let { value } = property;
-  if (typeof value === 'object') {
-    if (property.observable !== value) {
-      property.proxy = new Proxy(value, getPropertyHandler(property, value instanceof DOMTokenList));
-      property.observable = value;
-    }
-    value = property.proxy;
-  }
-  return value;
-}
-
-export function set(property, value = '') {
-  return value instanceof Promise ?
-  value.then((data) => changeContent(property, data)) :
-  changeContent(property, value);
 }
 
 export function addAttribute(property, name, $element, prop) {

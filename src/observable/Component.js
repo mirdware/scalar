@@ -60,7 +60,7 @@ function watch(component, $node) {
 
 function getState(state, properties) {
   for (const name in properties) {
-    const prop = properties[name].value;;
+    const prop = properties[name].value;
     state[name] = prop instanceof CSSStyleDeclaration ?
     prop.cssText :
     prop instanceof DOMTokenList ?

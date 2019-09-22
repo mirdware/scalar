@@ -58,13 +58,13 @@ export function generateUUID(obj) {
   return uuid;
 }
 
-export function setValue(property, $node, value, attr = 'value') {
+export function setValue($node, value, attr = 'value') {
   if (attr === 'innerHTML' && typeof value == 'string') {
     value = escapeHTML(value);
   } else if ($node.type === 'checkbox' || $node.type === 'radio') {
     attr = 'checked';
     if ($node.type === 'radio') {
-      value = $node.value === property.value;
+      value = $node.value === value;
     }
   } else if ($node.type === 'file') {
     attr = 'files';
