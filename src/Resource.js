@@ -1,79 +1,91 @@
-function manage(resource, method, data, queryString) {
-  const { xhr, headers } = resource;
-  data = formatData(data, headers);
+let worker;
+if (Worker) {
+  const blob = new Blob(['self.onmessage=function(e){a(e.data,self.postMessage)};a=' + sendRequest]);
+  worker = new Worker(window.URL.createObjectURL(blob));
+}
+
+function sendRequest(request, callback) {  
+  function formatQueryString(queryString) {
+    const res = [];
+    for (const key in data) {
+      if(typeof data[key] !== 'function') {
+        res.push(encodeURIComponent(key) + '=' + encodeURIComponent(data[key]));
+      }
+    }
+    queryString = res.join('&');
+    return queryString ? '?' + queryString : queryString;
+  }
+  
+  function formatURL(url, data) {
+    for (const key in data) {
+      const variable = '/{' + key + '}';
+      if (url.indexOf(variable) !== -1) {
+        url = url.replace(variable, '/' + data[key]);
+        delete data[key];
+      }
+    }
+    return url.replace(/\/\{(\w+)\}/gi, '');
+  }
+  
+  let { headers, data, method, url, async, queryString } = request;
+  const xhr = new XMLHttpRequest();
+  if (headers['Content-Type'] === 'application/x-www-form-urlencoded') {
+    data = serialize(data);
+  }
+  if (headers['Content-Type'] === 'application/json') {
+    data = JSON.stringify(data);
+  }
   xhr.open(
     method,
-    formatURL(resource.url, queryString) + formatQueryString(queryString),
-    resource.async
+    formatURL(url, queryString) + formatQueryString(queryString),
+    async
   );
   for (const header in headers) {
     xhr.setRequestHeader(header, headers[header]);
   }
   xhr.send(data);
-  return new Promise((resolve, reject) => {
-    xhr.onreadystatechange = () => solve(xhr, resolve, reject);
-  });
-}
-
-function formatData(data, headers) {
-  if (headers['Content-Type'] === 'application/x-www-form-urlencoded') {
-    return serialize(data);
-  }
-  if (headers['Content-Type'] === 'application/json') {
-    return JSON.stringify(data);
-  }
-  return data;
-}
-
-function formatQueryString(queryString) {
-  queryString = serialize(queryString);
-  if (queryString) {
-    queryString = '?' + queryString;
-  }
-  return queryString;
-}
-
-function formatURL(url, data) {
-  for (const key in data) {
-    const variable = '/{' + key + '}';
-    if (url.indexOf(variable) !== -1) {
-      url = url.replace(variable, '/' + data[key]);
-      delete data[key];
+  xhr.onreadystatechange = () => {
+    if (xhr.readyState === 4) {
+      const { status, responseXML, responseText } = xhr;
+      const content = xhr.getResponseHeader('Content-Type');
+      callback({ status, responseXML, responseText, content });
     }
-  }
-  return url.replace(/\/\{(\w+)\}/gi, '');
-}
-
-function serialize(data) {
-  const res = [];
-  for (const key in data) {
-    if(typeof data[key] !== 'function') {
-      res.push(encodeURIComponent(key) + '=' + encodeURIComponent(data[key]));
-    }
-  }
-  return res.join('&');
+  };
 }
 
 function solve(xhr, resolve, reject) {
-  if (xhr.readyState === 4) {
-    const { status } = xhr;
-    const content = xhr.getResponseHeader('Content-Type').split(';');
-    let response = /(aplication|text)\/xml/.test(content) ?
-      xhr.responseXML :
-      xhr.responseText;
-    if (content[0] === 'application/json') {
+  const { status, content } = xhr;
+  let response;
+  if (/(application|text)\/xml/.test(content)) {
+    response = xhr.responseXML;
+  } else {
+    response = xhr.responseText;
+    if (content.indexOf('application/json') !== -1) {
       response = JSON.parse(response);
     }
-    (status >= 200 && status <= 299) ?
-      resolve(response) :
-      reject(response, status);
   }
+  (status > 399) ?
+  reject(response, status) :
+  resolve(response);
+}
+
+function manage(resource, method, data, queryString) {
+  resource.method = method;
+  resource.data = data;
+  resource.queryString = queryString;
+  return new Promise((resolve, reject) => {
+    if (worker) {
+      worker.postMessage(resource);
+      worker.onmessage = (e) => solve(e.data, resolve, reject);
+    } else {
+      sendRequest(resource, (res) => solve(res, resolve, reject));
+    }
+  });
 }
 
 export default class Resource {
   constructor(url) {
     this.url = url;
-    this.xhr = new XMLHttpRequest();
     this.async = true;
     this.headers = {
       'Content-Type': 'application/json',

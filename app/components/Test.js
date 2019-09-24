@@ -1,7 +1,8 @@
 import { Resource } from '../../scalar';
 import Message from '../services/Message';
 
-const user = new Resource('response.json');
+const { protocol, hostname, port } = window.location;
+const user = new Resource(protocol + '//' + hostname + ':' + port + '/response.json');
 
 export default ($) => {
   const message = $.inject(Message);
