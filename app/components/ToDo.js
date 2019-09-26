@@ -27,7 +27,7 @@ export default class ToDo extends Component {
       content: this.task,
       checked: ''
     });
-    this.task = "";
+    this.task = '';
   }
   
   crossOutItem(e) {

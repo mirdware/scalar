@@ -134,8 +134,8 @@ export function addNode(property, $node, prop) {
     complexType = value;
     value = value.getValue();
   }
-  property.nodes.push({ prop, $node, complexType });
   setPropertyValue(property, prop, value);
+  property.nodes.push({ prop, $node, complexType });
 }
 
 export function addAttribute(property, name, $element, prop) {
@@ -143,8 +143,6 @@ export function addAttribute(property, name, $element, prop) {
   let $attribute = $element;
   name = keys.pop();
   keys.forEach((k) => $attribute = $attribute[k]);
-  if ($attribute[name] && !property.value) {
-    setPropertyValue(property, prop, $attribute[name]);
-  }
+  setPropertyValue(property, prop, $attribute[name]);
   property.attributes.push({ name, $attribute, $element, prop });
 }

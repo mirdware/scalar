@@ -27,7 +27,7 @@ function sendRequest(request, callback) {
     return url.replace(/\/\{(\w+)\}/gi, '');
   }
   
-  let { headers, data, method, url, async, queryString } = request;
+  let { headers, data, queryString } = request;
   const xhr = new XMLHttpRequest();
   if (headers['Content-Type'] === 'application/x-www-form-urlencoded') {
     data = serialize(data);
@@ -36,9 +36,9 @@ function sendRequest(request, callback) {
     data = JSON.stringify(data);
   }
   xhr.open(
-    method,
-    formatURL(url, queryString) + formatQueryString(queryString),
-    async
+    request.method,
+    formatURL(request.url, queryString) + formatQueryString(queryString),
+    true
   );
   for (const header in headers) {
     xhr.setRequestHeader(header, headers[header]);
@@ -86,7 +86,6 @@ function manage(resource, method, data, queryString) {
 export default class Resource {
   constructor(url) {
     this.url = url;
-    this.async = true;
     this.headers = {
       'Content-Type': 'application/json',
       'X-Requested-With': 'XMLHttpRequest'

@@ -54,21 +54,43 @@ export function escapeHTML(str) {
 
 export default class Template {
   constructor(component, $node) {
-    const $template = $node.getElementsByTagName('template');
+    let $template = $node.getElementsByTagName('template');
     this.component = component;
     this.$node = $node;
     if ($template.length) {
-      this.fn = generateTemplate($template[0].innerHTML);
+      $template = $template[0]; 
+      this.tpl = $template.innerHTML;
+      this.base = $node.innerHTML.trim()
+      .replace($template.outerHTML,'')
+      .replace(/>\s*</g, '><');
     }
   }
 
   getValue() {
-    return [];
+    const regex = new RegExp(this.tpl.trim()
+    .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    .replace(/(\\\$)+\\\{[\w\\\.]+\\\}/g, '([^<]*)')
+    .replace(/>\s*</g, '><'), 'g');
+    const dataTpl = this.tpl.match(/\$+\{[\w\.]+\}/g);
+    const value = [];
+    const keys = [];
+    for (let i = 0; i < dataTpl.length; i++) {
+      keys.push(dataTpl[i].replace(/^\$+\{data\./, '').replace('}', ''));
+    }
+    let matches;
+    while ((matches = regex.exec(this.base)) !== null) {
+      const obj = {};
+      for (let i = 1; i < matches.length; i++) {
+        obj[keys[i - 1]] = matches[i];
+      }
+      value.push(obj);
+    }
+    return value;
   }
 
   render(param) {
-    const { $node, component, fn } = this;
-    $node.innerHTML = parseTemplate(fn, param);
-    addListeners($node, component.events, false);
+    const { $node } = this;
+    $node.innerHTML = parseTemplate(generateTemplate(this.tpl), param);
+    addListeners($node, this.component.events, false);
   }
 }
