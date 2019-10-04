@@ -67,13 +67,13 @@ export default class Template {
   }
 
   getValue() {
+    const value = [];
+    const keys = [];
     const regex = new RegExp(this.tpl.trim()
     .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
     .replace(/(\\\$)+\\\{[\w\\\.]+\\\}/g, '([^<]*)')
     .replace(/>\s*</g, '><'), 'g');
     const dataTpl = this.tpl.match(/\$+\{[\w\.]+\}/g);
-    const value = [];
-    const keys = [];
     for (let i = 0; i < dataTpl.length; i++) {
       keys.push(dataTpl[i].replace(/^\$+\{data\./, '').replace('}', ''));
     }

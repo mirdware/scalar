@@ -1,7 +1,11 @@
 # Scalar
 Scalar nace de la necesidad de crear sistemas escalables, de alto rendimiento y no obstructivos usando los últimos estándares de programación web, lo cual incluye el uso de las ultimas características basadas en [ECMAScript](https://www.ecma-international.org/ecma-262/8.0/index.html).
 
-El desarrollo de aplicaciones con scalar se basa en componentes no obstructivos, lo cual quiere decir que no se generan directamente desde javascript si no que deben ser definidos en el HTML y luego usados desde un módulo.
+El desarrollo de aplicaciones con scalar se basa en componentes no obstructivos, lo cual quiere decir que su funcionamiento no depende enteramente que javascript este activado desde el navegador. Otra premisa de scalar es la separación entre contenido, estilo y comportamiento.
+
+## Instalación
+
+Basta con tener instalado node y npm para ejecutar el comando `npm install --save scalar`.
 
 ## Módulos
 Un módulo es un objeto javascript que se instancia de la clase Module de scalar, se deben proveer por constructor las dependencias para luego crear cada uno de los componentes mediante el método `compose`, esto se logra enviando como primer parámetro el selector del elemento y como segundo la función o clase conductual.
@@ -208,6 +212,18 @@ remove(e) {
   const index = this.getIndex(e);
   this.tasks.splice(index, 1);
 }
+...
+```
+
+Un componente puede generar otro componente mediante el método `compose`, este último se denomina componente derivado, ya que su creación no se realizo desde un modulo si no que deriva de un similar.
+
+El componente padre puede hacer uso de los métodos del derivado siempre y cuando este se haya constituido desde una clase, ya que el método compose retorna el objeto resultante de la composición. En caso que se cree mediante una función el método compose devolverá _undefined_.
+
+```javascript
+...
+$.compose(modal.$dom, Modal)
+.send({ data })
+.then((res) => console.log(res));
 ...
 ```
 

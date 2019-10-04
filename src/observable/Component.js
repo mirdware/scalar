@@ -2,8 +2,6 @@ import { addListeners } from '../util/stdlib';
 import * as Privy from '../util/Wrapper';
 import * as Property from './Property';
 
-const event = new Event('mount');
-
 function getProperty(component, name) {
   const prop = {
     parent: Privy.get(component),
@@ -79,9 +77,10 @@ export function compose($node, behavioral, module) {
   props.events = behavioralIsComponent ?
   (component.listen && component.listen()) :
   behavioral(component);
-  props.initState = getState({}, props.properties);
   addListeners($node, props.events);
-  $node.dispatchEvent(event);
+  $node.dispatchEvent(new Event('mount'));
+  props.initState = getState({}, props.properties);
+  if (behavioralIsComponent) return component;
 }
 
 export default class Component {
@@ -96,18 +95,6 @@ export default class Component {
     }
   }
 
-  inject(provider) {
-    const { classes, instances } = Privy.get(this).module;
-    const { uuid } = provider;
-    if (classes[uuid]) {
-      provider = new classes[uuid]();
-      provider.uuid = uuid;
-      instances[uuid] = provider;
-      delete classes[uuid];
-    }
-    return instances[uuid];
-  }
-
   toJSON() {
     const { properties } = Privy.get(this);
     const json = {};
@@ -115,6 +102,14 @@ export default class Component {
       json[key] = properties[key].value;
     }
     return JSON.stringify(json);
+  }
+
+  inject(provider) {
+    return Privy.get(this).module.inject(provider);
+  }
+
+  compose($domElement, behavioral) {
+    return compose($domElement, behavioral, Privy.get(this).module);
   }
 
   getIndex(e) {

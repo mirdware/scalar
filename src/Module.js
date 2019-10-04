@@ -5,6 +5,17 @@ import * as Privy from './util/Wrapper';
 export default class Module {
   constructor(...providers) {
     const properties = { classes: {}, instances: {} };
+    properties.inject = (provider) => {
+      const { classes, instances } = properties;
+      const { uuid } = provider;
+      if (classes[uuid]) {
+        provider = new classes[uuid](properties.inject);
+        provider.uuid = uuid;
+        instances[uuid] = provider;
+        delete classes[uuid];
+      }
+      return instances[uuid];
+    }
     Privy.set(this, properties);
     providers.forEach((provider) => {
       if (!provider.uuid) {

@@ -7,7 +7,7 @@ if (Worker) {
 function sendRequest(request, callback) {  
   function formatQueryString(queryString) {
     const res = [];
-    for (const key in data) {
+    for (const key in queryString) {
       if(typeof data[key] !== 'function') {
         res.push(encodeURIComponent(key) + '=' + encodeURIComponent(data[key]));
       }
@@ -46,22 +46,28 @@ function sendRequest(request, callback) {
   xhr.send(data);
   xhr.onreadystatechange = () => {
     if (xhr.readyState === 4) {
-      const { status, responseXML, responseText } = xhr;
-      const content = xhr.getResponseHeader('Content-Type');
-      callback({ status, responseXML, responseText, content });
+      callback({
+        content: xhr.getResponseHeader('Content-Type'),
+        status: xhr.status,
+        xml: xhr.responseXML,
+        text: xhr.responseText,
+        url: xhr.responseURL
+      });
     }
   };
 }
 
-function solve(xhr, resolve, reject) {
-  const { status, content } = xhr;
+function solve(xhr, baseURL, resolve, reject) {
+  const { status, content, url } = xhr;
   let response;
   if (/(application|text)\/xml/.test(content)) {
-    response = xhr.responseXML;
+    response = xhr.xml;
   } else {
-    response = xhr.responseText;
+    response = xhr.text;
     if (content.indexOf('application/json') !== -1) {
       response = JSON.parse(response);
+    } else if (baseURL !== url) {
+      return window.location = url;
     }
   }
   (status > 399) ?
@@ -70,15 +76,16 @@ function solve(xhr, resolve, reject) {
 }
 
 function manage(resource, method, data, queryString) {
+  const { url } = resource;
   resource.method = method;
   resource.data = data;
   resource.queryString = queryString;
   return new Promise((resolve, reject) => {
     if (worker) {
       worker.postMessage(resource);
-      worker.onmessage = (e) => solve(e.data, resolve, reject);
+      worker.onmessage = (e) => solve(e.data, url, resolve, reject);
     } else {
-      sendRequest(resource, (res) => solve(res, resolve, reject));
+      sendRequest(resource, (res) => solve(res, url, resolve, reject));
     }
   });
 }
