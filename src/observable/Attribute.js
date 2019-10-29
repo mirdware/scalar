@@ -14,7 +14,11 @@ export function execute(property, attribute, value) {
   const { $element } = attribute;
   const { eventListenerList } = $element;
   const { parent } = property;
-  attribute.prop.forEach((prop) => value = value[prop]);
+  if (attribute.exp) {
+    value = Function('p', `return ${attribute.exp}`)(property.component);
+  } else {
+    attribute.prop.forEach((prop) => value = value[prop]);
+  }
   setAttribute(attribute.$attribute, attribute.name, value);
   if (eventListenerList) {
     while (eventListenerList.length) {

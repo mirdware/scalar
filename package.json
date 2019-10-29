@@ -1,10 +1,10 @@
 {
   "name": "scalar",
-  "version": "0.2.6",
+  "version": "0.2.7",
   "description": "Javascript scalable and not intrusive",
   "main": "./dist/js/scalar.min.js",
   "scripts": {
-    "build": "rimraf dist && webpack --config config/webpack.js  -p",
+    "build": "rimraf dist && webpack --config config/webpack.js -p",
     "serve": "webpack-dev-server --config config/webpack.js -d",
     "prepare": "npm run build",
     "start": "npm run build & npm run serve"

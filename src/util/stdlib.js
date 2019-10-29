@@ -1,5 +1,3 @@
-import { escapeHTML } from '../view/Template';
-
 function bindFunction(eventName, $element, fn) {
   const method = (e) => {
     try {
@@ -59,14 +57,13 @@ export function generateUUID(obj) {
 }
 
 export function setValue($node, value, attr = 'value') {
-  if (attr === 'innerHTML' && typeof value == 'string') {
-    value = escapeHTML(value);
-  } else if ($node.type === 'checkbox' || $node.type === 'radio') {
+  const { type } = $node;
+  if (type === 'checkbox' || type === 'radio') {
     attr = 'checked';
-    if ($node.type === 'radio') {
+    if (type === 'radio') {
       value = $node.value === value;
     }
-  } else if ($node.type === 'file') {
+  } else if (type === 'file') {
     attr = 'files';
   }
   if ($node[attr] !== value) $node[attr] = value;

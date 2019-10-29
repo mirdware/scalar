@@ -46,8 +46,8 @@ const getPropertyHandler = (property, root) => ({
 
 function changeContent(property, value) {
   property.value = value;
-  property.attributes.forEach((attr) => Attribute.execute(property, attr, value));
   property.nodes.forEach((node) => Node.execute(node, value));
+  property.attributes.forEach((attr) => Attribute.execute(property, attr, value));
   return true;
 }
 
@@ -135,7 +135,9 @@ export function addNode(property, $node, prop) {
     value = value.getValue();
   }
   setPropertyValue(property, prop, value);
-  property.nodes.push({ prop, $node, complexType });
+  const node = { prop, $node, complexType };
+  property.nodes.push(node);
+  return node;
 }
 
 export function addAttribute(property, name, $element, prop) {
@@ -144,5 +146,7 @@ export function addAttribute(property, name, $element, prop) {
   name = keys.pop();
   keys.forEach((k) => $attribute = $attribute[k]);
   setPropertyValue(property, prop, $attribute[name]);
-  property.attributes.push({ name, $attribute, $element, prop });
+  const attribute = { name, $attribute, $element, prop };
+  property.attributes.push(attribute);
+  return attribute;
 }

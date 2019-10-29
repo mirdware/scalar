@@ -4,6 +4,7 @@ import * as Property from './Property';
 
 function getProperty(component, name) {
   const prop = {
+    component,
     parent: Privy.get(component),
     value: '',
     nodes: [],
@@ -17,7 +18,7 @@ function getProperty(component, name) {
 }
 
 function bindData(component, $domElement) {
-  let name = $domElement.getAttribute("data-bind");
+  let name = $domElement.dataset.bind;
   const properties = Privy.get(component).properties;
   const propertyObj = name.split('.');
   name = propertyObj.shift();
@@ -28,28 +29,41 @@ function bindData(component, $domElement) {
 }
 
 function bindAttributes(component, $domElement) {
-  const attributes = $domElement.getAttribute("data-attr").split(';');
-  const properties = Privy.get(component).properties;
-  attributes.forEach((attribute) => {
-    attribute = attribute.split(':');
-    let value = attribute[1].trim();
-    const name = attribute[0].trim();
-    const propertyObj = value.split('.');
-    value = propertyObj.shift();
-    if (!properties[value]) {
-      properties[value] = getProperty(component, value);
-    }
-    Property.addAttribute(properties[value], name, $domElement, propertyObj);
+  $domElement.dataset.attr.split(';')
+  .forEach((attribute) => {
+    const index = attribute.indexOf(':');
+    const attributes = [];
+    let exp = attribute.substr(index + 1).trim();
+    exp.replace(/'[^']*'/g, '').match(/\w[\w\._]+/g)
+    .forEach((prop) => {
+      const propertyObj = prop.split('.');
+      const value = propertyObj.shift();
+      const properties = Privy.get(component).properties;
+      if (!properties[value]) {
+        properties[value] = getProperty(component, value);
+      }
+      const attr = Property.addAttribute(
+        properties[value],
+        attribute.substr(0, index).trim(),
+        $domElement,
+        propertyObj
+      );
+      if (exp !== prop) {
+        attributes.push(attr);
+        exp = exp.replace(prop, 'p.' + prop);
+      }
+    });
+    attributes.forEach((attr) => attr.exp = exp);
   });
 }
 
-function watch(component, $node) {
+export function watch(component, $node) {
   const dataBinds = Array.from($node.querySelectorAll('[data-bind]'));
   const dataAttributes = Array.from($node.querySelectorAll('[data-attr]'));
-  if ($node.getAttribute('data-bind')) {
+  if ($node.dataset.bind) {
     dataBinds.push($node);
   }
-  if ($node.getAttribute('data-attr')) {
+  if ($node.dataset.attr) {
     dataAttributes.push($node);
   }
   dataBinds.forEach(($bind) => bindData(component, $bind));

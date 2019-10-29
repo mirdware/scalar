@@ -41,7 +41,7 @@
     <form id="hello-world">
       <input type="text" data-bind="name" value="init" disabled />
       <label><input type="checkbox" data-bind="show" checked /> ¿Mostrar alert?</label>
-      <div data-bind="name"></div>
+      <div data-bind="name" data-attr="style.background: show ? 'blue' : ''"></div>
       <textarea data-bind="name"></textarea><br/>
       <select data-bind="select">
         <option value="h">Hola</option>

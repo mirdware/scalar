@@ -27,8 +27,7 @@ function generateTemplate(template) {
     .replace(/\$\{([\s]*[^;\s\{]+[\s]*)\}/g, (_, match) => `\$\{map.${match.trim()}\}`)
     .replace(/(\$\{(?!map\.)[^}]+\})/g, '');
     fn = cache[template] = Function(
-      'data, index',
-      `${escapeHTML}map={index, data};return ${html}\`${sanitized}\``
+      'd,i', `${escapeHTML}map={data:d,index:i};return ${html}\`${sanitized}\``
     );
   }
   return fn;
@@ -43,7 +42,7 @@ function parseTemplate(fn, param) {
   return '';
 }
 
-export function escapeHTML(str) {
+function escapeHTML(str) {
   return str.replace(/&/g, '&amp;')
     .replace(/>/g, '&gt;')
     .replace(/</g, '&lt;')
@@ -73,7 +72,7 @@ export default class Template {
     .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
     .replace(/(\\\$)+\\\{[\w\\\.]+\\\}/g, '([^<]*)')
     .replace(/>\s*</g, '><'), 'g');
-    const dataTpl = this.tpl.match(/\$+\{[\w\.]+\}/g);
+    const dataTpl = this.tpl.match(/\$+\{\w[\w\._\d\s]*\}/g);
     for (let i = 0; i < dataTpl.length; i++) {
       keys.push(dataTpl[i].replace(/^\$+\{data\./, '').replace('}', ''));
     }
