@@ -20,26 +20,16 @@ function html(literalSections, ...substs) {
   return result;
 }
 
-function generateTemplate(template) {
+function generateTemplate(template, param) {
   let fn = cache[template];
   if (!fn){
-    const sanitized = template
-    .replace(/\$\{([\s]*[^;\s\{]+[\s]*)\}/g, (_, match) => `\$\{map.${match.trim()}\}`)
-    .replace(/(\$\{(?!map\.)[^}]+\})/g, '');
     fn = cache[template] = Function(
-      'd,i', `${escapeHTML}map={data:d,index:i};return ${html}\`${sanitized}\``
+      'data,index', `${escapeHTML}return ${html}\`${template}\``
     );
   }
-  return fn;
-}
-
-function parseTemplate(fn, param) {
-  if (fn) {
-    const template = Array.isArray(param) ? param.map(fn) : fn(param);
-    if (Array.isArray(template)) return template.join('');
-    return template;
-  }
-  return '';
+  template = Array.isArray(param) ? param.map(fn) : fn(param);
+  if (Array.isArray(template)) return template.join('');
+  return template;
 }
 
 function escapeHTML(str) {
@@ -89,7 +79,7 @@ export default class Template {
 
   render(param) {
     const { $node } = this;
-    $node.innerHTML = parseTemplate(generateTemplate(this.tpl), param);
+    $node.innerHTML = generateTemplate(this.tpl, param);
     addListeners($node, this.component.events, false);
   }
 }

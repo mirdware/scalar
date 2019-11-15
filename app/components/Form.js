@@ -1,10 +1,9 @@
 import Message from '../services/Message';
 
 export default ($) => ({
-  mount: () => console.log($),
   submit: () => {
     $.inject(Message).set($.name);
-    $.show ? alert($.toJSON()) : console.log($);
+    console.log($);
   },
   reset: () => $.reset(),
   '.fill': {
@@ -12,7 +11,7 @@ export default ($) => ({
       name: 'Marlon Ramírez',
       password: 'MySecretPassword',
       sexo: 'M',
-      show: false,
+      paint: false,
       select: 'm'
     })
   }

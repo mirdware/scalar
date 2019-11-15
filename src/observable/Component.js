@@ -46,14 +46,12 @@ function bindAttributes(component, $domElement) {
         properties[value],
         attribute.substr(0, index).trim(),
         $domElement,
-        propertyObj
+        propertyObj,
+        exp = (exp !== prop) ? exp.replace(prop, 'p.' + prop) : null
       );
-      if (exp !== prop) {
-        attributes.push(attr);
-        exp = exp.replace(prop, 'p.' + prop);
-      }
+      attributes.push(attr);
     });
-    attributes.forEach((attr) => attr.exp = exp);
+    attributes.forEach((attr) => attr.exp && (attr.exp = exp));
   });
 }
 
@@ -107,15 +105,6 @@ export default class Component {
         this[name] = initState[name];
       }
     }
-  }
-
-  toJSON() {
-    const { properties } = Privy.get(this);
-    const json = {};
-    for (const key in properties) {
-      json[key] = properties[key].value;
-    }
-    return JSON.stringify(json);
   }
 
   inject(provider) {

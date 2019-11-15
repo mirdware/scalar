@@ -40,8 +40,8 @@
     <h2>Formularios</h2>
     <form id="hello-world">
       <input type="text" data-bind="name" value="init" disabled />
-      <label><input type="checkbox" data-bind="show" checked /> ¿Mostrar alert?</label>
-      <div data-bind="name" data-attr="style.background: show ? 'blue' : ''"></div>
+      <label><input type="checkbox" data-bind="paint" checked />Paint blue</label>
+      <div data-bind="name" data-attr="style.background: paint ? 'blue' : ''; style.color: paint ? 'white' : ''"></div>
       <textarea data-bind="name"></textarea><br/>
       <select data-bind="select">
         <option value="h">Hola</option>

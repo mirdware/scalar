@@ -140,13 +140,13 @@ export function addNode(property, $node, prop) {
   return node;
 }
 
-export function addAttribute(property, name, $element, prop) {
+export function addAttribute(property, name, $element, prop, exp) {
   const keys = name.split('.');
   let $attribute = $element;
   name = keys.pop();
   keys.forEach((k) => $attribute = $attribute[k]);
-  setPropertyValue(property, prop, $attribute[name]);
-  const attribute = { name, $attribute, $element, prop };
+  const attribute = { name, $attribute, $element, prop, exp };
   property.attributes.push(attribute);
+  exp ? Attribute.execute(property, attribute) : setPropertyValue(property, prop, $attribute[name]);
   return attribute;
 }
