@@ -3,10 +3,20 @@ import * as Privy from '../util/Wrapper';
 import * as Property from './Property';
 
 function getProperty(component, name) {
+  const parent = Privy.get(component);
+  const {$node, module} = parent;
+  let overComponent = searchParentComponent($node, module.components, name);
+  let value = '';
+  if (!overComponent) {
+    overComponent = searchChildComponent($node, module.components, name);
+  }
+  if (overComponent) {
+    Object.assign(Privy.get(overComponent).events, parent.events);
+    value = overComponent[name];
+  }
   const prop = {
-    component,
-    parent: Privy.get(component),
-    value: '',
+    parent,
+    value,
     nodes: [],
     attributes: []
   };
@@ -15,6 +25,30 @@ function getProperty(component, name) {
     set: (value) => Property.set(prop, value)
   });
   return prop;
+}
+
+function searchChildComponent($node, components, name) {
+  const $childrens = $node.querySelectorAll('[data-component]');
+  for (let i = 0, $child; $child = $childrens[i]; i++) {
+    const uuid = $child.dataset.component;
+    if (components[uuid][name]) {
+      return components[uuid];
+    }
+  }
+}
+
+function searchParentComponent($node, components, name) {
+  if ($node.parentNode) {
+    const parentNode = $node.parentNode;
+    if (parentNode.dataset && parentNode.dataset.component){
+      const uuid = parentNode.dataset.component;
+      if (components[uuid][name]) {
+        return components[uuid];
+      }
+    }
+    return searchParentComponent($node.parentNode, components, name);
+  }
+  return null;
 }
 
 function bindData(component, $domElement) {
@@ -47,7 +81,7 @@ function bindAttributes(component, $domElement) {
         attribute.substr(0, index).trim(),
         $domElement,
         propertyObj,
-        exp = (exp !== prop) ? exp.replace(prop, 'p.' + prop) : null
+        exp = (exp !== prop) ? exp.replace(prop, 'p.properties.' + prop + '.value') : null
       );
       attributes.push(attr);
     });
@@ -85,14 +119,14 @@ export function compose($node, behavioral, module) {
   const behavioralIsComponent = behavioral.prototype instanceof Component;
   const component = behavioralIsComponent ? new behavioral() : new Component();
   Privy.set(component, props);
-  watch(component, $node);
   props.events = behavioralIsComponent ?
   (component.listen && component.listen()) :
   behavioral(component);
+  watch(component, $node);
   addListeners($node, props.events);
   $node.dispatchEvent(new Event('mount'));
   props.initState = getState({}, props.properties);
-  if (behavioralIsComponent) return component;
+  return component;
 }
 
 export default class Component {

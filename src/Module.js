@@ -4,7 +4,7 @@ import * as Privy from './util/Wrapper';
 
 export default class Module {
   constructor(...providers) {
-    const properties = { classes: {}, instances: {} };
+    const properties = { classes: {}, instances: {}, components: {} };
     properties.inject = (provider) => {
       const { classes, instances } = properties;
       const { uuid } = provider;
@@ -27,7 +27,9 @@ export default class Module {
   compose(selector, behavioral) {
     const $nodes = document.querySelectorAll(selector);
     for (let i = 0, $node; $node = $nodes[i]; i++) {
-      compose($node, behavioral, Privy.get(this));
+      const component = compose($node, behavioral, Privy.get(this));
+      Privy.get(this).components[component.uuid] = component;
+      $node.dataset.component = component.uuid;
     }
     return this;
   }
