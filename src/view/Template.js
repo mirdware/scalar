@@ -32,20 +32,22 @@ export default class Template {
     if (!this.tpl) return value;
     const keys = [];
     const regex = new RegExp(this.tpl.trim()
-    .replace(/\$\{.+\}/g, ' ___ ')
+    .replace(/\$\{data\.[^\}]*\}/g, '@__')
+    .replace(/\$\{[^\}]*\}/g, '@_')
     .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-    .replace(/\s___\s/g, '([^<]*)')
+    .replace(/@__/g, '([^<]*)')
+    .replace(/@_/g, '[^<]*')
     .replace(/>\s*</g, '><'), 'g');
-    const dataTpl = this.tpl.match(/\$\{.+\}/g);
-    for (let i = 0; i < dataTpl.length; i++) {
-      keys.push(dataTpl[i].replace(/^\$+\{data\./, '').replace('}', ''));
-    }
+    this.tpl.match(/\$\{data\.[^\}]*\}/g)
+    .forEach((data) => {
+      keys.push(data.replace('${data.', '').replace('}', ''));
+    });
     let matches;
     while ((matches = regex.exec(this.base)) !== null) {
       const obj = {};
-      for (let i = 1; i < matches.length; i++) {
-        obj[keys[i - 1]] = matches[i];
-      }
+      keys.forEach((key, i) => {
+        obj[key] = matches[i + 1];
+      });
       value.push(obj);
     }
     return value;

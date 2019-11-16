@@ -17,7 +17,7 @@ export default ($) => {
   }
 
   function paint() {
-    const color = this.innerHTML;
+    const color = this.innerText.toLowerCase();
     $.squareStyle = {
       backgroundColor: color,
       borderRadius: color !== 'blue' ? '.5em': '0'
@@ -30,7 +30,7 @@ export default ($) => {
     '.open': {
       click: sendRequest
     },
-    '.first': {
+    '.paint': {
       _click: paint
     },
     '.reset': {

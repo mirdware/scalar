@@ -45,7 +45,7 @@ section {
   right: 0;
 }
 
-#square .first {
+#square .paint, #square .show {
   cursor: pointer;
 }
 

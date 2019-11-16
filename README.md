@@ -5,7 +5,23 @@ El desarrollo de aplicaciones con scalar se basa en componentes no obstructivos,
 
 ## Instalación
 
-Basta con tener instalado node y npm para ejecutar el comando `npm install --save scalar`.
+Para usar scalar en un proyecto solo basta con tener instalado node y npm para ejecutar el comando `npm install scalar` o usar el [CDN](https://sespesoft.com/cdn/scalar.min.js).
+
+Para su instalación en desarrollo es imprescindible contar con [node](https://nodejs.org/es/) en sus ultimas versiones y [git](https://git-scm.com/).
+
+Clona o copia desde el repositorio principal de escalar el proyecto.
+
+```bash
+git clone git://github.com/jquery/jquery.git
+```
+
+Ingresa a la carpeta del proyecto y descarga las dependencias.
+
+```bash
+cd scalar && npm install
+```
+
+Una vez instaladas es posible ejecutar un servidor webpack con el comando `npm start` o construir el proyecto con `npm run build`.
 
 ## Módulos
 Un módulo es un objeto javascript que se instancia de la clase Module de scalar, se deben proveer por constructor las dependencias para luego crear cada uno de los componentes mediante el método `compose`, esto se logra enviando como primer parámetro el selector del elemento y como segundo la función o clase conductual.
@@ -184,7 +200,7 @@ return {
 ...
 ```
 
-Un componente puede hacer uso de servicios mediante la función `inject`, a esta se le debe enviar como parámetro la clase que fue proveída al módulo, si la clase que se intenta inyector no fue declarada no retornara ningún servicio.
+Un componente puede hacer uso de servicios mediante el método `inject`, a este se le debe enviar como parámetro la clase que fue proveída al módulo, si la clase que se intenta inyectar no fue declarada no retornara ningún servicio.
 
 ```javascript
 ...
@@ -194,7 +210,7 @@ return {
 ...
 ```
 
-Para hacer uso de un array dentro del componente se debe establecer un data-key que sirve como indice del elemento, luego se debe obtener el indice del array propiamente dicho mediante el método `getIndex` al cual se le envia el evento como parámetro.
+Para hacer uso de un arreglo dentro del componente se debe establecer un data-key que sirve como indice del elemento, luego se debe obtener el indice propiamente dicho mediante el método `getIndex` al cual se le envia el evento como parámetro.
 
 ```javascript
 ...
@@ -207,7 +223,7 @@ remove(e) {
 
 Un componente puede generar otro componente mediante el método `compose`, este último se denomina **componente derivado**, ya que su creación no se realizo desde un modulo si no que deriva de un similar.
 
-El componente padre puede hacer uso de los métodos del derivado siempre y cuando este se haya constituido desde una clase, ya que el método compose retorna el objeto resultante de la composición. En caso que se cree mediante una función el método compose devolverá _undefined_.
+El componente padre puede hacer uso de los métodos del derivado, ya que el método compose retorna el objeto resultante de la composición.
 
 ```javascript
 ...
@@ -247,7 +263,7 @@ A parte de sobrescribir propiedades como observamos en el ejemplo anterior con l
 Las plantillas (Templates) representan la parte más básica del sistema y se pueden clasificar en: prerenderizadas y JIT (Just In Time).
 
 ### Prerenderizadas
-Las plantillas prerenderizadas son aquellas suministradas por el servidor y hacen parte integral del cuerpo de la petición, de esta manera se puede garantizar el funcionamiento de la aplicación aún si el cliente no activa JavaScript; en parte la idea de la libreria es ir _"escalando"_ la aplicación según las limitantes del cliente (accesibilidad).
+Las plantillas prerenderizadas son aquellas suministradas por el servidor y hacen parte integral del cuerpo de la petición, de esta manera se puede garantizar el funcionamiento de la aplicación aún si el cliente no activa JavaScript; en parte la idea de la libreria es ir _"escalando"_ un proyecto según las limitantes del cliente (accesibilidad).
 
 Una plantilla scalar podría contener atributos `data-bind` y/o `data-attr`, los primeros generan un enlace en dos direcciones entre el objeto compuesto y la plantilla, siempre y cuando el elemento al cual se enlaza pueda introducir información en caso contrario dicho enlace se establecerá en una sola dirección; el segundo modifica los atributos del elemento según se modifique alguna propiedad y por su naturaleza es unidireccional.
 
@@ -267,26 +283,26 @@ Una plantilla scalar podría contener atributos `data-bind` y/o `data-attr`, los
 </div>
 ```
 
-El data-bind es simplemente un enlace a una propiedad del componente, por lo tanto debe tener el formato de una [propiedad javascript](https://developer.mozilla.org/es/docs/Web/JavaScript/Data_structures#Objetos), mientras el data-attr puede tener tantos atributos separados por `;` como se desee, un atributo es un par clave valor en donde la clave es el nombre del atributo y el valor la propiedad del componente que manejará los cambios de estado.
+El data-bind es simplemente un enlace a una propiedad del componente, por lo tanto debe tener el formato de una [propiedad javascript](https://developer.mozilla.org/es/docs/Web/JavaScript/Data_structures#Objetos), mientras el data-attr puede tener tantos atributos separados por `;` como se desee, un atributo es un par clave valor en donde la clave es el nombre del atributo y el valor la propiedad del componente o una expresión javascript que manejará los cambios de estado, en caso de ser una propiedad no definida en un da-bind esta se creara en el componente, si es una expresión esto no sera posible.
 
-Cuando se desea declarar un objeto desde el sistema de plantillas este debe incluirse con separación de `.`.
+Cuando se desea declarar un objeto desde el sistema de plantillas se debe separar con `.` cada uno de las propiedades del mismo.
 
 ```html
 <h2 data-bind="my.msg" style="color: #fff">Mensaje inicial</h2>
 ```
 
 ### JIT
-El soporte para plantillas JIT está aún en una etapa bastante temprana, pero se están haciendo progresos. Su principal uso se encuentra restringido al enlace de datos cuando la propiedad de un componente es compleja (principalmente array) y su función es generar código HTML de manera dinámica. Una propiedad es definida como compleja cuando dentro se haya una [template tag](https://developer.mozilla.org/es/docs/Web/HTML/Elemento/template), si se desea manipular un array desde el componente este debe estar indexado por `data-key`.
+El soporte para plantillas JIT está aún en una etapa bastante temprana, pero se están haciendo progresos. Su principal uso se encuentra restringido al enlace de datos cuando la propiedad de un componente es compleja (principalmente arreglos) y su función es generar código HTML de manera dinámica. Una propiedad es definida como compleja cuando dentro se haya un script tipo `text/template`, si se desea manipular al arreglo desde el componente este debe estar indexado por `data-key`.
 
 ```html
 <ul data-bind="tasks">
-  <template>
+  <script type="text/template">
     <li data-key="${index}">
       <span class="${data.checked}">${data.content}</span>
       <a href="#" class="check">✔</a>
       <a href="#" class="close">[x]</a>
     </li>
-  </template>
+  </script>
 </ul>
 ```
 

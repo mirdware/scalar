@@ -13,23 +13,14 @@
     <table>
       <thead>
         <tr>
-          <th>Color</th>
-          <th>Name</th>
+          <th colspan="2">Name</th>
         </tr>
       </thead>
-      <tbody data-bind="name">
-          <tr>
-            <td class="first">Green</td>
-            <td>Jules</td>
-          </tr>
-          <tr>
-            <td class="first">Gray</td>
-            <td>Beer</td>
-          </tr>
+      <tbody data-bind="name" class="alert">
         <script type="text/template">
           <tr>
-            <td class="first">${data.first}</td>
-            <td>${data.last}</td>
+            <td class="show">${data.first}</td>
+            <td class="paint">${data.last}</td>
           </tr>
         </script>
       </tbody>
@@ -65,6 +56,16 @@
       <input type="submit" value="Agregar" />
       <input type="button" value="Limpiar" id="clean" />
       <ul data-bind="tasks">
+        <li data-key="0">
+          <span class="checked">run</span>
+          <a href="#" class="check">✔</a>
+          <a href="#" class="close">[x]</a>
+        </li>
+        <li data-key="1">
+          <span class="">Breakfast</span>
+          <a href="#" class="check">✔</a>
+          <a href="#" class="close">[x]</a>
+        </li>
         <script type="text/template">
           <li data-key="${index}">
             <span class="${data.checked}">${data.content}</span>

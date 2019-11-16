@@ -9,7 +9,10 @@ import VirtualDOM from '../src/view/VirtualDOM';
 new Module(Message)
 .compose('#square', Test)
 .compose('#hello-world', Form)
-.compose('#todo', ToDo);
+.compose('#todo', ToDo)
+.compose('.alert', () => ({
+  '.show': { click: (e) => alert(e.target.innerText) }
+}));
 
 function log(e) {
   console.log(e.target.value);
@@ -24,17 +27,17 @@ const f = VirtualDOM.create('ul', {style: 'list-style: none'},
   VirtualDOM.create('li', {}, 'text')
 );
 
-const g = VirtualDOM.create('ul', {style: 'list-style: none'},
-  VirtualDOM.create('li', {className: 'item item2', onClick: () => alert('hola!')}, 'item 1'),
-  VirtualDOM.create('li', {style: 'background: red'},
-    VirtualDOM.create('input', {type: 'checkbox', checked: false}),
-    VirtualDOM.create('input', {type: 'text', onInput: log})
-  ),
-  VirtualDOM.create('li', {}, 'text')
-);
-
-const $root = document.getElementById('root');
-const $reload = document.getElementById('reload');
-
-const dom = new VirtualDOM($root, f);
-$reload.addEventListener('click', () => dom.patch(g));
+const dom = new VirtualDOM(document.getElementById('root'), f);
+let i = 0;
+document.getElementById('reload').addEventListener('click', () => {
+  const g = VirtualDOM.create('ul', {style: 'list-style: none'},
+    VirtualDOM.create('li', {className: 'item item2', onClick: () => alert('hola!')}, 'item 1'),
+    VirtualDOM.create('li', {style: 'background: red'},
+      VirtualDOM.create('input', {type: 'checkbox', checked: false}),
+      VirtualDOM.create('input', {type: 'text', onInput: log})
+    ),
+    VirtualDOM.create('li', {}, 'text' + i)
+  );
+  dom.patch(g);
+  i++;
+});

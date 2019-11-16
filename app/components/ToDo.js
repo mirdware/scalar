@@ -3,6 +3,7 @@ import { Component } from "../../scalar";
 export default class ToDo extends Component {
   listen() {
     return {
+      mount: () => console.log(this),
       submit: () => this.add(),
       '.close': {
         click: (e) => this.remove(e)
