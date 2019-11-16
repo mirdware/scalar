@@ -16,26 +16,27 @@ function generateTemplate(template, param) {
 
 export default class Template {
   constructor(component, $node) {
-    let $template = $node.getElementsByTagName('template');
+    let $template = $node.querySelector('script[type="text/template"]');
     this.component = component;
     this.$node = $node;
-    if ($template.length) {
-      $template = $template[0]; 
+    if ($template) {
       this.tpl = $template.innerHTML;
       this.base = $node.innerHTML.trim()
-      .replace($template.outerHTML,'')
+      .replace($template.outerHTML, '')
       .replace(/>\s*</g, '><');
     }
   }
 
   getValue() {
     const value = [];
+    if (!this.tpl) return value;
     const keys = [];
     const regex = new RegExp(this.tpl.trim()
+    .replace(/\$\{.+\}/g, ' ___ ')
     .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-    .replace(/(\\\$)+\\\{[\w\\\.]+\\\}/g, '([^<]*)')
+    .replace(/\s___\s/g, '([^<]*)')
     .replace(/>\s*</g, '><'), 'g');
-    const dataTpl = this.tpl.match(/\$+\{\w[\w\._\d\s]*\}/g);
+    const dataTpl = this.tpl.match(/\$\{.+\}/g);
     for (let i = 0; i < dataTpl.length; i++) {
       keys.push(dataTpl[i].replace(/^\$+\{data\./, '').replace('}', ''));
     }

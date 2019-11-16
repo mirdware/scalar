@@ -184,16 +184,6 @@ return {
 ...
 ```
 
-El método `toJSON` convierte todas las propiedades del objeto a un formato JSON valido para el envió de datos a través de repositorios o cualquier otro medio.
-
-```javascript
-...
-return {
-  submit: () => ($.show ? alert($.toJSON()) : console.log($))
-};
-...
-```
-
 Un componente puede hacer uso de servicios mediante la función `inject`, a esta se le debe enviar como parámetro la clase que fue proveída al módulo, si la clase que se intenta inyector no fue declarada no retornara ningún servicio.
 
 ```javascript
@@ -215,7 +205,7 @@ remove(e) {
 ...
 ```
 
-Un componente puede generar otro componente mediante el método `compose`, este último se denomina componente derivado, ya que su creación no se realizo desde un modulo si no que deriva de un similar.
+Un componente puede generar otro componente mediante el método `compose`, este último se denomina **componente derivado**, ya que su creación no se realizo desde un modulo si no que deriva de un similar.
 
 El componente padre puede hacer uso de los métodos del derivado siempre y cuando este se haya constituido desde una clase, ya que el método compose retorna el objeto resultante de la composición. En caso que se cree mediante una función el método compose devolverá _undefined_.
 
@@ -251,7 +241,7 @@ class ServerConnection extends Resource {
 }
 ```
 
-A parte de sobrescribir propiedades como observamos en el ejemplo anterior con los headers, también es posible utilizar del sistema de inversión para usar un solo objeto durante todo el ciclo de vida de la aplicación, solo basta con proveer esta clase y scalar se encarga del resto.
+A parte de sobrescribir propiedades como observamos en el ejemplo anterior con los headers, también es posible utilizar del sistema de inversión para usar un solo objeto durante todo el ciclo de vida de la aplicación, solo basta con proveer esta clase y scalar se encarga del resto, tambien cabe resaltar el uso de [web workers](https://developer.mozilla.org/es/docs/Web/Guide/Performance/Usando_web_workers) para el envió de peticiones, esto hace que toda petición realizada con Resource se realice en segundo plano.
 
 ## Plantillas
 Las plantillas (Templates) representan la parte más básica del sistema y se pueden clasificar en: prerenderizadas y JIT (Just In Time).
@@ -300,4 +290,26 @@ El soporte para plantillas JIT está aún en una etapa bastante temprana, pero s
 </ul>
 ```
 
-Es posible interpolar código javaScript mediante el uso de la notación [template string](https://developer.mozilla.org/es/docs/Web/JavaScript/Referencia/template_strings) `${}`, si se usa el simbolo `$${}` se escapan las etiquetas que se viasualizan en pantalla; dentro del template es posible acceder a dos propiedades `index` y `data`, la primera indica el indice del array y la segunda la información contenida en el mismo, esto puede cambiar cuando se implemente virtual DOM en proximas versiones.
+Es posible interpolar código javaScript mediante el uso de la notación [template string](https://developer.mozilla.org/es/docs/Web/JavaScript/Referencia/template_strings) `${}`; dentro del template es posible acceder a dos propiedades `index` y `data`, la primera indica el indice del array y la segunda la información contenida en el mismo, esto puede cambiar cuando se implemente virtual DOM en proximas versiones.
+
+## Solapamiento de componentes
+El solapamiento se presenta cuando se define un componente sobre otro componente ya establecido.
+
+```javascript
+new Module()
+.compose('.pageable', pageable)
+.compose('.check-table', checkTable);
+```
+
+```html
+<div class="pageable">
+  <form action="https://sespesoft.com">
+    <input type="search" name="name" data-bind="name" />
+    <input type="submit" value="Buscar" />
+  </form>
+  <table class="check-table" data-bind="data">
+  </table>
+</div>
+```
+
+En este caso tanto el componente pageable como checkTable hacen uso de la propiedad data, a esto hace referencia el solapamiento a compratir propiedades gracias a su ubicación dentro del DOM. Se debe tener cuidado con los eventos al momento de solapar dado que un componente podria sobreescribir sin querer los eventos de otro.

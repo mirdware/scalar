@@ -15,7 +15,7 @@ export function execute(property, attribute, value) {
   const { eventListenerList } = $element;
   const { parent } = property;
   if (attribute.exp) {
-    value = Function('p', `return ${attribute.exp}`)(property.parent);
+    value = Function('p', 'return ' + attribute.exp)(property.component);
   } else {
     attribute.prop.forEach((prop) => value = value[prop]);
   }

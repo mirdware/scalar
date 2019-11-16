@@ -26,12 +26,12 @@
             <td class="first">Gray</td>
             <td>Beer</td>
           </tr>
-        <template>
+        <script type="text/template">
           <tr>
             <td class="first">${data.first}</td>
             <td>${data.last}</td>
           </tr>
-        </template>
+        </script>
       </tbody>
     </table>
   </div>
@@ -65,13 +65,13 @@
       <input type="submit" value="Agregar" />
       <input type="button" value="Limpiar" id="clean" />
       <ul data-bind="tasks">
-        <template>
+        <script type="text/template">
           <li data-key="${index}">
             <span class="${data.checked}">${data.content}</span>
             <a href="#" class="check">✔</a>
             <a href="#" class="close">[x]</a>
           </li>
-        </template>
+        </script>
       </ul>
     </form>
   </section>

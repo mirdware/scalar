@@ -5,16 +5,14 @@ import * as Property from './Property';
 function getProperty(component, name) {
   const parent = Privy.get(component);
   const {$node, module} = parent;
-  let overComponent = searchParentComponent($node, module.components, name);
+  const overComponent = findComponent($node, module.components, name);
   let value = '';
-  if (!overComponent) {
-    overComponent = searchChildComponent($node, module.components, name);
-  }
   if (overComponent) {
     Object.assign(Privy.get(overComponent).events, parent.events);
     value = overComponent[name];
   }
   const prop = {
+    component,
     parent,
     value,
     nodes: [],
@@ -27,7 +25,7 @@ function getProperty(component, name) {
   return prop;
 }
 
-function searchChildComponent($node, components, name) {
+function findComponent($node, components, name) {
   const $childrens = $node.querySelectorAll('[data-component]');
   for (let i = 0, $child; $child = $childrens[i]; i++) {
     const uuid = $child.dataset.component;
@@ -35,9 +33,10 @@ function searchChildComponent($node, components, name) {
       return components[uuid];
     }
   }
+  return findParentComponent($node, components, name);
 }
 
-function searchParentComponent($node, components, name) {
+function findParentComponent($node, components, name) {
   if ($node.parentNode) {
     const parentNode = $node.parentNode;
     if (parentNode.dataset && parentNode.dataset.component){
@@ -46,9 +45,8 @@ function searchParentComponent($node, components, name) {
         return components[uuid];
       }
     }
-    return searchParentComponent($node.parentNode, components, name);
+    return findParentComponent($node.parentNode, components, name);
   }
-  return null;
 }
 
 function bindData(component, $domElement) {
@@ -81,7 +79,7 @@ function bindAttributes(component, $domElement) {
         attribute.substr(0, index).trim(),
         $domElement,
         propertyObj,
-        exp = (exp !== prop) ? exp.replace(prop, 'p.properties.' + prop + '.value') : null
+        exp = (exp !== prop) ? exp.replace(prop, 'p.' + prop) : null
       );
       attributes.push(attr);
     });
