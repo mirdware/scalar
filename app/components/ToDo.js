@@ -4,7 +4,7 @@ export default class ToDo extends Component {
   listen() {
     return {
       mount: () => console.log(this),
-      submit: () => this.add(),
+      submit: (e) => this.add(e),
       '.close': {
         click: (e) => this.remove(e)
       },
@@ -18,11 +18,13 @@ export default class ToDo extends Component {
   }
 
   remove(e) {
+    e.preventDefault();
     const index = this.getIndex(e);
     this.tasks.splice(index, 1);
   }
   
-  add() {
+  add(e) {
+    e.preventDefault();
     if (!this.task) return;
     this.tasks.push({
       content: this.task,

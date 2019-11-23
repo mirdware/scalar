@@ -1,19 +1,12 @@
 function bindFunction(eventName, $element, fn) {
-  const method = (e) => {
-    try {
-      fn.bind($element)(e) || e.preventDefault();
-    } catch (ex) {
-      e.preventDefault();
-      throw ex;
-    }
-  };
-  let bubble = true;
+  const method = (e) => fn.bind($element)(e);
+  let capture = false;
   if (eventName.indexOf('_') === 0) {
-    bubble = false;
+    capture = true;
     eventName = eventName.substring(1);
   }
   method.uuid = fn.uuid;
-  $element.addEventListener(eventName, method, bubble);
+  $element.addEventListener(eventName, method, capture);
   $element.eventListenerList.push({name: eventName, fn: method});
 }
 

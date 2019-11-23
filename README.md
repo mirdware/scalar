@@ -5,14 +5,14 @@ El desarrollo de aplicaciones con scalar se basa en componentes no obstructivos,
 
 ## Instalación
 
-Para usar scalar en un proyecto solo basta con tener instalado node y npm para ejecutar el comando `npm install scalar` o usar el [CDN](https://sespesoft.com/cdn/scalar.min.js).
+Para usar scalar en un proyecto solo basta con tener instalado node y npm para ejecutar el comando `npm install scalar` o usar el [CDN](https://unpkg.com/scalar@0.2.8/dist/js/scalar.min.js).
 
-Para su instalación en desarrollo es imprescindible contar con [node](https://nodejs.org/es/) en sus ultimas versiones y [git](https://git-scm.com/).
+Para su instalación en desarrollo es imprescindible contar con [node](https://nodejs.org/es/) y [git](https://git-scm.com/) en sus ultimas versiones.
 
 Clona o copia desde el repositorio principal de escalar el proyecto.
 
 ```bash
-git clone git://github.com/jquery/jquery.git
+git clone git@github.com:mirdware/scalar.git
 ```
 
 Ingresa a la carpeta del proyecto y descarga las dependencias.
@@ -63,7 +63,7 @@ La ejecución del método compose genera un `compound object`(Objeto compuesto) 
 ```
 
 ## Componentes
-Existen dos maneras de generar un componentes, la primera es extendiendo de la clase Component de escalar en la que se debe establecer el método listen, el cual retorna un `behavioral object`(Objeto conductual) con el comportamiento del componente.
+Existen dos maneras de generar un componentes; la primera es extendiendo de la clase Component de escalar, la cual deberá implementar el método listen que retorna un `behavioral object`(Objeto conductual) con el comportamiento del componente.
 
 ```javascript
 export default class ToDo extends Component {
@@ -84,7 +84,7 @@ export default class ToDo extends Component {
 }
 ```
 
-La segunda manera de definir un componente es mediante `behavioral function`(función conductual), esta es una función pura en javascript que retorna las acciones y comportamiento del componente; la función recibe como argumento un objeto compuesto y retorna un objeto conductual.
+La segunda manera de definir un componente es mediante `behavioral function`(función conductual), esta es una función pura en javascript que retorna las acciones y comportamiento del componente; la función recibe como parámetro un objeto compuesto y retorna un objeto conductual.
 
 ```javascript
 export default ($) => ({
@@ -105,7 +105,7 @@ export default ($) => ({
 });
 ```
 
-Al ser una función javascript pura es posible usar diferentes estilos de programación. En el ejemplo anterior vimos un retorno directo del objeto, pero tambien se puede usar como una función módulo.
+Al ser una función javascript pura se pueden usar diferentes estilos de programación. En el ejemplo anterior vimos un retorno directo del objeto, pero tambien es posible usar clousures.
 
 ```javascript
 export default ($) => {
@@ -132,7 +132,7 @@ export default ($) => {
 };
 ```
 
-Incluso es posible usar las últimas características de ECMAScript para encapsular llamadas a otras funciones.
+Incluso es posible usar las últimas características de ECMAScript para encapsular llamadas a otras funciones en módulos.
 
 ```javascript
 function remove($, e) {
@@ -143,7 +143,7 @@ function remove($, e) {
 function add($) {
     if (!$.task) return;
     $.tasks.push($.task);
-    $.task = "";
+    $.task = '';
 }
 
 export default ($) => ({
@@ -183,9 +183,7 @@ Por defecto las funciones o métodos lanzados por el objeto tienen un comportami
   }
 ```
 
-En este último ejemplo podemos observar el uso del evento especial `mount`, este es ejecutado tan pronto inicia el componente y es ideal para asignar objetos a servicios.
-
-Todo evento lanzado previene su comportamiento por defecto a no ser que explicitamente se defina lo contrario retornando `true` desde la función o método.
+El evento especial `mount` es ejecutado tan pronto inicia el componente y cualquier cambio que se realice dentro del este hace parte del estado inicial por lo cual es ideal entre otras cosas para inicializar objetos y enlazar con servicios.
 
 ### Métodos del objeto compuesto
 Es posible reiniciar cualquier componente a un estado inicial mediante el método `reset`; se debe tener en cuenta que las propiedades representadas por un objeto no pueden ser restablecidos a su estado inicial ya que su valor es referenciado, excepto los estilos pasados como atributos.
@@ -210,7 +208,7 @@ return {
 ...
 ```
 
-Para hacer uso de un arreglo dentro del componente se debe establecer un data-key que sirve como indice del elemento, luego se debe obtener el indice propiamente dicho mediante el método `getIndex` al cual se le envia el evento como parámetro.
+Para hacer uso de un arreglo dentro del componente se debe establecer un data-key que sirve como indice del elemento, luego se debe obtener el key mediante el método `getIndex` el cual recibe el evento como parámetro.
 
 ```javascript
 ...
@@ -221,9 +219,7 @@ remove(e) {
 ...
 ```
 
-Un componente puede generar otro componente mediante el método `compose`, este último se denomina **componente derivado**, ya que su creación no se realizo desde un modulo si no que deriva de un similar.
-
-El componente padre puede hacer uso de los métodos del derivado, ya que el método compose retorna el objeto resultante de la composición.
+Un componente puede generar otro componente mediante el método `compose`, este último se denomina **componente derivado**, ya que su creación no se realizo desde un modulo si no que deriva de un similar. El componente padre puede hacer uso de los métodos del derivado, ya que el método compose retorna el objeto resultante de la composición.
 
 ```javascript
 ...
@@ -283,16 +279,16 @@ Una plantilla scalar podría contener atributos `data-bind` y/o `data-attr`, los
 </div>
 ```
 
-El data-bind es simplemente un enlace a una propiedad del componente, por lo tanto debe tener el formato de una [propiedad javascript](https://developer.mozilla.org/es/docs/Web/JavaScript/Data_structures#Objetos), mientras el data-attr puede tener tantos atributos separados por `;` como se desee, un atributo es un par clave valor en donde la clave es el nombre del atributo y el valor la propiedad del componente o una expresión javascript que manejará los cambios de estado, en caso de ser una propiedad no definida en un da-bind esta se creara en el componente, si es una expresión esto no sera posible.
+Mediante data-bind se crea un enlace a una propiedad del componente, por lo tanto debe tener el formato de una [propiedad javascript](https://developer.mozilla.org/es/docs/Web/JavaScript/Data_structures#Objetos), mientras data-attr puede tener tantos atributos separados por `;` como se desee, un atributo es un par clave valor en donde la clave es el nombre del atributo y el valor la propiedad del componente o una expresión javascript que manejará los cambios de estado, en caso de ser una propiedad no definida en un data-bind esta se creara en el componente, si la propiedad se encuentra dentro de una expresión esto no sera posible.
 
 Cuando se desea declarar un objeto desde el sistema de plantillas se debe separar con `.` cada uno de las propiedades del mismo.
 
 ```html
-<h2 data-bind="my.msg" style="color: #fff">Mensaje inicial</h2>
+<h2 data-bind="my.msg" style="color:#fff">Mensaje inicial</h2>
 ```
 
 ### JIT
-El soporte para plantillas JIT está aún en una etapa bastante temprana, pero se están haciendo progresos. Su principal uso se encuentra restringido al enlace de datos cuando la propiedad de un componente es compleja (principalmente arreglos) y su función es generar código HTML de manera dinámica. Una propiedad es definida como compleja cuando dentro se haya un script tipo `text/template`, si se desea manipular al arreglo desde el componente este debe estar indexado por `data-key`.
+El soporte para plantillas JIT está aún en una etapa bastante temprana, pero se están haciendo progresos. Su principal uso se encuentra restringido al enlace de datos cuando la propiedad de un componente es compleja (principalmente arreglos) y su función es generar código HTML de manera dinámica. Una propiedad es definida como compleja cuando dentro se haya un script tipo `text/template`.
 
 ```html
 <ul data-bind="tasks">
@@ -306,10 +302,12 @@ El soporte para plantillas JIT está aún en una etapa bastante temprana, pero s
 </ul>
 ```
 
+Siempre que se deseé manipular un arreglo desde el componente este debe estar indexado por `data-key`.
+
 Es posible interpolar código javaScript mediante el uso de la notación [template string](https://developer.mozilla.org/es/docs/Web/JavaScript/Referencia/template_strings) `${}`; dentro del template es posible acceder a dos propiedades `index` y `data`, la primera indica el indice del array y la segunda la información contenida en el mismo, esto puede cambiar cuando se implemente virtual DOM en proximas versiones.
 
 ## Solapamiento de componentes
-El solapamiento se presenta cuando se define un componente sobre otro componente ya establecido.
+El solapamiento se presenta cuando se define un componente sobre otro ya establecido.
 
 ```javascript
 new Module()

@@ -28,13 +28,13 @@ export default ($) => {
     mount: () => message.my = $.my,
     mousemove: track,
     '.open': {
-      click: sendRequest
+      _click: sendRequest
     },
     '.paint': {
-      _click: paint
+      click: paint
     },
     '.reset': {
-      click: () => $.reset()
+      _click: () => $.reset()
     }
   };
 };
