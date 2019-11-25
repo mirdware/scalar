@@ -23,7 +23,7 @@ export function execute(property, attribute, value) {
   if (eventListenerList) {
     while (eventListenerList.length) {
       const listener = eventListenerList.shift();
-      $element.removeEventListener(listener.name, listener.fn, true);
+      $element.removeEventListener(listener.name, listener.fn, listener.opt);
     }
   }
   addListeners(parent.$node, parent.events);

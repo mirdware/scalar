@@ -1,13 +1,34 @@
-function bindFunction(eventName, $element, fn) {
-  const method = (e) => fn.bind($element)(e);
-  let capture = false;
-  if (eventName.indexOf('_') === 0) {
-    capture = true;
-    eventName = eventName.substring(1);
+let hasPassive = false;
+let $test = document.createElement('b');
+const options = Object.defineProperty({}, 'passive', {
+  get() {
+    hasPassive = true;
   }
-  method.uuid = fn.uuid;
-  $element.addEventListener(eventName, method, capture);
-  $element.eventListenerList.push({name: eventName, fn: method});
+});
+$test.addEventListener('click', () => {}, options);
+$test = undefined;
+
+function bindFunction(name, $element, fn) {
+  const lastChar = name.length - 1;
+  let capture = false;
+  let passive = true;
+  if (name.indexOf('_') === 0) {
+    const method = fn;
+    fn = (e) => {
+      e.preventDefault();
+      method.call($element, e);
+    };
+    fn.uuid = method.uuid;
+    passive = false;
+    name = name.substring(1);
+  }
+  if (name.lastIndexOf('_') === lastChar) {
+    capture = true;
+    name = name.substring(0, lastChar);
+  }
+  const opt = hasPassive ? {passive, capture} : capture;
+  $element.addEventListener(name, fn, opt);
+  $element.eventListenerList.push({name, fn, opt});
 }
 
 export function addListeners($element, events, root = true) {

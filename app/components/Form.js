@@ -1,8 +1,7 @@
 import Message from '../services/Message';
 
 export default ($) => ({
-  submit: (e) => {
-    e.preventDefault();
+  _submit: () => {
     $.inject(Message).set($.name);
     console.log($);
   },

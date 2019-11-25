@@ -159,26 +159,26 @@ export default ($) => ({
 
 ### Definición del objeto conductual
 
-El resultado de un componente siempre debe ser el comportamiento del mismo, para este fin se debe proveer un objeto que contenga como llave un selector CSS o el nombre de un evento (click, submit, reset, blur, focus, etc), en el primer caso su valor deberá ser otro objeto conductual y en el segundo contendrá la función o método a ejecutar.
+Mediante javascript se establece el comportamiento de un componente, con este fin se retorna un objeto que poseé como llaves un selector CSS o el nombre de un evento (click, submit, reset, blur, focus, etc), en el primer caso su valor deberá ser otro objeto con similares caracteristicas y en el segundo contendrá la función o método a ejecutar. a esta estructura se le denomina objeto conductual.
 
 ```javascript
 {
-  submit: (e) => add($),
+  _submit: (e) => add($),
   '.close': {
-    click: (e) => remove($, e)
+    _click: (e) => remove($, e)
   },
   '#clean': {
     click: () => $.tasks = []
   }
 }
 ```
-Por defecto las funciones o métodos lanzados por el objeto tienen un comportamiento de burbuja, si se desea forzar a la captura se debe anteponer el signo `_` al nombre del evento.
+Por defecto los eventos lanzados por el objeto tienen un comportamiento de burbuja y son pasivos, si se antepone el signo `_` a su nombre este prevendra su comportamiento por defecto eliminando la pasividad del mismo, si el signo aparece despues del nombre quiere decir que se esta forzando la propagación en modo captura, es posible usar ambas carácteristicas a la vez.
 
 ```javascript
 {
     mount: () => message.my = $.my,
     '.first': {
-      _click: paint
+      _click_: paint
     }
   }
 ```
