@@ -1,8 +1,8 @@
-let hasPassive = false;
+let hasObjectConfig = false;
 let $test = document.createElement('b');
 const options = Object.defineProperty({}, 'passive', {
   get() {
-    hasPassive = true;
+    hasObjectConfig = true;
   }
 });
 $test.addEventListener('click', () => {}, options);
@@ -14,10 +14,7 @@ function bindFunction(name, $element, fn) {
   let passive = true;
   if (name.indexOf('_') === 0) {
     const method = fn;
-    fn = (e) => {
-      e.preventDefault();
-      method.call($element, e);
-    };
+    fn = (e) => method.call($element, e) || e.preventDefault();
     fn.uuid = method.uuid;
     passive = false;
     name = name.substring(1);
@@ -26,7 +23,7 @@ function bindFunction(name, $element, fn) {
     capture = true;
     name = name.substring(0, lastChar);
   }
-  const opt = hasPassive ? {passive, capture} : capture;
+  const opt = hasObjectConfig ? {passive, capture} : capture;
   $element.addEventListener(name, fn, opt);
   $element.eventListenerList.push({name, fn, opt});
 }

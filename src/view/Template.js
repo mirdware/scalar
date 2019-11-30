@@ -32,13 +32,11 @@ export default class Template {
     if (!this.tpl) return value;
     const keys = [];
     const regex = new RegExp(this.tpl.trim()
-    .replace(/\$\{data\.[^\}]*\}/g, '@__')
-    .replace(/\$\{[^\}]*\}/g, '@_')
     .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-    .replace(/@__/g, '([^<]*)')
-    .replace(/@_/g, '[^<]*')
+    .replace(/\\\$\\\{data\\\.[\w\d\.]*\\\}/g, '([^<]*)')
+    .replace(/\\\$\\\{[^\}]*\\\}/g, '[^<]*')
     .replace(/>\s*</g, '><'), 'g');
-    this.tpl.match(/\$\{data\.[^\}]*\}/g)
+    this.tpl.match(/\$\{data\.[\w\d\.]*\}/g)
     .forEach((data) => {
       keys.push(data.replace('${data.', '').replace('}', ''));
     });

@@ -53,7 +53,7 @@ function sendRequest(request, callback) {
         xml: xhr.responseXML,
         text: xhr.responseText,
         url: responseURL,
-        redirect: responseURL !== url
+        redirect: request.redirect && responseURL !== url
       });
     }
   };
@@ -62,14 +62,15 @@ function sendRequest(request, callback) {
 function solve(xhr, resolve, reject) {
   const { status, content, url } = xhr;
   let response;
+  if (xhr.redirect) {
+    return window.location = url;
+  }
   if (/(application|text)\/xml/.test(content)) {
     response = xhr.xml;
   } else {
     response = xhr.text;
     if (content && content.indexOf('application/json') !== -1) {
       response = JSON.parse(response);
-    } else if (status < 300 && xhr.redirect) {
-      return window.location = url;
     }
   }
   (status > 399) ?
@@ -94,6 +95,7 @@ function manage(resource, method, data, queryString) {
 export default class Resource {
   constructor(url) {
     this.url = url;
+    this.redirect = true;
     this.headers = {
       'Content-Type': 'application/json',
       'X-Requested-With': 'XMLHttpRequest'

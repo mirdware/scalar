@@ -1,15 +1,22 @@
 # Scalar
-Scalar nace de la necesidad de crear sistemas escalables, de alto rendimiento y no obstructivos usando los últimos estándares de programación web, lo cual incluye el uso de las ultimas características basadas en [ECMAScript](https://www.ecma-international.org/ecma-262/8.0/index.html).
+Scalar nace de la necesidad de crear sistemas escalables, de alto rendimiento y no obstructivos usando los últimos estándares de programación web, lo cual incluye el uso de las últimas características basadas en [ECMAScript](https://www.ecma-international.org/ecma-262/8.0/index.html).
 
-El desarrollo de aplicaciones con scalar se basa en componentes no obstructivos, lo cual quiere decir que su funcionamiento no depende enteramente que javascript este activado desde el navegador. Otra premisa de scalar es la separación entre contenido, estilo y comportamiento.
+El desarrollo de aplicaciones con scalar se basa en componentes no obstructivos, lo cual quiere decir que su funcionamiento no depende enteramente de javascript. Otra premisa de scalar es la separación entre contenido, estilo y comportamiento.
 
 ## Instalación
 
 Para usar scalar en un proyecto solo basta con tener instalado node y npm para ejecutar el comando `npm install scalar` o usar el [CDN](https://unpkg.com/scalar@0.2.8/dist/js/scalar.min.js).
 
-Para su instalación en desarrollo es imprescindible contar con [node](https://nodejs.org/es/) y [git](https://git-scm.com/) en sus ultimas versiones.
+```html
+<script src="https://unpkg.com/scalar@0.2.8/dist/js/scalar.min.js"></script>
+<script defer>
+  console.log(scalar);
+</script>
+```
 
-Clona o copia desde el repositorio principal de escalar el proyecto.
+Para su instalación en desarrollo es imprescindible contar con [node](https://nodejs.org/es/) y [git](https://git-scm.com/) en sus últimas versiones.
+
+Clona o copia desde el repositorio principal de scalar.
 
 ```bash
 git clone git@github.com:mirdware/scalar.git
@@ -63,7 +70,7 @@ La ejecución del método compose genera un `compound object`(Objeto compuesto) 
 ```
 
 ## Componentes
-Existen dos maneras de generar un componentes; la primera es extendiendo de la clase Component de escalar, la cual deberá implementar el método listen que retorna un `behavioral object`(Objeto conductual) con el comportamiento del componente.
+Existen dos maneras de generar un componente; la primera es extendiendo de la clase Component de escalar, la cual deberá implementar el método listen que retorna un `behavioral object`(Objeto conductual).
 
 ```javascript
 export default class ToDo extends Component {
@@ -84,7 +91,7 @@ export default class ToDo extends Component {
 }
 ```
 
-La segunda manera de definir un componente es mediante `behavioral function`(función conductual), esta es una función pura en javascript que retorna las acciones y comportamiento del componente; la función recibe como parámetro un objeto compuesto y retorna un objeto conductual.
+La segunda manera de definir es mediante `behavioral function`(función conductual), esta es una función pura en javascript que retorna las acciones del componente; la función recibe como parámetro un objeto compuesto y retorna un objeto conductual.
 
 ```javascript
 export default ($) => ({
@@ -105,7 +112,7 @@ export default ($) => ({
 });
 ```
 
-Al ser una función javascript pura se pueden usar diferentes estilos de programación. En el ejemplo anterior vimos un retorno directo del objeto, pero tambien es posible usar clousures.
+Al ser una función javascript pura se pueden usar diferentes estilos de programación. En el ejemplo anterior vimos un retorno directo del objeto, pero también es posible usar clousures.
 
 ```javascript
 export default ($) => {
@@ -159,7 +166,7 @@ export default ($) => ({
 
 ### Definición del objeto conductual
 
-Mediante javascript se establece el comportamiento de un componente, con este fin se retorna un objeto que poseé como llaves un selector CSS o el nombre de un evento (click, submit, reset, blur, focus, etc), en el primer caso su valor deberá ser otro objeto con similares caracteristicas y en el segundo contendrá la función o método a ejecutar. a esta estructura se le denomina objeto conductual.
+Mediante javascript se establece el comportamiento de un componente por lo cual se debe retornar un objeto con selectores CSS o nombres de evento (click, submit, reset, blur, focus, etc) como llaves, en el primer caso su valor deberá ser otro objeto con similares características y en el segundo contendrá el manejador del evento, a esta estructura se le denomina objeto conductual.
 
 ```javascript
 {
@@ -172,7 +179,7 @@ Mediante javascript se establece el comportamiento de un componente, con este fi
   }
 }
 ```
-Por defecto los eventos lanzados por el objeto tienen un comportamiento de burbuja y son pasivos, si se antepone el signo `_` a su nombre este prevendra su comportamiento por defecto eliminando la pasividad del mismo, si el signo aparece despues del nombre quiere decir que se esta forzando la propagación en modo captura, es posible usar ambas carácteristicas a la vez.
+Por defecto los eventos lanzados por un objeto conductual tienen un comportamiento de burbuja y son pasivos, si se antepone el signo `_` a su nombre este prevendrá su comportamiento si no se retorna true desde el manejador, eliminando así la pasividad del mismo; si el signo aparece después del nombre quiere decir que sé está forzando la propagación en modo captura, es posible usar ambas características a la vez.
 
 ```javascript
 {
@@ -183,10 +190,10 @@ Por defecto los eventos lanzados por el objeto tienen un comportamiento de burbu
   }
 ```
 
-El evento especial `mount` es ejecutado tan pronto inicia el componente y cualquier cambio que se realice dentro del este hace parte del estado inicial por lo cual es ideal entre otras cosas para inicializar objetos y enlazar con servicios.
+El evento `mount` es ejecutado tan pronto inicia el componente y cualquier cambio que se realice dentro de este hace parte del estado inicial por lo cual es ideal para inicializar propiedades y enlazar servicios.
 
 ### Métodos del objeto compuesto
-Es posible reiniciar cualquier componente a un estado inicial mediante el método `reset`; se debe tener en cuenta que las propiedades representadas por un objeto no pueden ser restablecidos a su estado inicial ya que su valor es referenciado, excepto los estilos pasados como atributos.
+Es posible establecer cualquier componente a un estado inicial mediante el método `reset`; se debe tener en cuenta que las propiedades objeto no pueden ser reiniciadas ya que su valor es referenciado, excepto los estilos pasados como atributos.
 
 ```javascript
 ...
@@ -198,7 +205,7 @@ return {
 ...
 ```
 
-Un componente puede hacer uso de servicios mediante el método `inject`, a este se le debe enviar como parámetro la clase que fue proveída al módulo, si la clase que se intenta inyectar no fue declarada no retornara ningún servicio.
+Un componente puede hacer uso de servicios mediante el método `inject` enviando como parámetro la clase que fue proveída al módulo, si esta no fue declarada no se retornara ningún servicio.
 
 ```javascript
 ...
@@ -208,7 +215,7 @@ return {
 ...
 ```
 
-Para hacer uso de un arreglo dentro del componente se debe establecer un data-key que sirve como indice del elemento, luego se debe obtener el key mediante el método `getIndex` el cual recibe el evento como parámetro.
+Para hacer uso de un arreglo dentro de un componente se debe establecer un data-key que sirva como índice del elemento, posteriormente se obtiene mediante el método `getIndex` el cual recibe el evento como parámetro.
 
 ```javascript
 ...
@@ -219,7 +226,7 @@ remove(e) {
 ...
 ```
 
-Un componente puede generar otro componente mediante el método `compose`, este último se denomina **componente derivado**, ya que su creación no se realizo desde un modulo si no que deriva de un similar. El componente padre puede hacer uso de los métodos del derivado, ya que el método compose retorna el objeto resultante de la composición.
+Un componente puede generar otro mediante el método `compose`, este último se denomina **componente derivado**, ya que su creación no se realizó desde un módulo sino que deriva de un similar. Se puede hacer uso de los métodos de un derivado ya que compose retorna el objeto compuesto.
 
 ```javascript
 ...
@@ -230,7 +237,7 @@ $.compose(modal.$dom, Modal)
 ```
 
 ## Servicios y recursos
-Un servicio no es más que un objeto común a todo el ambito del módulo, esto es especialmente útil para la creación de reporitorios que se encuentran usualmente ligados a los recursos (Resources), estos artefactos se encargan de obtener información desde el servidor, claro que se puede usar como origen de datos cualquier cosa, incluso el mismo [localStorage](https://developer.mozilla.org/es/docs/Web/API/Storage/LocalStorage), pero lo normal es que se use una API Rest o GraphQL. Para utilizar un recurso basta con instanciar un objeto de la clase Resource que provee la librería.
+Un servicio no es más que un objeto común al ámbito del módulo, esto es especialmente útil para la creación de repositorios que se encuentran usualmente ligados a los recursos (Resources), estos artefactos se encargan de obtener información desde el servidor, claro que se puede usar como origen de datos cualquier cosa, incluso el mismo [localStorage](https://developer.mozilla.org/es/docs/Web/API/Storage/LocalStorage), pero lo normal es que se use una API Rest o GraphQL. Para utilizar un recurso basta con instanciar un objeto de la clase Resource que provee la librería.
 
 ```javascript
 import { Resource } from 'scalar';
@@ -253,15 +260,15 @@ class ServerConnection extends Resource {
 }
 ```
 
-A parte de sobrescribir propiedades como observamos en el ejemplo anterior con los headers, también es posible utilizar del sistema de inversión para usar un solo objeto durante todo el ciclo de vida de la aplicación, solo basta con proveer esta clase y scalar se encarga del resto, tambien cabe resaltar el uso de [web workers](https://developer.mozilla.org/es/docs/Web/Guide/Performance/Usando_web_workers) para el envió de peticiones, esto hace que toda petición realizada con Resource se realice en segundo plano.
+A parte de sobrescribir propiedades como observamos en el ejemplo anterior también es posible utilizar el sistema de inversión de control para usar un solo objeto durante todo el ciclo de vida de la aplicación, solo basta con proveer la clase y scalar se encarga del resto. Cabe resaltar el uso de [web workers](https://developer.mozilla.org/es/docs/Web/Guide/Performance/Usando_web_workers) para enviar peticiones, esto hace que toda petición realizada con Resource se realice en segundo plano.
 
 ## Plantillas
 Las plantillas (Templates) representan la parte más básica del sistema y se pueden clasificar en: prerenderizadas y JIT (Just In Time).
 
 ### Prerenderizadas
-Las plantillas prerenderizadas son aquellas suministradas por el servidor y hacen parte integral del cuerpo de la petición, de esta manera se puede garantizar el funcionamiento de la aplicación aún si el cliente no activa JavaScript; en parte la idea de la libreria es ir _"escalando"_ un proyecto según las limitantes del cliente (accesibilidad).
+Las plantillas prerenderizadas son aquellas suministradas por el servidor y hacen parte integral del cuerpo de la petición, de esta manera se puede garantizar el funcionamiento de la aplicación aun si el cliente no activa JavaScript; en parte la idea de la librería es ir _"escalando"_ un proyecto según la limitación del cliente (accesibilidad).
 
-Una plantilla scalar podría contener atributos `data-bind` y/o `data-attr`, los primeros generan un enlace en dos direcciones entre el objeto compuesto y la plantilla, siempre y cuando el elemento al cual se enlaza pueda introducir información en caso contrario dicho enlace se establecerá en una sola dirección; el segundo modifica los atributos del elemento según se modifique alguna propiedad y por su naturaleza es unidireccional.
+Una plantilla scalar podría contener atributos `data-bind` y/o `data-attr`, los primeros generan un enlace en dos direcciones entre el objeto compuesto y la plantilla, siempre y cuando el elemento al cual se enlaza pueda introducir información, en caso contrario dicho enlace se establecerá en una sola dirección; el segundo modifica los atributos del elemento según se modifique alguna propiedad y por su naturaleza es unidireccional.
 
 ```html
 <div id="square">
@@ -279,12 +286,12 @@ Una plantilla scalar podría contener atributos `data-bind` y/o `data-attr`, los
 </div>
 ```
 
-Mediante data-bind se crea un enlace a una propiedad del componente, por lo tanto debe tener el formato de una [propiedad javascript](https://developer.mozilla.org/es/docs/Web/JavaScript/Data_structures#Objetos), mientras data-attr puede tener tantos atributos separados por `;` como se desee, un atributo es un par clave valor en donde la clave es el nombre del atributo y el valor la propiedad del componente o una expresión javascript que manejará los cambios de estado, en caso de ser una propiedad no definida en un data-bind esta se creara en el componente, si la propiedad se encuentra dentro de una expresión esto no sera posible.
+Mediante data-bind se crea un enlace a una propiedad del componente, por lo tanto debe tener el formato de una [propiedad javascript](https://developer.mozilla.org/es/docs/Web/JavaScript/Data_structures#Objetos), mientras data-attr puede tener tantos atributos separados por `;` como se desee, un atributo es un par clave valor en donde la clave es el nombre del atributo y el valor la propiedad del componente o una expresión javascript que manejará los cambios de estado, en caso de ser una propiedad no definida en un data-bind esta se creara en el componente, si la propiedad se encuentra dentro de una expresión esto no será posible.
 
-Cuando se desea declarar un objeto desde el sistema de plantillas se debe separar con `.` cada uno de las propiedades del mismo.
+Cuando se desea declarar un objeto desde el sistema de plantillas se debe separar con `.` cada una de las propiedades del mismo, esto aplica también para modificaciones de atributos como estilos.
 
 ```html
-<h2 data-bind="my.msg" style="color:#fff">Mensaje inicial</h2>
+<h2 data-bind="my.msg" data-attr="style.color:my.color" style="color:#fff">Mensaje inicial</h2>
 ```
 
 ### JIT
@@ -302,9 +309,9 @@ El soporte para plantillas JIT está aún en una etapa bastante temprana, pero s
 </ul>
 ```
 
-Siempre que se deseé manipular un arreglo desde el componente este debe estar indexado por `data-key`.
+Siempre que se quiera manipular un arreglo desde el componente este debe estar indexado por `data-key` de esta manera es posible hacer uso del método getIndex.
 
-Es posible interpolar código javaScript mediante el uso de la notación [template string](https://developer.mozilla.org/es/docs/Web/JavaScript/Referencia/template_strings) `${}`; dentro del template es posible acceder a dos propiedades `index` y `data`, la primera indica el indice del array y la segunda la información contenida en el mismo, esto puede cambiar cuando se implemente virtual DOM en proximas versiones.
+Se puede interpolar código javaScript mediante el uso de la notación [template string](https://developer.mozilla.org/es/docs/Web/JavaScript/Referencia/template_strings) `${}`; dentro de la plantilla es posible acceder a dos propiedades `index` y `data`, la primera indica el índice del array y la segunda la información contenida en el mismo, esto puede cambiar cuando se implemente virtual DOM en próximas versiones.
 
 ## Solapamiento de componentes
 El solapamiento se presenta cuando se define un componente sobre otro ya establecido.
@@ -326,4 +333,4 @@ new Module()
 </div>
 ```
 
-En este caso tanto el componente pageable como checkTable hacen uso de la propiedad data, a esto hace referencia el solapamiento a compratir propiedades gracias a su ubicación dentro del DOM. Se debe tener cuidado con los eventos al momento de solapar dado que un componente podria sobreescribir sin querer los eventos de otro.
+En este caso tanto el componente pageable como checkTable hacen uso de la propiedad data, a esto hace referencia el solapamiento a compartir propiedades gracias a su ubicación dentro del DOM. Se debe tener cuidado con los eventos al momento de solapar dado que un componente podría sobreescribir sin querer los eventos de otro.
