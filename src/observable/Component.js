@@ -3,50 +3,12 @@ import * as Privy from '../util/Wrapper';
 import * as Property from './Property';
 
 function getProperty(component, name) {
-  const parent = Privy.get(component);
-  const {$node, module} = parent;
-  const overComponent = findComponent($node, module.components, name);
-  let value = '';
-  if (overComponent) {
-    Object.assign(Privy.get(overComponent).events, parent.events);
-    value = overComponent[name];
-  }
-  const prop = {
-    component,
-    parent,
-    value,
-    nodes: [],
-    attributes: []
-  };
+  const prop = Property.create(component, name);
   Object.defineProperty(component, name, {
     get: () => Property.get(prop),
     set: (value) => Property.set(prop, value)
   });
   return prop;
-}
-
-function findComponent($node, components, name) {
-  const $childrens = $node.querySelectorAll('[data-component]');
-  for (let i = 0, $child; $child = $childrens[i]; i++) {
-    const uuid = $child.dataset.component;
-    if (components[uuid][name]) {
-      return components[uuid];
-    }
-  }
-  return findParentComponent($node, components, name);
-}
-
-function findParentComponent($node, components, name) {
-  if ($node.parentNode) {
-    const parentNode = $node.parentNode;
-    if (parentNode.dataset && parentNode.dataset.component){
-      const uuid = parentNode.dataset.component;
-      if (components[uuid][name]) {
-        return components[uuid];
-      }
-    }
-    return findParentComponent($node.parentNode, components, name);
-  }
 }
 
 function bindData(component, $domElement) {
@@ -64,26 +26,29 @@ function bindAttributes(component, $domElement) {
   $domElement.dataset.attr.split(';')
   .forEach((attribute) => {
     const index = attribute.indexOf(':');
-    const attributes = [];
+    const properties = [];
     let exp = attribute.substr(index + 1).trim();
     exp.replace(/'[^']*'/g, '').match(/\w[\w\._]+/g)
     .forEach((prop) => {
-      const propertyObj = prop.split('.');
-      const value = propertyObj.shift();
-      const properties = Privy.get(component).properties;
-      if (!properties[value]) {
-        properties[value] = getProperty(component, value);
+      const props = prop.split('.');
+      const name = props.shift();
+      const privy = Privy.get(component).properties;
+      if (!privy[name]) {
+        privy[name] = getProperty(component, name);
       }
-      const attr = Property.addAttribute(
-        properties[value],
-        attribute.substr(0, index).trim(),
-        $domElement,
-        propertyObj,
-        exp = (exp !== prop) ? exp.replace(prop, 'p.' + prop) : null
-      );
-      attributes.push(attr);
+      exp = (exp !== prop) ? exp.replace(prop, 'p.' + prop) : null;
+      properties.push({
+        props,
+        value: privy[name]
+      });
     });
-    attributes.forEach((attr) => attr.exp && (attr.exp = exp));
+    properties.forEach((prop) => Property.addAttribute(
+      prop.value,
+      attribute.substr(0, index).trim(),
+      $domElement,
+      prop.props,
+      exp
+    ));
   });
 }
 

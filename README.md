@@ -91,7 +91,7 @@ export default class ToDo extends Component {
 }
 ```
 
-La segunda manera de definir es mediante `behavioral function`(función conductual), esta es una función pura en javascript que retorna las acciones del componente; la función recibe como parámetro un objeto compuesto y retorna un objeto conductual.
+La segunda manera es mediante `behavioral function`(función conductual) la cual es una función pura de javascript que retorna las acciones del componente; la función recibe como parámetro un objeto compuesto y retorna un objeto conductual.
 
 ```javascript
 export default ($) => ({
@@ -179,7 +179,7 @@ Mediante javascript se establece el comportamiento de un componente por lo cual 
   }
 }
 ```
-Por defecto los eventos lanzados por un objeto conductual tienen un comportamiento de burbuja y son pasivos, si se antepone el signo `_` a su nombre este prevendrá su comportamiento si no se retorna true desde el manejador, eliminando así la pasividad del mismo; si el signo aparece después del nombre quiere decir que sé está forzando la propagación en modo captura, es posible usar ambas características a la vez.
+Los eventos lanzados por un objeto conductual tienen un comportamiento de burbuja y son pasivos, si se antepone el signo `_` a su nombre este prevendrá su acción por defecto y se volvera activo, si es necesario se puede retornar true para ejecutar el comportamiento del elemento pero esto no modificara el hecho que el evento a dejado de ser pasivo; si el signo aparece después del nombre quiere decir que sé está forzando la propagación en modo captura, es posible usar ambas características a la vez.
 
 ```javascript
 {
@@ -190,7 +190,7 @@ Por defecto los eventos lanzados por un objeto conductual tienen un comportamien
   }
 ```
 
-El evento `mount` es ejecutado tan pronto inicia el componente y cualquier cambio que se realice dentro de este hace parte del estado inicial por lo cual es ideal para inicializar propiedades y enlazar servicios.
+El evento `mount` es ejecutado tan pronto inicia el componente y cualquier cambio que se realice dentro de este hace parte del estado inicial por lo cual es ideal para enlazar propiedades y servicios.
 
 ### Métodos del objeto compuesto
 Es posible establecer cualquier componente a un estado inicial mediante el método `reset`; se debe tener en cuenta que las propiedades objeto no pueden ser reiniciadas ya que su valor es referenciado, excepto los estilos pasados como atributos.
@@ -237,7 +237,7 @@ $.compose(modal.$dom, Modal)
 ```
 
 ## Servicios y recursos
-Un servicio no es más que un objeto común al ámbito del módulo, esto es especialmente útil para la creación de repositorios que se encuentran usualmente ligados a los recursos (Resources), estos artefactos se encargan de obtener información desde el servidor, claro que se puede usar como origen de datos cualquier cosa, incluso el mismo [localStorage](https://developer.mozilla.org/es/docs/Web/API/Storage/LocalStorage), pero lo normal es que se use una API Rest o GraphQL. Para utilizar un recurso basta con instanciar un objeto de la clase Resource que provee la librería.
+Un servicio no es más que un objeto común al ámbito del módulo lo cual es especialmente útil para la creación de repositorios que se encuentran usualmente ligados a los recursos (Resources), estos artefactos se encargan de obtener información desde el servidor aunque es posible usar como origen de datos cualquier cosa incluso [localStorage](https://developer.mozilla.org/es/docs/Web/API/Storage/LocalStorage), pero lo normal es que se use una API Rest o GraphQL. Para utilizar un recurso basta con instanciar un objeto de la clase Resource que provee la librería.
 
 ```javascript
 import { Resource } from 'scalar';
@@ -245,7 +245,7 @@ import { Resource } from 'scalar';
 const user = new Resource('response.json');
 ```
 
-Ya con el objeto se pueden invocar sus métodos get, post, put, delete y request, este último se usa para crear una petición personalizada (PATCH, OPTIONS, HEAD). Hasta acá no difiere mucho de lo que se puede hacer con la [API fetch](https://developer.mozilla.org/es/docs/Web/API/Fetch_API), pero también es posible extender la clase para realizar peticiones más personalizadas.
+Ya con el objeto se pueden invocar sus métodos get, post, put, delete y request, este último se usa para crear una petición personalizada (PATCH, OPTIONS, HEAD). Hasta acá no difiere mucho de lo que se puede hacer con la [API fetch](https://developer.mozilla.org/es/docs/Web/API/Fetch_API) pero también es posible extender la clase para realizar peticiones más personalizadas.
 
 ```javascript
 import { Resource } from 'scalar';

@@ -1,4 +1,4 @@
-import { addListeners } from '../util/stdlib';
+import { addListeners, setPropertyValue } from '../util/stdlib';
 
 function setAttribute($attribute, name, property) {
   if (property.constructor === Object) {
@@ -8,6 +8,16 @@ function setAttribute($attribute, name, property) {
   } else if ($attribute[name] !== property) {
     $attribute[name] = property;
   }
+}
+
+export function create(property, name, $element, prop, exp) {
+  const keys = name.split('.');
+  let $attribute = $element;
+  name = keys.pop();
+  keys.forEach((k) => $attribute = $attribute[k]);
+  const attribute = { name, $attribute, $element, prop, exp };
+  exp ? execute(property, attribute) : setPropertyValue(property, prop, $attribute[name]);
+  return attribute;
 }
 
 export function execute(property, attribute, value) {

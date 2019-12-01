@@ -28,6 +28,14 @@ function bindFunction(name, $element, fn) {
   $element.eventListenerList.push({name, fn, opt});
 }
 
+function getObject(obj, props, value, i = 0) {
+  const prop = obj[props[i]];
+  obj[props[i]] = ++i < props.length ?
+  getObject(prop || {}, props, value, i) :
+  value;
+  return obj;
+}
+
 export function addListeners($element, events, root = true) {
   for (const selector in events) {
     const fn = events[selector];
@@ -67,20 +75,9 @@ export function generateUUID(obj) {
   return uuid;
 }
 
-export function setValue($node, value, attr = 'value') {
-  const { type } = $node;
-  if (type === 'checkbox' || type === 'radio') {
-    attr = 'checked';
-    if (type === 'radio') {
-      value = $node.value === value;
-    }
-  } else if (type === 'file') {
-    attr = 'files';
-  }
-  if ($node[attr] !== value) $node[attr] = value;
-}
 
-export function isInput($node) {
-  const nodeName = $node.nodeName;
-  return nodeName === 'INPUT' || nodeName === 'TEXTAREA' || nodeName === 'SELECT';
+export function setPropertyValue(property, prop, value) {
+  property.value = prop.length ?
+  getObject(property.value || {}, prop, value) :
+  value;
 }

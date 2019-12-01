@@ -14,46 +14,44 @@ function generateTemplate(template, param) {
   return template;
 }
 
-export default class Template {
-  constructor(component, $node) {
-    let $template = $node.querySelector('script[type="text/template"]');
-    this.component = component;
-    this.$node = $node;
-    if ($template) {
-      this.tpl = $template.innerHTML;
-      this.base = $node.innerHTML.trim()
-      .replace($template.outerHTML, '')
-      .replace(/>\s*</g, '><');
-    }
-  }
 
-  getValue() {
-    const value = [];
-    if (!this.tpl) return value;
-    const keys = [];
-    const regex = new RegExp(this.tpl.trim()
-    .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-    .replace(/\\\$\\\{data\\\.[\w\d\.]*\\\}/g, '([^<]*)')
-    .replace(/\\\$\\\{[^\}]*\\\}/g, '[^<]*')
-    .replace(/>\s*</g, '><'), 'g');
-    this.tpl.match(/\$\{data\.[\w\d\.]*\}/g)
-    .forEach((data) => {
-      keys.push(data.replace('${data.', '').replace('}', ''));
+export function create(component, $node, $template) {
+  const template = { component, $node };
+  if ($template) {
+    template.tpl = $template.innerHTML;
+    template.base = $node.innerHTML.trim()
+    .replace($template.outerHTML, '')
+    .replace(/>\s*</g, '><');
+  }
+  return template;
+}
+
+export function getValue(template) {
+  const value = [];
+  if (!template.tpl) return value;
+  const keys = [];
+  const regex = new RegExp(template.tpl.trim()
+  .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  .replace(/\\\$\\\{data\\\.[\w\d\.]*\\\}/g, '([^<]*)')
+  .replace(/\\\$\\\{[^\}]*\\\}/g, '[^<]*')
+  .replace(/>\s*</g, '><'), 'g');
+  template.tpl.match(/\$\{data\.[\w\d\.]*\}/g)
+  .forEach((data) => {
+    keys.push(data.replace('${data.', '').replace('}', ''));
+  });
+  let matches;
+  while ((matches = regex.exec(template.base)) !== null) {
+    const obj = {};
+    keys.forEach((key, i) => {
+      obj[key] = matches[i + 1];
     });
-    let matches;
-    while ((matches = regex.exec(this.base)) !== null) {
-      const obj = {};
-      keys.forEach((key, i) => {
-        obj[key] = matches[i + 1];
-      });
-      value.push(obj);
-    }
-    return value;
+    value.push(obj);
   }
+  return value;
+}
 
-  render(param) {
-    const { $node } = this;
-    $node.innerHTML = generateTemplate(this.tpl, param);
-    addListeners($node, this.component.events, false);
-  }
+export function render(template, param) {
+  const { $node } = template;
+  $node.innerHTML = generateTemplate(template.tpl, param);
+  addListeners($node, template.component.events, false);
 }

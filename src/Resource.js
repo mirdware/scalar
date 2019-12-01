@@ -1,6 +1,6 @@
 let worker;
 if (Worker) {
-  const blob = new Blob(['self.onmessage=function(e){a(e.data,self.postMessage)};a=' + sendRequest]);
+  const blob = new Blob(['self.onmessage=function(e){(' + sendRequest + ')(e.data,self.postMessage)}']);
   worker = new Worker(window.URL.createObjectURL(blob));
 }
 
@@ -13,15 +13,12 @@ function sendRequest(request, callback) {
     return formData;
   }
 
-  function formatQueryString(queryString) {
-    const res = [];
-    for (const key in queryString) {
-      if(typeof queryString[key] !== 'function') {
-        res.push(encodeURIComponent(key) + '=' + encodeURIComponent(queryString[key]));
-      }
+  function formatQueryString(data) {
+    let queryString = '';
+    for (const key in data) {
+      queryString += encodeURIComponent(key) + '=' + encodeURIComponent(data[key]) + '&';
     }
-    queryString = res.join('&');
-    return queryString ? '?' + queryString : queryString;
+    return queryString ? '?' + queryString.substring(0, queryString.length - 1) : queryString;
   }
   
   function formatURL(url, data) {
@@ -38,7 +35,7 @@ function sendRequest(request, callback) {
   let { headers, data, queryString, url } = request;
   const xhr = new XMLHttpRequest();
   data = headers['Content-Type'] === 'application/json' ? JSON.stringify(data) : serialize(data);
-  url = formatURL(url, queryString) + formatQueryString(queryString)
+  url = formatURL(url, queryString) + formatQueryString(queryString);
   xhr.open(request.method, url, true);
   for (const header in headers) {
     xhr.setRequestHeader(header, headers[header]);
@@ -46,13 +43,20 @@ function sendRequest(request, callback) {
   xhr.send(data);
   xhr.onreadystatechange = () => {
     if (xhr.readyState === 4) {
+      const content = xhr.getResponseHeader('Content-Type');
       const { responseURL } = xhr;
+      let response = xhr.responseText;
+      if (content) {
+        if (content.indexOf('application/json') !== -1) {
+          response = JSON.parse(response);
+        } else if (/(application|text)\/xml/.test(content)) {
+          response = xhr.responseXML;
+        }
+      }
       callback({
-        content: xhr.getResponseHeader('Content-Type'),
-        status: xhr.status,
-        xml: xhr.responseXML,
-        text: xhr.responseText,
+        response,
         url: responseURL,
+        status: xhr.status,
         redirect: request.redirect && responseURL !== url
       });
     }
@@ -60,22 +64,13 @@ function sendRequest(request, callback) {
 }
 
 function solve(xhr, resolve, reject) {
-  const { status, content, url } = xhr;
-  let response;
+  const { status, response } = xhr;
   if (xhr.redirect) {
-    return window.location = url;
-  }
-  if (/(application|text)\/xml/.test(content)) {
-    response = xhr.xml;
-  } else {
-    response = xhr.text;
-    if (content && content.indexOf('application/json') !== -1) {
-      response = JSON.parse(response);
-    }
+    return window.location = xhr.url;
   }
   (status > 399) ?
   reject(response, status) :
-  resolve(response);
+  resolve(response, status);
 }
 
 function manage(resource, method, data, queryString) {
