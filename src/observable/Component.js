@@ -52,7 +52,7 @@ function bindAttributes(component, $domElement) {
   });
 }
 
-export function watch(component, $node) {
+function watch(component, $node) {
   const dataBinds = Array.from($node.querySelectorAll('[data-bind]'));
   const dataAttributes = Array.from($node.querySelectorAll('[data-attr]'));
   if ($node.dataset.bind) {

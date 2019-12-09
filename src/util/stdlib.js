@@ -23,9 +23,9 @@ function bindFunction(name, $element, fn) {
     capture = true;
     name = name.substring(0, lastChar);
   }
-  const opt = hasObjectConfig ? {passive, capture} : capture;
+  const opt = hasObjectConfig ? { passive, capture } : capture;
   $element.addEventListener(name, fn, opt);
-  $element.eventListenerList.push({name, fn, opt});
+  $element.eventListenerList.push({ name, fn, opt });
 }
 
 function getObject(obj, props, value, i = 0) {
@@ -74,7 +74,6 @@ export function generateUUID(obj) {
   });
   return uuid;
 }
-
 
 export function setPropertyValue(property, prop, value) {
   property.value = prop.length ?

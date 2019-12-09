@@ -8,13 +8,17 @@ El desarrollo de aplicaciones con scalar se basa en componentes no obstructivos,
 Para usar scalar en un proyecto solo basta con tener instalado node y npm para ejecutar el comando `npm install scalar` o usar el [CDN](https://unpkg.com/scalar@0.2.8/dist/js/scalar.min.js).
 
 ```html
+<h1 data-bind="msg" id="hello-world"></h1>
 <script src="https://unpkg.com/scalar@0.2.8/dist/js/scalar.min.js"></script>
 <script defer>
-  console.log(scalar);
+  new scalar.Module()
+  .compose('#hello-world', ($) => ({
+      mount: () => $.msg = 'Hello world!!!'
+  }));
 </script>
 ```
 
-Para su instalación en desarrollo es imprescindible contar con [node](https://nodejs.org/es/) y [git](https://git-scm.com/) en sus últimas versiones.
+En ambiente de desarrollo es imprescindible contar con [node](https://nodejs.org/es/) y [git](https://git-scm.com/) en sus últimas versiones.
 
 Clona o copia desde el repositorio principal de scalar.
 

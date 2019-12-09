@@ -76,7 +76,7 @@ function findParentComponent($node, components, name) {
 
 export function create(component, name) {
   const parent = Privy.get(component);
-  const {$node, module} = parent;
+  const { $node, module } = parent;
   const overComponent = findComponent($node, module.components, name);
   let value = '';
   if (overComponent) {

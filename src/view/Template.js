@@ -2,56 +2,42 @@ import { addListeners } from "../util/stdlib";
 
 const cache = {};
 
-function generateTemplate(template, param) {
-  let fn = cache[template];
-  if (!fn){
-    fn = cache[template] = Function(
-      'data,index', `return \`${template}\``
-    );
-  }
-  template = Array.isArray(param) ? param.map(fn) : fn(param);
-  if (Array.isArray(template)) return template.join('');
-  return template;
-}
-
-
 export function create(component, $node, $template) {
-  const template = { component, $node };
-  if ($template) {
-    template.tpl = $template.innerHTML;
-    template.base = $node.innerHTML.trim()
+  return {
+    component,
+    $node,
+    tpl: $template.innerHTML,
+    base: $node.innerHTML.trim()
     .replace($template.outerHTML, '')
-    .replace(/>\s*</g, '><');
-  }
-  return template;
+    .replace(/>\s+</g, '><')
+  };
 }
 
 export function getValue(template) {
   const value = [];
-  if (!template.tpl) return value;
-  const keys = [];
+  const keys = template.tpl.match(/\$\{data\.[\w\d\.]*\}/g)
+  .map((data) => (data.replace('${data.', '').replace('}', '')));
   const regex = new RegExp(template.tpl.trim()
   .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
   .replace(/\\\$\\\{data\\\.[\w\d\.]*\\\}/g, '([^<]*)')
   .replace(/\\\$\\\{[^\}]*\\\}/g, '[^<]*')
-  .replace(/>\s*</g, '><'), 'g');
-  template.tpl.match(/\$\{data\.[\w\d\.]*\}/g)
-  .forEach((data) => {
-    keys.push(data.replace('${data.', '').replace('}', ''));
-  });
+  .replace(/>\s+</g, '><'), 'g');
   let matches;
   while ((matches = regex.exec(template.base)) !== null) {
     const obj = {};
-    keys.forEach((key, i) => {
-      obj[key] = matches[i + 1];
-    });
+    keys.forEach((key, i) => obj[key] = matches[i + 1]);
     value.push(obj);
   }
   return value;
 }
 
 export function render(template, param) {
-  const { $node } = template;
-  $node.innerHTML = generateTemplate(template.tpl, param);
-  addListeners($node, template.component.events, false);
+  const { $node, tpl, component } = template;
+  let fn = cache[tpl];
+  if (!fn){
+    fn = cache[tpl] = Function('data,index', 'return `' + tpl + '`');
+  }
+  template = Array.isArray(param) ? param.map(fn) : fn(param);
+  $node.innerHTML = Array.isArray(template) ? template.join('') : template;
+  addListeners($node, component.events, false);
 }

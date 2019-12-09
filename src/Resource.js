@@ -1,9 +1,3 @@
-let worker;
-if (Worker) {
-  const blob = new Blob(['self.onmessage=function(e){(' + sendRequest + ')(e.data,self.postMessage)}']);
-  worker = new Worker(window.URL.createObjectURL(blob));
-}
-
 function sendRequest(request, callback) {
   function serialize(data) {
     const formData = new FormData();
@@ -78,7 +72,9 @@ function manage(resource, method, data, queryString) {
   resource.data = data;
   resource.queryString = queryString;
   return new Promise((resolve, reject) => {
-    if (worker) {
+    if (Worker) {
+      const blob = new Blob(['self.onmessage=function(e){(' + sendRequest + ')(e.data,self.postMessage)}']);
+      const worker = new Worker(window.URL.createObjectURL(blob));
       worker.postMessage(resource);
       worker.onmessage = (e) => solve(e.data, resolve, reject);
     } else {

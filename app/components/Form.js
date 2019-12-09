@@ -5,7 +5,7 @@ export default ($) => ({
     $.inject(Message).set($.name);
     console.log($);
   },
-  reset: () => $.reset(),
+  _reset: () => $.reset(),
   '.fill': {
     click: () => Object.assign($, {
       name: 'Marlon Ramírez',
