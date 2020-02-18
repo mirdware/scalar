@@ -74,13 +74,23 @@ function findParentComponent($node, components, name) {
   }
 }
 
+function mergeEvents(origin, destination) {
+  for (const name in origin) {
+    if (!(origin[name] instanceof Function)) {
+      destination[name] = origin[name];
+    }
+  }
+}
+
 export function create(component, name) {
   const parent = Privy.get(component);
-  const { $node, module } = parent;
+  const { $node, module, events } = parent;
   const overComponent = findComponent($node, module.components, name);
   let value = '';
   if (overComponent) {
-    Object.assign(Privy.get(overComponent).events, parent.events);
+    const componentEvents = Privy.get(overComponent).events;
+    mergeEvents(componentEvents, events);
+    mergeEvents(events, componentEvents);
     value = overComponent[name];
   }
   return {

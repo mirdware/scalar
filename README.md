@@ -13,7 +13,7 @@ Para usar scalar en un proyecto solo basta con tener instalado node y npm para e
 <script defer>
   new scalar.Module()
   .compose('#hello-world', ($) => ({
-      mount: () => $.msg = 'Hello world!!!'
+    mount: () => $.msg = 'Hello world!!!'
   }));
 </script>
 ```
