@@ -15,8 +15,9 @@ export function create(component, $node, $template) {
 
 export function getValue(template) {
   const value = [];
-  const keys = template.tpl.match(/\$\{data\.[\w\d\.]*\}/g)
-  .map((data) => (data.replace('${data.', '').replace('}', '')));
+  let keys = template.tpl.match(/\$\{data\.[\w\d\.]*\}/g);
+  if (!keys) return value;
+  keys = keys.map((data) => (data.replace('${data.', '').replace('}', '')));
   const regex = new RegExp(template.tpl.trim()
   .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
   .replace(/\\\$\\\{data\\\.[\w\d\.]*\\\}/g, '([^<]*)')

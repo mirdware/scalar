@@ -124,7 +124,7 @@ export function set(property, value = '') {
 }
 
 export function addNode(property, $node, prop) {
-  property.nodes.push(Node.create(property, $node, prop, set));
+  property.nodes.push(Node.create(property, $node, prop));
 }
 
 export function addAttribute(property, name, $element, prop, exp) {

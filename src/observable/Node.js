@@ -1,4 +1,5 @@
 import { setPropertyValue } from '../util/stdlib';
+import * as Attribute from './Attribute';
 import * as Template from '../view/Template';
 
 function isInput($node) {
@@ -32,13 +33,31 @@ function evalValue(target) {
   return target.value || null;
 }
 
-export function create(property, $node, prop, set) {
+function changeContent(property, prop, value) {
+  setPropertyValue(property, prop, value);
+  value = property.value;
+  property.nodes.forEach((node) => execute(node, value));
+  property.attributes.forEach((attr) => Attribute.execute(property, attr, value));
+}
+
+function getObjectValue(obj, props) {
+  for (let i = 0, prop; prop = props[i]; i++) {
+    if (!obj[prop]) return '';
+    obj = obj[prop];
+  }
+  return obj;
+}
+
+export function create(property, $node, prop) {
   let { value } = property;
   let complexType = null;
+  if (value instanceof Object) {
+    value = getObjectValue(value, prop);
+  }
   if (isInput($node)) {
     const inputValue = evalValue($node);
-    $node.addEventListener('keyup', (e) => set(property, e.target.value));
-    $node.addEventListener('change', (e) => set(property, evalValue(e.target)));
+    $node.addEventListener('keyup', (e) => changeContent(property, prop, e.target.value));
+    $node.addEventListener('change', (e) => changeContent(property, prop, evalValue(e.target)));
     if (inputValue === null) {
       setValue($node, value);
     } else {
@@ -61,7 +80,7 @@ export function create(property, $node, prop, set) {
 
 export function execute(node, value) {
   const { $node, complexType } = node;
-  const attr = isInput($node) ? 'value': 'innerHTML';
+  const attr = isInput($node) ? 'value' : 'innerHTML';
   node.prop.forEach((prop) => value = value[prop]);
   if (complexType && value && attr === 'innerHTML') {
     return Template.render(complexType, value);
