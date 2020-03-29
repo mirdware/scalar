@@ -1,12 +1,10 @@
 let hasObjectConfig = false;
-let $test = document.createElement('b');
-const options = Object.defineProperty({}, 'passive', {
+document.createElement('b')
+.addEventListener('load', null, Object.defineProperty({}, 'passive', {
   get() {
     hasObjectConfig = true;
   }
-});
-$test.addEventListener('click', () => {}, options);
-$test = undefined;
+}));
 
 function bindFunction(name, $element, fn) {
   const lastChar = name.length - 1;
@@ -14,7 +12,7 @@ function bindFunction(name, $element, fn) {
   let passive = true;
   if (name.indexOf('_') === 0) {
     const method = fn;
-    fn = (e) => method.call($element, e) || e.preventDefault();
+    fn = (e) => method.call($element, e) !== true && e.preventDefault();
     fn.uuid = method.uuid;
     passive = false;
     name = name.substring(1);

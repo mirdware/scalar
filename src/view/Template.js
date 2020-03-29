@@ -22,7 +22,7 @@ export function getValue(template) {
   .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
   .replace(/\\\$\\\{data\\\.[\w\d\.]*\\\}/g, '([^<]*)')
   .replace(/\\\$\\\{[^\}]*\\\}/g, '[^<]*')
-  .replace(/>\s+</g, '><'), 'g');
+  .replace(/\/?\s*>\s*<\s*/g, '><'), 'g');
   let matches;
   while ((matches = regex.exec(template.base)) !== null) {
     const obj = {};

@@ -337,4 +337,4 @@ new Module()
 </div>
 ```
 
-En este caso tanto el componente pageable como checkTable hacen uso de la propiedad data, a esto hace referencia el solapamiento a compartir propiedades gracias a su ubicación dentro del DOM. Se debe tener cuidado con los eventos al momento de solapar dado que un componente podría sobreescribir sin querer los eventos de otro.
+En este caso tanto el componente pageable como checkTable hacen uso de la propiedad data, a esto hace referencia el solapamiento a compartir propiedades gracias a su ubicación dentro del DOM; un cambio en una propiedad afectara a la propiedad del componente solapado. Se debe tener cuidado con los eventos al momento de solapar dado que un componente podría sobreescribir sin querer los eventos de otro.

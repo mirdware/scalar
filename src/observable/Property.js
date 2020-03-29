@@ -50,56 +50,39 @@ function changeContent(property, value) {
   return true;
 }
 
-function findComponent($node, components, name) {
-  const $childrens = $node.querySelectorAll('[data-component]');
-  for (let i = 0, $child; $child = $childrens[i]; i++) {
-    const uuid = $child.dataset.component;
-    if (components[uuid][name]) {
-      return components[uuid];
-    }
-  }
-  return findParentComponent($node, components, name);
+function addOverloap(component, property, name) {
+  component = Privy.get(component);
+  const prop = component.properties[name];
+  prop.over.push(property);
+  property.over.push(prop);
+  Object.assign(component.events, property.parent.events);
 }
 
-function findParentComponent($node, components, name) {
+function findComponent($node, components, property, name) {
   if ($node.parentNode) {
     const parentNode = $node.parentNode;
     if (parentNode.dataset && parentNode.dataset.component){
       const uuid = parentNode.dataset.component;
       if (components[uuid][name]) {
-        return components[uuid];
+        addOverloap(components[uuid], property, name);
       }
     }
-    return findParentComponent($node.parentNode, components, name);
-  }
-}
-
-function mergeEvents(origin, destination) {
-  for (const name in origin) {
-    if (!(origin[name] instanceof Function)) {
-      destination[name] = origin[name];
-    }
+    findComponent($node.parentNode, components, property, name);
   }
 }
 
 export function create(component, name) {
   const parent = Privy.get(component);
-  const { $node, module, events } = parent;
-  const overComponent = findComponent($node, module.components, name);
-  let value = '';
-  if (overComponent) {
-    const componentEvents = Privy.get(overComponent).events;
-    mergeEvents(componentEvents, events);
-    mergeEvents(events, componentEvents);
-    value = overComponent[name];
-  }
-  return {
+  const property = {
     component,
     parent,
-    value,
+    value: '',
     nodes: [],
-    attributes: []
+    attributes: [],
+    over: []
   };
+  findComponent(parent.$node, parent.module.components, property, name);
+  return property;
 }
 
 export function get(property) {
@@ -118,6 +101,7 @@ export function get(property) {
 }
 
 export function set(property, value = '') {
+  property.over.forEach((prop) => prop.value = value);
   return value instanceof Promise ?
   value.then((data) => changeContent(property, data)) :
   changeContent(property, value);
