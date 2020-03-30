@@ -44,8 +44,9 @@ const getPropertyHandler = (property, root) => ({
 });
 
 function changeContent(property, value) {
+  const state = Object.assign({}, property.value);
   property.value = value;
-  property.nodes.forEach((node) => Node.execute(node, value));
+  property.nodes.forEach((node) => Node.execute(node, state, value));
   property.attributes.forEach((attr) => Attribute.execute(property, attr, value));
   return true;
 }

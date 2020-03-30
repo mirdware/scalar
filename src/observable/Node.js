@@ -17,7 +17,10 @@ function setValue($node, value, attr = 'value') {
   } else if (type === 'file') {
     attr = 'files';
   }
-  if ($node[attr] !== value) $node[attr] = value;
+  if ($node[attr] !== value) {
+    $node[attr] = value;
+    $node.dispatchEvent(new Event('mutate'));
+  }
 }
 
 function evalValue(target) {
@@ -34,9 +37,10 @@ function evalValue(target) {
 }
 
 function changeContent(property, prop, value) {
+  const state = Object.assign({}, property.value);
   setPropertyValue(property, prop, value);
   value = property.value;
-  property.nodes.forEach((node) => execute(node, value));
+  property.nodes.forEach((node) => execute(node, state, value));
   property.attributes.forEach((attr) => Attribute.execute(property, attr, value));
 }
 
@@ -78,10 +82,14 @@ export function create(property, $node, prop) {
   return { prop, $node, complexType };
 }
 
-export function execute(node, value) {
+export function execute(node, state, value) {
   const { $node, complexType } = node;
   const attr = isInput($node) ? 'value' : 'innerHTML';
-  node.prop.forEach((prop) => value = value[prop]);
+  node.prop.forEach((prop) => {
+    value = value[prop];
+    state = state[prop];
+  });
+  if (value === state) return;
   if (complexType && value && attr === 'innerHTML') {
     return Template.render(complexType, value);
   }

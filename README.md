@@ -187,14 +187,22 @@ Los eventos lanzados por un objeto conductual tienen un comportamiento de burbuj
 
 ```javascript
 {
-    mount: () => message.my = $.my,
-    '.first': {
-      _click_: paint
-    }
+  mount: () => message.my = $.my,
+  '.first': {
+    _click_: paint
   }
+}
 ```
 
 El evento `mount` es ejecutado tan pronto inicia el componente y cualquier cambio que se realice dentro de este hace parte del estado inicial por lo cual es ideal para enlazar propiedades y servicios.
+
+```javascript
+{
+  mutate: (e) => mask(e.target)
+}
+```
+
+Aparte de mount existe el evento especial `mutate` el cual notifica cuando un elemento del componente ha sido modificado, para escuchar el evento se debe enlazar al elemento que se transformara con la mutación de la propiedad.
 
 ### Métodos del objeto compuesto
 Es posible establecer cualquier componente a un estado inicial mediante el método `reset`; se debe tener en cuenta que las propiedades objeto no pueden ser reiniciadas ya que su valor es referenciado, excepto los estilos pasados como atributos.
