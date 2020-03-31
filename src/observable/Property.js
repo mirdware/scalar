@@ -1,3 +1,4 @@
+import { clone } from '../util/stdlib';
 import * as Privy from '../util/Wrapper';
 import * as Node from './Node';
 import * as Attribute from './Attribute';
@@ -12,13 +13,14 @@ const getFunctionHandler = (property, root) => ({
 const getPropertyHandler = (property, root) => ({
   set: (target, prop, value) => {
     root = root || target;
+    const state = clone(root);
     if (value instanceof Promise) {
       return value.then((data) => {
-        if (Reflect.set(target, prop, data)) return set(property, root);
+        if (Reflect.set(target, prop, data)) return set(property, root, state);
       });
     }
     if (Reflect.set(target, prop, value)) {
-      return set(property, root);
+      return set(property, root, state);
     }
   },
   get: (target, prop, receiver) => {
@@ -43,11 +45,14 @@ const getPropertyHandler = (property, root) => ({
   }
 });
 
-function changeContent(property, value) {
-  const state = Object.assign({}, property.value);
+function changeContent(property, value, state) {
   property.value = value;
-  property.nodes.forEach((node) => Node.execute(node, state, value));
-  property.attributes.forEach((attr) => Attribute.execute(property, attr, value));
+  property.nodes.forEach((node) => {
+    Node.execute(node, state, value);
+  });
+  property.attributes.forEach((attr) => {
+    Attribute.execute(property, attr, value);
+  });
   return true;
 }
 
@@ -101,11 +106,13 @@ export function get(property) {
   return value;
 }
 
-export function set(property, value = '') {
-  property.over.forEach((prop) => prop.value = value);
+export function set(property, value = '', state) {
+  property.over.forEach((prop) => {
+    prop.value = value;
+  });
   return value instanceof Promise ?
-  value.then((data) => changeContent(property, data)) :
-  changeContent(property, value);
+  value.then((data) => changeContent(property, data, state)) :
+  changeContent(property, value, state);
 }
 
 export function addNode(property, $node, prop) {

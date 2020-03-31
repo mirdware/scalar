@@ -58,6 +58,30 @@ export function addListeners($element, events, root = true) {
   }
 }
 
+export function clone(object) {
+  const gdcc = '_deep_';
+  if (object !== Object(object)) return object;
+  const set = gdcc in object;
+  const cache = object[gdcc];
+  let result;
+  if (set && typeof cache == 'function') return cache();
+  object[gdcc] = () => result;
+  if (object instanceof Array) {
+    result = object.map((obj) => clone(obj));
+  } else {
+    result = {};
+    for (var prop in object) {
+      result[prop] = prop != gdcc ? clone(object[prop]) : clone(cache);
+    }
+  }
+  if (set) {
+      object[gdcc] = cache;
+  } else {
+      delete object[gdcc];
+  }
+  return result;
+}
+
 export function generateUUID(obj) {
   const uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'
   .replace(/[xy]/g, (c) => {

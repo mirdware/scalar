@@ -1,4 +1,4 @@
-import { addListeners } from '../util/stdlib';
+import { addListeners, clone } from '../util/stdlib';
 import * as Privy from '../util/Wrapper';
 import * as Property from './Property';
 
@@ -6,7 +6,7 @@ function getProperty(component, name) {
   const prop = Property.create(component, name);
   Object.defineProperty(component, name, {
     get: () => Property.get(prop),
-    set: (value) => Property.set(prop, value)
+    set: (value) => Property.set(prop, value, Object.assign({}, prop.value))
   });
   return prop;
 }
@@ -42,13 +42,9 @@ function bindAttributes(component, $domElement) {
         value: privy[name]
       });
     });
-    properties.forEach((prop) => Property.addAttribute(
-      prop.value,
-      attribute.substr(0, index).trim(),
-      $domElement,
-      prop.props,
-      exp
-    ));
+    properties.forEach((prop) => {
+      Property.addAttribute(prop.value, attribute.substr(0, index).trim(), $domElement, prop.props, exp);
+    });
   });
 }
 
@@ -61,17 +57,24 @@ function watch(component, $node) {
   if ($node.dataset.attr) {
     dataAttributes.push($node);
   }
-  dataBinds.forEach(($bind) => bindData(component, $bind));
-  dataAttributes.forEach(($attr) => bindAttributes(component, $attr));
+  dataBinds.forEach(($bind) => {
+    bindData(component, $bind);
+  });
+  dataAttributes.forEach(($attr) => {
+    bindAttributes(component, $attr);
+  });
 }
 
 function getState(state, properties) {
   for (const name in properties) {
     const prop = properties[name].value;
-    state[name] = prop instanceof CSSStyleDeclaration ?
+    const constructor = prop.constructor;
+    state[name] = constructor === CSSStyleDeclaration ?
     prop.cssText :
-    prop instanceof DOMTokenList ?
+    constructor === DOMTokenList ?
     prop.value :
+    constructor === Object || constructor === Array ?
+    clone(prop) :
     prop;
   }
   return state;

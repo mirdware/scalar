@@ -14,7 +14,9 @@ export function create(property, name, $element, prop, exp) {
   const keys = name.split('.');
   let $attribute = $element;
   name = keys.pop();
-  keys.forEach((k) => $attribute = $attribute[k]);
+  keys.forEach((k) => {
+    $attribute = $attribute[k];
+  });
   const attribute = { name, $attribute, $element, prop, exp };
   exp ? execute(property, attribute) : setPropertyValue(property, prop, $attribute[name]);
   return attribute;
@@ -27,7 +29,9 @@ export function execute(property, attribute, value) {
   if (attribute.exp) {
     value = Function('p', 'return ' + attribute.exp)(property.component);
   } else {
-    attribute.prop.forEach((prop) => value = value[prop]);
+    attribute.prop.forEach((prop) => {
+      value = value[prop];
+    });
   }
   setAttribute(attribute.$attribute, attribute.name, value);
   if (eventListenerList) {

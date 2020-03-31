@@ -1,4 +1,4 @@
-import { setPropertyValue } from '../util/stdlib';
+import { setPropertyValue, clone } from '../util/stdlib';
 import * as Attribute from './Attribute';
 import * as Template from '../view/Template';
 
@@ -37,11 +37,15 @@ function evalValue(target) {
 }
 
 function changeContent(property, prop, value) {
-  const state = Object.assign({}, property.value);
+  const state = clone(property.value);
   setPropertyValue(property, prop, value);
   value = property.value;
-  property.nodes.forEach((node) => execute(node, state, value));
-  property.attributes.forEach((attr) => Attribute.execute(property, attr, value));
+  property.nodes.forEach((node) => {
+    execute(node, state, value);
+  });
+  property.attributes.forEach((attr) => {
+    Attribute.execute(property, attr, value);
+  });
 }
 
 function getObjectValue(obj, props) {

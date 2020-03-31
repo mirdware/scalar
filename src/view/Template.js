@@ -26,7 +26,9 @@ export function getValue(template) {
   let matches;
   while ((matches = regex.exec(template.base)) !== null) {
     const obj = {};
-    keys.forEach((key, i) => obj[key] = matches[i + 1]);
+    keys.forEach((key, i) => {
+      obj[key] = matches[i + 1];
+    });
     value.push(obj);
   }
   return value;
