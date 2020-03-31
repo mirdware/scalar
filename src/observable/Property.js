@@ -59,9 +59,15 @@ function changeContent(property, value, state) {
 function addOverloap(component, property, name) {
   component = Privy.get(component);
   const prop = component.properties[name];
+  const events = Object.assign({}, property.parent.events);
   prop.over.push(property);
   property.over.push(prop);
-  Object.assign(component.events, property.parent.events);
+  for (const name in events) {
+    if (events[name] instanceof Function) {
+      delete events[name];
+    }
+  }
+  Object.assign(component.events, events);
 }
 
 function findComponent($node, components, property, name) {
