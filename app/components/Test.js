@@ -16,6 +16,17 @@ export default ($) => {
     $.name = user.get();
   }
 
+  function reset() {
+    $.action.replace('reset', 'open');
+    Object.assign($, {
+      name: [],
+      squareStyle: {
+        backgroundColor: 'black',
+        borderRadius: 0
+      }
+    });
+  }
+
   function paint() {
     const color = this.innerText.toLowerCase();
     $.squareStyle = {
@@ -34,7 +45,7 @@ export default ($) => {
       click: paint
     },
     '.reset': {
-      click: () => $.reset()
+      click: () => reset()
     }
   };
 };

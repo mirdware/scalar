@@ -205,19 +205,7 @@ El evento `mount` es ejecutado tan pronto inicia el componente y cualquier cambi
 Aparte de mount existe el evento especial `mutate` el cual notifica cuando un elemento del componente ha sido modificado, para escuchar el evento se debe enlazar al elemento que se transformara con la mutación de la propiedad.
 
 ### Métodos del objeto compuesto
-Es posible establecer cualquier componente a un estado inicial mediante el método `reset`, es posible que ciertos objetos no se restablezcan de manera adecuada.
-
-```javascript
-...
-return {
-  '.reset': {
-    click: () => $.reset()
-  }
-};
-...
-```
-
-Un componente puede hacer uso de servicios mediante el método `inject` enviando como parámetro la clase que fue proveída al módulo, si esta no fue declarada no se retornara ningún servicio.
+Es posible hacer uso de servicios mediante el método `inject` enviando como parámetro la clase que fue proveída al módulo, si esta no fue declarada se retornara undefined.
 
 ```javascript
 ...

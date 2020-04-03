@@ -1,4 +1,4 @@
-import { addListeners, clone } from '../util/stdlib';
+import { addListeners } from '../util/stdlib';
 import * as Privy from '../util/Wrapper';
 import * as Property from './Property';
 
@@ -65,21 +65,6 @@ function watch(component, $node) {
   });
 }
 
-function getState(state, properties) {
-  for (const name in properties) {
-    const prop = properties[name].value;
-    const constructor = prop.constructor;
-    state[name] = constructor === CSSStyleDeclaration ?
-    prop.cssText :
-    constructor === DOMTokenList ?
-    prop.value :
-    constructor === Object || constructor === Array ?
-    clone(prop) :
-    prop;
-  }
-  return state;
-}
-
 export function compose($node, behavioral, module) {
   const props = { $node, module, properties: {} };
   const behavioralIsComponent = behavioral.prototype instanceof Component;
@@ -91,22 +76,10 @@ export function compose($node, behavioral, module) {
   watch(component, $node);
   addListeners($node, props.events);
   $node.dispatchEvent(new Event('mount'));
-  props.initState = getState({}, props.properties);
   return component;
 }
 
 export default class Component {
-  reset() {
-    const { initState } = Privy.get(this);
-    for (const name in initState) {
-      if (this[name] instanceof DOMTokenList) {
-        this[name].value = initState[name];
-      } else {
-        this[name] = initState[name];
-      }
-    }
-  }
-
   inject(provider) {
     return Privy.get(this).module.inject(provider);
   }
