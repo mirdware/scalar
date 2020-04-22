@@ -1,5 +1,7 @@
 import Message from '../services/Message';
 
+const initState = ['Hello', 'Hi', 'OK'];
+
 function getEmptyFileList() {
   const $file = document.createElement('input');
   $file.type = 'file';
@@ -7,6 +9,10 @@ function getEmptyFileList() {
 }
 
 export default ($) => ({
+  mount: () => {
+    $.dependency = initState;
+    $.select2 = initState[0];
+  },
   _submit: () => {
     $.inject(Message).set($.name);
     console.log($);
@@ -27,5 +33,20 @@ export default ($) => ({
       paint: false,
       select: 'm'
     })
+  },
+  '#select': {
+    change: () => {
+      $.dependency = $.select === 'm' ? ['World'] : initState;
+      $.select2 = $.dependency[0];
+    }
+  },
+  'datalist[data-bind]': {
+    mutate: (e) => {
+      const { target } = e;
+      const selects = document.querySelectorAll('select[list="'+target.id+'"]');
+      for (let i = 0, select; select = selects[i]; i++) {
+        select.innerHTML = target.innerHTML;
+      }
+    }
   }
 });

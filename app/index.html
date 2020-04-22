@@ -34,10 +34,16 @@
       <label><input type="checkbox" data-bind="paint" checked />Paint blue</label>
       <div data-bind="name" data-attr="style.background: paint ? 'blue' : ''; style.color: paint ? 'white' : ''"></div>
       <textarea data-bind="name"></textarea><br/>
-      <select data-bind="select">
+      <select data-bind="select" id="select">
         <option value="h">Hola</option>
         <option value="m">Mundo</option>
       </select>
+      <select data-bind="select2" list="dependency"></select>
+      <datalist id="dependency" data-bind="dependency">
+        <script type="text/template">
+          <option>${data}</option>
+        </script>
+      </datalist>
       <input type="text" name="select" data-bind="select"><br/>
       <label><input type="radio" name="sexo" data-bind="sexo" value="F" checked /> Femenino</label> <label><input type="radio" name="sexo" data-bind="sexo" value="M"> Masculino</label><br/>
       <input type="password" data-bind="password" /> <input type="text" data-bind="password" /><br/>
