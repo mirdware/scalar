@@ -1,6 +1,6 @@
 {
   "name": "scalar",
-  "version": "0.2.8",
+  "version": "0.2.9",
   "description": "Javascript scalable and not intrusive",
   "main": "./dist/js/scalar.js",
   "types": "./scalar.d.ts",

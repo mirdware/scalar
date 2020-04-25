@@ -1,4 +1,5 @@
 import { addListeners } from "../util/stdlib";
+import { updateNodes } from './DOM'; 
 
 const cache = {};
 
@@ -35,14 +36,14 @@ export function getValue(template) {
   return value;
 }
 
-export function render(template, param) {
-  const { $node, tpl, component } = template;
+export function render({ $node, tpl, component }, param) {
   let fn = cache[tpl];
   if (!fn){
     fn = cache[tpl] = Function('data,index', 'return `' + tpl + '`');
   }
-  template = Array.isArray(param) ? param.map(fn) : fn(param);
-  $node.innerHTML = Array.isArray(template) ? template.join('') : template;
+  const fragment = document.createElement('template');
+  fragment.innerHTML = Array.isArray(param) ? param.map(fn).join('') : fn(param);
+  updateNodes($node, fragment.content.childNodes);
   $node.dispatchEvent(new Event('mutate'));
   addListeners($node, component.events, false);
 }

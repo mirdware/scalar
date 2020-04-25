@@ -324,10 +324,16 @@ Tambien existe la posibilidad de realizar el enlace de datos directamente desde 
 </select>
 ```
 
-Se puede interpolar código javaScript mediante el uso de la notación [template string](https://developer.mozilla.org/es/docs/Web/JavaScript/Referencia/template_strings) `${}`; dentro de la plantilla es posible acceder a dos propiedades `index` y `data`, la primera indica el índice del array y la segunda la información contenida en el mismo, esto puede cambiar cuando se implemente virtual DOM en próximas versiones.
+Se puede interpolar código javaScript mediante el uso de la notación [template string](https://developer.mozilla.org/es/docs/Web/JavaScript/Referencia/template_strings) `${}`; dentro de la plantilla es posible acceder a dos propiedades `index` y `data`, la primera indica el índice del array y la segunda la información contenida en el mismo.
+
+### Hidden DOM
+
+En la actualidad se elimino la idea de usar virtual DOM como mecanismo de actualización para las plantillas JIT, en su lugar se esta haciendo uso de un hidden DOM, su principal beneficio es que no se esta guardando constantemente el estado del DOM tree como un conjunto de objetos jerarquizados, si no que el mismo es su propio estado.
+
+El hidden DOM functiona como un [documentFragment](https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment) el cual no es adicionado al DOM en ningún momento, si no que sirve como referencia para saber exactamente cuales son los cambios que deben realizarse. 
 
 ## Solapamiento de componentes
-El solapamiento se presenta cuando se define un componente sobre otro ya establecido.
+El solapamiento (overloaping) se presenta cuando se define un componente sobre otro ya establecido.
 
 ```javascript
 new Module()
