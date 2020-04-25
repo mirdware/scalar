@@ -38,12 +38,11 @@
         <option value="h">Hola</option>
         <option value="m">Mundo</option>
       </select>
-      <select data-bind="select2" list="dependency"></select>
-      <datalist id="dependency" data-bind="dependency">
-        <script type="text/template">
+      <select data-bind="select2">
+        <script type="text/template" data-bind="dependency">
           <option>${data}</option>
         </script>
-      </datalist>
+      </select>
       <input type="text" name="select" data-bind="select"><br/>
       <label><input type="radio" name="sexo" data-bind="sexo" value="F" checked /> Femenino</label> <label><input type="radio" name="sexo" data-bind="sexo" value="M"> Masculino</label><br/>
       <input type="password" data-bind="password" /> <input type="text" data-bind="password" /><br/>

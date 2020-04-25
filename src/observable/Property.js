@@ -99,7 +99,7 @@ export function create(component, name) {
 
 export function get(property) {
   const { value } = property;
-  if (typeof value === 'object') {
+  if (value instanceof Object) {
     if (property.observable !== value) {
       property.proxy = new Proxy(
         value,

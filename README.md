@@ -311,6 +311,19 @@ El soporte para plantillas JIT está aún en una etapa bastante temprana, pero s
 
 Siempre que se quiera manipular un arreglo desde el componente este debe estar indexado por `data-key` de esta manera es posible hacer uso del método getIndex.
 
+Tambien existe la posibilidad de realizar el enlace de datos directamente desde el template de esta manera se tomara al elemento padre como base; esto es especialmente útil cuando el elemento padre debe tener un enlace con otra propiedad, por ejemplo al manejar selects dependientes.
+
+```html
+<select data-bind="select">
+  <option>One</option>
+  <option>Two</option>
+  <option>Three</option>
+  <script type="text/template" data-bind="dependency">
+    <option>${data}</option>
+  </script>
+</select>
+```
+
 Se puede interpolar código javaScript mediante el uso de la notación [template string](https://developer.mozilla.org/es/docs/Web/JavaScript/Referencia/template_strings) `${}`; dentro de la plantilla es posible acceder a dos propiedades `index` y `data`, la primera indica el índice del array y la segunda la información contenida en el mismo, esto puede cambiar cuando se implemente virtual DOM en próximas versiones.
 
 ## Solapamiento de componentes

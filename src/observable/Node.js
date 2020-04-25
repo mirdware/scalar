@@ -71,13 +71,15 @@ export function create(property, $node, prop) {
     } else {
       value = inputValue;
     }
+  } else if ($node.tagName === 'SCRIPT' && $node.type === 'text/template') {
+    complexType = Template.create(property.parent, $node.parentNode, $node);
+    value = Template.getValue(complexType);
   } else if ($node.innerHTML) {
     const $template = $node.querySelector('script[type="text/template"]');
+    value = $node.innerHTML;
     if ($template) {
       complexType = Template.create(property.parent, $node, $template);
       value = Template.getValue(complexType);
-    } else {
-      value = $node.innerHTML;
     }
   } else {
     setValue($node, value, 'innerHTML');
@@ -93,9 +95,9 @@ export function execute(node, state, value) {
     value = value[prop];
     state = state[prop];
   });
-  if (value === state) return;
-  if (complexType && value && attr === 'innerHTML') {
-    return Template.render(complexType, value);
+  if (value !== state) {
+    complexType && value ?
+    Template.render(complexType, value) :
+    setValue($node, value, attr);
   }
-  setValue($node, value, attr);
 }
