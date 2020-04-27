@@ -84,13 +84,12 @@ function manage(resource, method, data, queryString) {
 }
 
 export default class Resource {
-  constructor(url) {
+  constructor(url, headers = {}) {
     this.url = url;
     this.redirect = true;
-    this.headers = {
-      'Content-Type': 'application/json',
+    this.headers = Object.assign({
       'X-Requested-With': 'XMLHttpRequest'
-    };
+    }, headers);
   }
 
   get(queryString) {

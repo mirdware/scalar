@@ -328,9 +328,7 @@ Se puede interpolar código javaScript mediante el uso de la notación [template
 
 ### Hidden DOM
 
-En la actualidad se elimino la idea de usar virtual DOM como mecanismo de actualización para las plantillas JIT, en su lugar se esta haciendo uso de un hidden DOM, su principal beneficio es que no se esta guardando constantemente el estado del DOM tree como un conjunto de objetos jerarquizados, si no que el mismo es su propio estado.
-
-El hidden DOM functiona como un [documentFragment](https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment) el cual no es adicionado al DOM en ningún momento, si no que sirve como referencia para saber exactamente cuales son los cambios que deben realizarse. 
+En la actualidad se elimino la idea de usar virtual DOM como mecanismo de actualización para las plantillas JIT, en su lugar se esta experimentando con el uso de un hidden DOM. El cual funciona como un [documentFragment](https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment) que no es adicionado al DOM en ningún momento, si no que sirve como referencia para saber exactamente cuales son los cambios que se deben realizar. 
 
 ## Solapamiento de componentes
 El solapamiento (overloaping) se presenta cuando se define un componente sobre otro ya establecido.

@@ -59,14 +59,16 @@ export function addListeners($element, events, root = true) {
 }
 
 export function clone(object) {
+  if (!object) return object;
   const gdcc = '_deep_';
-  if (object !== Object(object)) return object;
+  const { constructor } = object;
+  if (constructor !== Object && constructor !== Array) return object;
   const set = gdcc in object;
   const cache = object[gdcc];
   let result;
   if (set && typeof cache == 'function') return cache();
   object[gdcc] = () => result;
-  if (object instanceof Array) {
+  if (constructor === Array) {
     result = object.map((obj) => clone(obj));
   } else {
     result = {};
