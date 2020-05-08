@@ -34,9 +34,19 @@ function updateElement($parent, $newNode, $oldNode, index = 0) {
   }
 }
 
+function toArray($nodeList) {
+  const array = [];
+  for (let i = 0, $node; $node = $nodeList[i]; i++) {
+    if ($node.nodeType !== 3 || $node.nodeValue.replace(/\s*/) !== '') {
+      array.push($node);
+    }
+  }
+  return array;
+}
+
 export function updateNodes($parent, newNodes) {
-  const oldNodes = [...$parent.childNodes];
-  newNodes = [...newNodes];
+  const oldNodes = toArray($parent.childNodes);
+  newNodes = toArray(newNodes);
   for (let i = 0; i < newNodes.length || i < oldNodes.length; i++) {
     updateElement(
       $parent,

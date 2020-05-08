@@ -1,4 +1,4 @@
-import { addListeners } from '../util/stdlib';
+import { addListeners, clone } from '../util/stdlib';
 import * as Privy from '../util/Wrapper';
 import * as Property from './Property';
 
@@ -6,7 +6,7 @@ function getProperty(component, name) {
   const prop = Property.create(component, name);
   Object.defineProperty(component, name, {
     get: () => Property.get(prop),
-    set: (value) => Property.set(prop, value, Object.assign({}, prop.value))
+    set: (value) => Property.set(prop, value, clone(prop.value))
   });
   return prop;
 }

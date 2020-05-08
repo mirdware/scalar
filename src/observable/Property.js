@@ -5,8 +5,9 @@ import * as Attribute from './Attribute';
 
 const getFunctionHandler = (property, root) => ({
   apply: (target, thisArg, argumentsList) => {
+    const state = clone(root);
     const res = Reflect.apply(target, thisArg, argumentsList);
-    set(property, root);
+    set(property, root, state);
     return res;
   }
 });

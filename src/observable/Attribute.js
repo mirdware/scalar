@@ -23,7 +23,7 @@ export function create(property, name, $element, prop, exp) {
 }
 
 export function execute(property, attribute, value) {
-  const { $element } = attribute;
+  const { $element, name } = attribute;
   const { eventListenerList } = $element;
   const { parent } = property;
   if (attribute.exp) {
@@ -33,12 +33,12 @@ export function execute(property, attribute, value) {
       value = value[prop];
     });
   }
-  setAttribute(attribute.$attribute, attribute.name, value);
-  if (eventListenerList) {
+  setAttribute(attribute.$attribute, name, value);
+  if (eventListenerList && name.indexOf('class') === 0 || name === 'id') {
     while (eventListenerList.length) {
       const listener = eventListenerList.shift();
       $element.removeEventListener(listener.name, listener.fn, listener.opt);
     }
+    addListeners(parent.$node, parent.events);
   }
-  addListeners(parent.$node, parent.events);
 }

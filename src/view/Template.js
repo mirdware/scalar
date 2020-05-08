@@ -37,12 +37,11 @@ export function getValue(template) {
 }
 
 export function render({ $node, tpl, component }, param) {
-  let fn = cache[tpl];
-  if (!fn){
-    fn = cache[tpl] = Function('data,index', 'return `' + tpl + '`');
-  }
   const fragment = document.createElement('template');
-  fragment.innerHTML = Array.isArray(param) ? param.map(fn).join('') : fn(param);
+  if (!cache[tpl]) {
+    cache[tpl] = Function('data,index', 'return `' + tpl + '`');
+  }
+  fragment.innerHTML = Array.isArray(param) ? param.map(cache[tpl]).join('') : cache[tpl](param);
   updateNodes($node, fragment.content.childNodes);
   $node.dispatchEvent(new Event('mutate'));
   addListeners($node, component.events, false);
