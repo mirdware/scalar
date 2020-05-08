@@ -11,7 +11,7 @@ function updateProps($target, newProps, oldProps) {
 
 function changed($node1, $node2) {
   return $node1.nodeType !== $node2.nodeType ||
-  $node1.nodeType === 3 && $node1.textContent !== $node2.textContent ||
+  $node1.nodeType === 3 && $node1.nodeValue !== $node2.nodeValue ||
   $node1.tagName !== $node2.tagName;
 }
 
@@ -29,24 +29,27 @@ function updateElement($parent, $newNode, $oldNode, index = 0) {
         $newNode.attributes,
         $oldNode.attributes
       );
-      updateNodes($parent.childNodes[index], $newNode.childNodes, $oldNode.childNodes);
+      updateNodes($parent.childNodes[index], $newNode, $oldNode);
     }
   }
 }
 
-function toArray($nodeList) {
+function toArray($parent) {
   const array = [];
-  for (let i = 0, $node; $node = $nodeList[i]; i++) {
-    if ($node.nodeType !== 3 || $node.nodeValue.replace(/\s*/) !== '') {
-      array.push($node);
+  const { childNodes } = $parent;
+  for (let i = childNodes.length - 1, $node; $node = childNodes[i]; i--) {
+    if ($node.nodeType === 3 && !$node.nodeValue.replace(/\s*/, '')) {
+      $parent.removeChild($node);
+    } else {
+      array.unshift($node);
     }
   }
   return array;
 }
 
-export function updateNodes($parent, newNodes) {
-  const oldNodes = toArray($parent.childNodes);
-  newNodes = toArray(newNodes);
+export function updateNodes($parent, $path) {
+  const oldNodes = toArray($parent);
+  const newNodes = toArray($path);
   for (let i = 0; i < newNodes.length || i < oldNodes.length; i++) {
     updateElement(
       $parent,

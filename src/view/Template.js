@@ -42,7 +42,7 @@ export function render({ $node, tpl, component }, param) {
     cache[tpl] = Function('data,index', 'return `' + tpl + '`');
   }
   fragment.innerHTML = Array.isArray(param) ? param.map(cache[tpl]).join('') : cache[tpl](param);
-  updateNodes($node, fragment.content.childNodes);
+  updateNodes($node, fragment.content);
   $node.dispatchEvent(new Event('mutate'));
   addListeners($node, component.events, false);
 }
