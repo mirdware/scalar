@@ -2,19 +2,19 @@ import { generateUUID } from './stdlib';
 
 const correlation = {};
 
-export function set(obj, props) {
-  let { uuid } = obj;
+export function set(object, properties) {
+  let { uuid } = object;
   if (!uuid) {
-    uuid = generateUUID(obj);
+    uuid = generateUUID(object);
   }
-  correlation[uuid] = props;
+  correlation[uuid] = properties;
   return uuid;
 }
 
-export function get(obj) {
-  let { uuid } = obj;
+export function get(object) {
+  let { uuid } = object;
   if (!uuid) {
-    uuid = set(obj, {});
+    uuid = set(object, {});
   }
   return correlation[uuid];
 }

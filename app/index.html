@@ -35,12 +35,15 @@
       <div data-bind="name" data-attr="style.background: paint ? 'blue' : ''; style.color: paint ? 'white' : ''"></div>
       <textarea data-bind="name"></textarea><br/>
       <select data-bind="select" id="select">
-        <option value="h">Hola</option>
-        <option value="m">Mundo</option>
+        <option></option>
+        <option value="0">Cars</option>
+        <option value="1">Cities</option>
+        <option value="2">Sports</option>
       </select>
       <select data-bind="select2">
+        <option></option>
         <script type="text/template" data-bind="dependency">
-          <option>${data}</option>
+          <option>${data.description||data}</option>
         </script>
       </select>
       <input type="text" name="select" data-bind="select"><br/>

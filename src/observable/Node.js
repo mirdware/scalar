@@ -7,7 +7,8 @@ function isInput($node) {
   return nodeName === 'INPUT' || nodeName === 'TEXTAREA' || nodeName === 'SELECT';
 }
 
-function setValue($node, value, attr = 'value') {
+function setValue($node, value, attr) {
+  attr = attr || 'value';
   const { type } = $node;
   if (type === 'checkbox' || type === 'radio') {
     attr = 'checked';
@@ -72,13 +73,13 @@ export function create(property, $node, prop) {
       value = inputValue;
     }
   } else if ($node.tagName === 'SCRIPT' && $node.type === 'text/template') {
-    complexType = Template.create(property.parent, $node.parentNode, $node);
+    complexType = Template.create(property, $node.parentNode, $node);
     value = Template.getValue(complexType);
   } else if ($node.innerHTML) {
     const $template = $node.querySelector('script[type="text/template"]');
     value = $node.innerHTML;
     if ($template) {
-      complexType = Template.create(property.parent, $node, $template);
+      complexType = Template.create(property, $node, $template);
       value = Template.getValue(complexType);
     }
   } else {

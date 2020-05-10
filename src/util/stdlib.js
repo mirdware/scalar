@@ -6,15 +6,37 @@ document.createElement('b')
   }
 }));
 
-function getObject(obj, props, value, i = 0) {
-  const prop = obj[props[i]];
-  obj[props[i]] = ++i < props.length ?
-  getObject(prop || {}, props, value, i) :
+function getObject(obj, props, value, index) {
+  index = index || 0;
+  const prop = obj[props[index]];
+  obj[props[index]] = ++index < props.length ?
+  getObject(prop || {}, props, value, index) :
   value;
   return obj;
 }
 
-export function addListeners($element, events, root = true) {
+function bindFunction(name, $element, fn) {
+  const lastChar = name.length - 1;
+  let capture = false;
+  let passive = true;
+  if (name.indexOf('_') === 0) {
+    const method = fn;
+    fn = (e) => method.call($element, e) !== true && e.preventDefault();
+    fn.uuid = method.uuid;
+    passive = false;
+    name = name.substring(1);
+  }
+  if (name.lastIndexOf('_') === lastChar) {
+    capture = true;
+    name = name.substring(0, lastChar);
+  }
+  const opt = hasObjectConfig ? { passive, capture } : capture;
+  $element.addEventListener(name, fn, opt);
+  $element.eventListenerList.push({ name, fn, opt });
+}
+
+export function addListeners($element, events, root) {
+  root = root || true;
   for (const selector in events) {
     const fn = events[selector];
     if (root && fn instanceof Function) {
@@ -26,24 +48,7 @@ export function addListeners($element, events, root = true) {
         binding = generateUUID(fn);
       }
       if (binding || !$element.eventListenerList.find((listener) => listener.fn.uuid === fn.uuid)) {
-        const lastChar = selector.length - 1;
-        let name = selector;
-        let capture = false;
-        let passive = true;
-        if (name.indexOf('_') === 0) {
-          const method = fn;
-          fn = (e) => method.call($element, e) !== true && e.preventDefault();
-          fn.uuid = method.uuid;
-          passive = false;
-          name = name.substring(1);
-        }
-        if (name.lastIndexOf('_') === lastChar) {
-          capture = true;
-          name = name.substring(0, lastChar);
-        }
-        const opt = hasObjectConfig ? { passive, capture } : capture;
-        $element.addEventListener(name, fn, opt);
-        $element.eventListenerList.push({ name, fn, opt });
+        bindFunction(selector, $element, fn);
       }
     } else {
       const $nodeList = $element.querySelectorAll(selector);

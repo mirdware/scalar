@@ -1,61 +1,63 @@
-function updateProps($target, newProps, oldProps) {
+function updateProps(property, $target, newProps, oldProps) {
   for (let i = 0, newProp; newProp = newProps[i]; i++) {
     $target.setAttribute(newProp.name, newProp.value);
   }
   for (let i = 0, oldProp; oldProp = oldProps[i]; i++) {
-    if (!newProps[oldProp.name]) {
-      $target.removeAttribute(oldProp.name);
+    const { name } = oldProp;
+    if (!newProps[name]) {
+      $target.removeAttribute(name);
+      if (name === 'data-bind') removeNode(property, $target);
     }
   }
 }
 
-function changed($node1, $node2) {
-  return $node1.nodeType !== $node2.nodeType ||
-  $node1.nodeType === 3 && $node1.nodeValue !== $node2.nodeValue ||
-  $node1.tagName !== $node2.tagName;
+function changed($newNode, $oldNode) {
+  return $newNode.nodeType !== $oldNode.nodeType ||
+  $newNode.nodeType === 3 && $newNode.nodeValue !== $oldNode.nodeValue ||
+  $newNode.tagName !== $oldNode.tagName;
 }
 
-function updateElement($parent, $newNode, $oldNode, index = 0) {
+function removeNode(property, $node) {
+  const { properties } = property.parent;
+  for (const key in properties) {
+    const nodes = properties[key].nodes;
+    nodes.forEach((node, index) => {
+      const $element = node.$node;
+      if ($element === $node && $element.tagName !== 'SCRIPT') {
+        nodes.splice(index, 1);
+      }
+    });
+  }
+}
+
+function updateElement(property, $parent, $newNode, $oldNode, index) {
+  index = index || 0;
   if (!$oldNode) {
     $parent.appendChild($newNode);
   } else if (!$newNode) {
     $parent.removeChild($oldNode);
-  } else {
-    if (changed($newNode, $oldNode)) {
-      $parent.replaceChild($newNode, $oldNode);
-    } else if ($newNode.nodeType !== 3) {
-      updateProps(
-        $parent.childNodes[index],
-        $newNode.attributes,
-        $oldNode.attributes
-      );
-      updateNodes($parent.childNodes[index], $newNode, $oldNode);
-    }
+    removeNode(property, $oldNode);
+  } else if (changed($newNode, $oldNode)) {
+    $parent.replaceChild($newNode, $oldNode);
+    removeNode(property, $oldNode);
+  } else if ($newNode.nodeType !== 3) {
+    updateProps(property, $parent.childNodes[index], $newNode.attributes, $oldNode.attributes);
+    updateNodes(property, $parent.childNodes[index], $newNode, $oldNode);
   }
 }
 
 function toArray($parent) {
   const array = [];
-  const { childNodes } = $parent;
-  for (let i = childNodes.length - 1, $node; $node = childNodes[i]; i--) {
-    if ($node.nodeType === 3 && !$node.nodeValue.replace(/\s*/, '')) {
-      $parent.removeChild($node);
-    } else {
-      array.unshift($node);
-    }
+  for (let i = 0, $node; $node = $parent.childNodes[i]; i++) {
+    array.push($node);
   }
   return array;
 }
 
-export function updateNodes($parent, $path) {
+export function updateNodes(property, $parent, $path) {
   const oldNodes = toArray($parent);
   const newNodes = toArray($path);
   for (let i = 0; i < newNodes.length || i < oldNodes.length; i++) {
-    updateElement(
-      $parent,
-      newNodes[i],
-      oldNodes[i],
-      i
-    );
+    updateElement(property, $parent, newNodes[i], oldNodes[i], i);
   }
 }

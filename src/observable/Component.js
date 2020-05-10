@@ -11,9 +11,9 @@ function getProperty(component, name) {
   return prop;
 }
 
-function bindData(component, $domElement) {
+function bindData(component, parent, $domElement) {
   let name = $domElement.dataset.bind;
-  const properties = Privy.get(component).properties;
+  const { properties } = parent;
   const propertyObj = name.split('.');
   name = propertyObj.shift();
   if (!properties[name]) {
@@ -22,7 +22,7 @@ function bindData(component, $domElement) {
   Property.addNode(properties[name], $domElement, propertyObj);
 }
 
-function bindAttributes(component, $domElement) {
+function bindAttributes(component, parent, $domElement) {
   $domElement.dataset.attr.split(';')
   .forEach((attribute) => {
     const index = attribute.indexOf(':');
@@ -32,7 +32,7 @@ function bindAttributes(component, $domElement) {
     .forEach((prop) => {
       const props = prop.split('.');
       const name = props.shift();
-      const privy = Privy.get(component).properties;
+      const privy = parent.properties;
       if (!privy[name]) {
         privy[name] = getProperty(component, name);
       }
@@ -48,7 +48,7 @@ function bindAttributes(component, $domElement) {
   });
 }
 
-function watch(component, $node) {
+export function watch(component, parent, $node) {
   const dataBinds = Array.from($node.querySelectorAll('[data-bind]'));
   const dataAttributes = Array.from($node.querySelectorAll('[data-attr]'));
   if ($node.dataset.bind) {
@@ -58,11 +58,12 @@ function watch(component, $node) {
     dataAttributes.push($node);
   }
   dataBinds.forEach(($bind) => {
-    bindData(component, $bind);
+    bindData(component, parent, $bind);
   });
   dataAttributes.forEach(($attr) => {
-    bindAttributes(component, $attr);
+    bindAttributes(component, parent, $attr);
   });
+  addListeners($node, parent.events);
 }
 
 export function compose($node, behavioral, module) {
@@ -73,8 +74,7 @@ export function compose($node, behavioral, module) {
   props.events = behavioralIsComponent ?
   (component.listen && component.listen()) :
   behavioral(component);
-  watch(component, $node);
-  addListeners($node, props.events);
+  watch(component, props, $node);
   $node.dispatchEvent(new Event('mount'));
   return component;
 }

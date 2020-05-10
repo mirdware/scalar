@@ -1,16 +1,16 @@
-import { addListeners } from "../util/stdlib";
+import { watch } from "../observable/Component";
 import { updateNodes } from './DOM'; 
 
 const cache = {};
 
-export function create(component, $node, $template) {
+export function create(property, $node, $template) {
   const regex = /\/?\s*>\s+<\s*/g;
   return {
-    component,
+    property,
     $node,
-    tpl: $template.innerHTML.trim()
+    tpl: $template.innerHTML
     .replace(regex, '> <'),
-    base: $node.innerHTML.trim()
+    base: $node.innerHTML
     .replace($template.outerHTML, '')
     .replace(regex, '> <')
   };
@@ -21,7 +21,7 @@ export function getValue(template) {
   let keys = template.tpl.match(/\$\{data\.[\w\d\.]*\}/g);
   if (!keys) return value;
   keys = keys.map((data) => (data.replace('${data.', '').replace('}', '')));
-  const regex = new RegExp(template.tpl
+  const regex = new RegExp(template.tpl.trim()
   .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
   .replace(/\\\$\\\{data\\\.[\w\d\.]*\\\}/g, '(.*?)')
   .replace(/\\\$\\\{[^\}]*\\\}/g, '.*?'), 'g');
@@ -36,13 +36,13 @@ export function getValue(template) {
   return value;
 }
 
-export function render({ $node, tpl, component }, param) {
+export function render({ $node, tpl, property }, param) {
   const fragment = document.createElement('template');
   if (!cache[tpl]) {
     cache[tpl] = Function('data,index', 'return `' + tpl + '`');
   }
   fragment.innerHTML = Array.isArray(param) ? param.map(cache[tpl]).join('') : cache[tpl](param);
-  updateNodes($node, fragment.content);
+  updateNodes(property, $node, fragment.content);
   $node.dispatchEvent(new Event('mutate'));
-  addListeners($node, component.events, false);
+  watch(property.component, property.parent, $node);
 }

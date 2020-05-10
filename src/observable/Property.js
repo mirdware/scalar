@@ -71,17 +71,25 @@ function addOverloap(component, property, name) {
   Object.assign(component.events, events);
 }
 
-function findComponent($node, components, property, name) {
+function findComponent(property, $node, name) {
+  const { components } = property.parent.module;
   if ($node.parentNode) {
-    const parentNode = $node.parentNode;
+    const { parentNode } = $node;
     if (parentNode.dataset && parentNode.dataset.component){
       const uuid = parentNode.dataset.component;
       if (components[uuid][name]) {
         addOverloap(components[uuid], property, name);
       }
     }
-    findComponent($node.parentNode, components, property, name);
+    findComponent(property, $node.parentNode, name);
   }
+}
+
+function exist(property, $element) {
+  for (let i = 0, node; node = property.nodes[i]; i++) {
+    if (node.$node === $element) return true;
+  }
+  return false;
 }
 
 export function create(component, name) {
@@ -94,7 +102,7 @@ export function create(component, name) {
     attributes: [],
     over: []
   };
-  findComponent(parent.$node, parent.module.components, property, name);
+  findComponent(property, parent.$node, name);
   return property;
 }
 
@@ -113,7 +121,7 @@ export function get(property) {
   return value;
 }
 
-export function set(property, value = '', state) {
+export function set(property, value, state) {
   property.over.forEach((prop) => {
     prop.value = value;
   });
@@ -123,7 +131,9 @@ export function set(property, value = '', state) {
 }
 
 export function addNode(property, $node, prop) {
-  property.nodes.push(Node.create(property, $node, prop));
+  if (!exist(property, $node)) {
+    property.nodes.push(Node.create(property, $node, prop));
+  }
 }
 
 export function addAttribute(property, name, $element, prop, exp) {

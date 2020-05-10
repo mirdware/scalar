@@ -1,6 +1,10 @@
 import Message from '../services/Message';
 
-const initState = ['Hello', 'Hi', 'OK'];
+const data = [
+  ['', 'Mazda', 'Tesla', 'Renault', 'Volkswagen', 'Pegeout'],
+  ['', 'London', 'New York', 'Madrid', 'Cali', 'Pekin', 'Moscou'],
+  ['', 'soccer', 'basketball', 'baseball', 'hockey', 'snowboarding']
+];
 
 function getEmptyFileList() {
   const $file = document.createElement('input');
@@ -9,20 +13,18 @@ function getEmptyFileList() {
 }
 
 export default ($) => ({
-  mount: () => {
-    $.dependency = initState;
-    $.select2 = initState[0];
-  },
   _submit: () => {
     $.inject(Message).set($.name);
     console.log($);
   },
-  reset: () => Object.assign($, {
+  _reset: () => Object.assign($, {
     name: 'init',
     password: '',
     sexo: 'F',
     paint: true,
-    select: 'h',
+    select: '',
+    dependency: [''],
+    select2: '',
     file: getEmptyFileList()
   }),
   '.fill': {
@@ -31,22 +33,16 @@ export default ($) => ({
       password: 'MySecretPassword',
       sexo: 'M',
       paint: false,
-      select: 'm'
+      select: 0,
+      dependency: data[0],
+      select2: 'Tesla'
     })
   },
   '#select': {
     change: () => {
-      $.dependency = $.select === 'm' ? ['World'] : initState;
-      $.select2 = $.dependency[0];
-    }
-  },
-  'datalist[data-bind]': {
-    mutate: (e) => {
-      const { target } = e;
-      const selects = document.querySelectorAll('select[list="'+target.id+'"]');
-      for (let i = 0, select; select = selects[i]; i++) {
-        select.innerHTML = target.innerHTML;
-      }
+      const { select } = $;
+      $.select2 = '';
+      $.dependency = select ? data[select] : [''];
     }
   }
 });
