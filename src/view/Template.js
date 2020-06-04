@@ -3,29 +3,35 @@ import { updateNodes } from './DOM';
 
 const cache = {};
 
+function clean (str) {
+  return str.replace(/<\s*/g, '<')
+  .replace(/\s*\/?\s*>/g, '>')
+  .replace(/\s+/g, ' ');
+}
+
 export function create(property, $node, $template) {
-  const regex = /\/?\s*>\s+<\s*/g;
   return {
     property,
     $node,
-    tpl: $template.innerHTML
-    .replace(regex, '> <'),
-    base: $node.innerHTML
-    .replace($template.outerHTML, '')
-    .replace(regex, '> <')
+    tpl: clean($template.innerHTML),
+    base: clean($node.innerHTML
+    .replace($template.outerHTML, ''))
   };
 }
 
 export function getValue(template) {
+  const keys = [];
   const value = [];
-  let keys = template.tpl.match(/\$\{data\.[\w\d\.]*\}/g);
-  if (!keys) return value;
-  keys = keys.map((data) => (data.replace('${data.', '').replace('}', '')));
-  const regex = new RegExp(template.tpl.trim()
+  let regex = /\$\{data\.([\w\d\.]*)\}/g;
+  let matches;
+  while ((matches = regex.exec(template.tpl)) !== null) {
+    keys.push(matches[1]);
+  }
+  if (!keys.length) return value;
+  regex = new RegExp(template.tpl.trim()
   .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
   .replace(/\\\$\\\{data\\\.[\w\d\.]*\\\}/g, '(.*?)')
   .replace(/\\\$\\\{[^\}]*\\\}/g, '.*?'), 'g');
-  let matches;
   while ((matches = regex.exec(template.base)) !== null) {
     const obj = {};
     keys.forEach((key, i) => {

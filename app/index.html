@@ -1,15 +1,15 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width"/>
   <title>Scalar</title>
 </head>
 <body>
   <h1>Scalar</h1>
   <div id="square" data-attr="style: squareStyle">
-    <span data-attr="classList: action" class="open"></span>
-    <h2 data-bind="my.msg" style="color: #fff">Mensaje inicial</h2>
+    <span data-attr="classList:action" class="open"></span>
+    <h2 data-bind="my.msg" style="color:#fff">Mensaje inicial</h2>
     <table>
       <thead>
         <tr>
@@ -30,8 +30,8 @@
   <section>
     <h2>Formularios</h2>
     <form id="hello-world">
-      <input type="text" data-bind="name" value="init" disabled />
-      <label><input type="checkbox" data-bind="paint" checked />Paint blue</label>
+      <input type="text" data-bind="name" value="init" disabled/>
+      <label><input type="checkbox" data-bind="paint" checked/>Paint blue</label>
       <div data-bind="name" data-attr="style.background: paint ? 'blue' : ''; style.color: paint ? 'white' : ''"></div>
       <textarea data-bind="name"></textarea><br/>
       <select data-bind="select" id="select">
@@ -43,26 +43,26 @@
       <select data-bind="select2">
         <option></option>
         <script type="text/template" data-bind="dependency">
-          <option>${data.description||data}</option>
+          <option>${data}</option>
         </script>
       </select>
       <input type="text" name="select" data-bind="select"><br/>
-      <label><input type="radio" name="sexo" data-bind="sexo" value="F" checked /> Femenino</label> <label><input type="radio" name="sexo" data-bind="sexo" value="M"> Masculino</label><br/>
-      <input type="password" data-bind="password" /> <input type="text" data-bind="password" /><br/>
-      <input type="file" data-bind="file" /><br/>
-      <input type="submit" />
-      <input type="reset" /><br/>
-      <input type="button" value="Fill data inside" class="fill" />
+      <label><input type="radio" name="sexo" data-bind="sexo" value="F" checked/> Femenino</label> <label><input type="radio" name="sexo" data-bind="sexo" value="M"> Masculino</label><br/>
+      <input type="password" data-bind="password"/> <input type="text" data-bind="password"/><br/>
+      <input type="file" data-bind="file"/><br/>
+      <input type="submit"/>
+      <input type="reset"/><br/>
+      <input type="button" value="Fill data inside" class="fill"/>
     </form>
-    <input type="button" value="Fill data outside" class="fill" />
+    <input type="button" value="Fill data outside" class="fill"/>
   </section>
 
   <section>
     <h2>To do</h2>
     <form id="todo">
-      <input type="text" data-bind="task" />
-      <input type="submit" value="Agregar" />
-      <input type="button" value="Limpiar" id="clean" />
+      <input type="text" data-bind="task"/>
+      <input type="submit" value="Agregar"/>
+      <input type="button" value="Limpiar" id="clean"/>
       <ul data-bind="tasks">
         <li data-key="0">
           <span class="checked">run</span>

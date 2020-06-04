@@ -54,22 +54,22 @@ La ejecución del método compose genera un `compound object`(Objeto compuesto) 
 
 ```html
 <form id="hello-world">
-  <input type="text" data-bind="name" disabled />
-  <label><input type="checkbox" data-bind="show" checked /> ¿Mostrar alert?</label>
-  <div data-bind="show"></div>
-  <textarea data-bind="name"></textarea><br/>
-  <select data-bind="select">
-    <option value="h">Hola</option>
-    <option value="m">Mundo</option>
-  </select>
-  <input type="text" name="select" data-bind="select"><br/>
-  <label><input type="radio" name="sexo" data-bind="sexo" value="F" checked /> Femenino</label>
-  <label><input type="radio" name="sexo" data-bind="sexo" value="M"> Masculino</label><br/>
-  <input type="password" data-bind="password" /> <input type="text" data-bind="password" /><br/>
-  <input type="file" data-bind="file" /><br/>
-  <input type="submit" />
-  <input type="reset" /><br/>
-  <input type="button" value="Fill data inside" class="fill" />
+    <input type="text" data-bind="name" disabled/>
+    <label><input type="checkbox" data-bind="show" checked/> ¿Mostrar alert?</label>
+    <div data-bind="show"></div>
+    <textarea data-bind="name"></textarea><br/>
+    <select data-bind="select">
+        <option value="h">Hola</option>
+        <option value="m">Mundo</option>
+    </select>
+    <input type="text" name="select" data-bind="select"><br/>
+    <label><input type="radio" name="sexo" data-bind="sexo" value="F" checked/> Femenino</label>
+    <label><input type="radio" name="sexo" data-bind="sexo" value="M"> Masculino</label><br/>
+    <input type="password" data-bind="password"/> <input type="text" data-bind="password"/><br/>
+    <input type="file" data-bind="file"/><br/>
+    <input type="submit"/>
+    <input type="reset"/><br/>
+    <input type="button" value="Fill data inside" class="fill"/>
 </form>
 ```
 
@@ -271,18 +271,9 @@ Las plantillas prerenderizadas son aquellas suministradas por el servidor y hace
 Una plantilla scalar podría contener atributos `data-bind` y/o `data-attr`, los primeros generan un enlace en dos direcciones entre el objeto compuesto y la plantilla, siempre y cuando el elemento al cual se enlaza pueda introducir información, en caso contrario dicho enlace se establecerá en una sola dirección; el segundo modifica los atributos del elemento según se modifique alguna propiedad y por su naturaleza es unidireccional.
 
 ```html
-<div id="square">
-  <span data-attr="className: open" class="open"></span>
-  <table>
-    <thead>
-      <tr>
-        <th>Color</th>
-        <th>Meta</th>
-      </tr>
-    </thead>
-    <tbody data-bind="name"></tbody>
-    <tfoot><a href="#" class="reset">Reset</a></tfoot>
-  </table>
+<div id="square" data-attr="style: squareStyle">
+    <span data-attr="classList: action" class="open"></span>
+    <h2 data-bind="my.msg" style="color:#fff">Mensaje inicial</h2>
 </div>
 ```
 
@@ -299,13 +290,13 @@ El soporte para plantillas JIT está aún en una etapa bastante temprana, pero s
 
 ```html
 <ul data-bind="tasks">
-  <script type="text/template">
-    <li data-key="${index}">
-      <span class="${data.checked}">${data.content}</span>
-      <a href="#" class="check">✔</a>
-      <a href="#" class="close">[x]</a>
-    </li>
-  </script>
+    <script type="text/template">
+        <li data-key="${index}">
+            <span class="${data.checked}">${data.content}</span>
+            <a href="#" class="check">✔</a>
+            <a href="#" class="close">[x]</a>
+        </li>
+    </script>
 </ul>
 ```
 
@@ -315,12 +306,12 @@ Tambien existe la posibilidad de realizar el enlace de datos directamente desde 
 
 ```html
 <select data-bind="select">
-  <option>One</option>
-  <option>Two</option>
-  <option>Three</option>
-  <script type="text/template" data-bind="dependency">
-    <option>${data}</option>
-  </script>
+    <option>One</option>
+    <option>Two</option>
+    <option>Three</option>
+    <script type="text/template" data-bind="dependency">
+        <option>${data}</option>
+    </script>
 </select>
 ```
 
@@ -341,12 +332,19 @@ new Module()
 
 ```html
 <div class="pageable">
-  <form action="https://sespesoft.com">
-    <input type="search" name="name" data-bind="name" />
-    <input type="submit" value="Buscar" />
-  </form>
-  <table class="check-table" data-bind="data">
-  </table>
+    <form action="https://sespesoft.com">
+        <input type="search" name="name" data-bind="name"/>
+        <input type="submit" value="Buscar"/>
+    </form>
+    <table class="check-table" data-bind="data">
+        <script type="text/template">
+            <tr>
+              <td>${data.one}</td>
+              <td>${data.two}</td>
+              <td>${data.three}</td>
+            </tr>
+        </script>
+    </table>
 </div>
 ```
 

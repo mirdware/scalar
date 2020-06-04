@@ -85,13 +85,6 @@ function findComponent(property, $node, name) {
   }
 }
 
-function exist(property, $element) {
-  for (let i = 0, node; node = property.nodes[i]; i++) {
-    if (node.$node === $element) return true;
-  }
-  return false;
-}
-
 export function create(component, name) {
   const parent = Privy.get(component);
   const property = {
@@ -131,7 +124,7 @@ export function set(property, value, state) {
 }
 
 export function addNode(property, $node, prop) {
-  if (!exist(property, $node)) {
+  if (!property.nodes.find((node) => node.$node === $node)) {
     property.nodes.push(Node.create(property, $node, prop));
   }
 }

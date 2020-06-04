@@ -37,4 +37,9 @@ export default class Module {
     }
     return this;
   }
+
+  bind(origin, replace) {
+    Privy.get(this).classes[origin.uuid] = replace;
+    return this;
+  }
 }

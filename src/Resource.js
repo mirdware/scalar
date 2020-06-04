@@ -7,12 +7,12 @@ function sendRequest(request, callback) {
     return formData;
   }
 
-  function formatQueryString(data) {
-    let queryString = '';
+  function formatQueryString(sign, data) {
+    const variables = []
     for (const key in data) {
-      queryString += encodeURIComponent(key) + '=' + encodeURIComponent(data[key]) + '&';
+      variables.push(encodeURIComponent(key) + '=' + encodeURIComponent(data[key]));
     }
-    return queryString ? '?' + queryString.substring(0, queryString.length - 1) : queryString;
+    return variables.length ? sign + variables.join('&') : '';
   }
   
   function formatURL(url, data) {
@@ -29,7 +29,7 @@ function sendRequest(request, callback) {
   let { headers, data, queryString, url } = request;
   const xhr = new XMLHttpRequest();
   data = headers['Content-Type'] === 'application/json' ? JSON.stringify(data) : serialize(data);
-  url = formatURL(url, queryString) + formatQueryString(queryString);
+  url = formatURL(url, queryString) + formatQueryString(url.indexOf('?') === -1 ? '?' : '&',queryString);
   xhr.open(request.method, url, true);
   for (const header in headers) {
     xhr.setRequestHeader(header, headers[header]);
@@ -84,12 +84,12 @@ function manage(resource, method, data, queryString) {
 }
 
 export default class Resource {
-  constructor(url, headers = {}) {
+  constructor(url, headers) {
     this.url = url;
     this.redirect = true;
     this.headers = Object.assign({
       'X-Requested-With': 'XMLHttpRequest'
-    }, headers);
+    }, headers || {});
   }
 
   get(queryString) {
@@ -108,7 +108,7 @@ export default class Resource {
     return manage(this, 'DELETE', null, queryString);
   }
 
-  request (method, opt = {}) {
-    return manage(this, method, opt.dataBody, opt.queryString);
+  request(method, dataBody, queryString) {
+    return manage(this, method, dataBody, queryString);
   }
 }

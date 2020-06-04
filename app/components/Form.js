@@ -12,6 +12,12 @@ function getEmptyFileList() {
   return $file.files;
 }
 
+function changeSelect2($) {
+  const { select } = $;
+  $.select2 = '';
+  $.dependency = select && data[select] ? data[select] : [''];
+}
+
 export default ($) => ({
   _submit: () => {
     $.inject(Message).set($.name);
@@ -33,16 +39,13 @@ export default ($) => ({
       password: 'MySecretPassword',
       sexo: 'M',
       paint: false,
-      select: 0,
-      dependency: data[0],
-      select2: 'Tesla'
+      select: 1,
+      dependency: data[1],
+      select2: 'Cali'
     })
   },
   '#select': {
-    change: () => {
-      const { select } = $;
-      $.select2 = '';
-      $.dependency = select ? data[select] : [''];
-    }
+    change: () => changeSelect2($),
+    mutate: () => changeSelect2($)
   }
 });

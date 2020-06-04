@@ -4,7 +4,7 @@ declare module 'scalar' {
         Module: Class<Module>,
         Resource: { new (url: string): Resource }
     };
-    export = scalar;
+    export = scalar
 }
 
 declare class Component {
@@ -15,6 +15,7 @@ declare class Component {
 
 declare class Module {
     compose (selector: string, component: Class<Component>|BehavioralFunction): Module
+    bind (origin: Class<any>, replace: Class<any>): Module
 }
 
 declare class Resource {
@@ -22,7 +23,7 @@ declare class Resource {
     post (dataBody: any, queryString: any): Promise<any>
     put (dataBody: any, queryString: any): Promise<any>
     delete (queryString: any): Promise<any>
-    request (method: string, opt:{dataBody:any, queryString:any}):Promise<any>
+    request (method: string, dataBody:any, queryString:any):Promise<any>
 }
 
 declare type BehavioralFunction = (compound: Component) => any
