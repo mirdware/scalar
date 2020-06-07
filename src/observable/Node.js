@@ -65,8 +65,14 @@ export function create(property, $node, prop) {
   }
   if (isInput($node)) {
     const inputValue = evalValue($node);
-    $node.addEventListener('keyup', (e) => changeContent(property, prop, e.target.value));
-    $node.addEventListener('change', (e) => changeContent(property, prop, evalValue(e.target)));
+    $node.addEventListener('keyup', (e) => {
+      const { target } = e;
+      changeContent(property, prop, target.value);
+      target.focus();
+    });
+    $node.addEventListener('change', (e) => {
+      changeContent(property, prop, evalValue(e.target));
+    });
     if (inputValue === null) {
       setValue($node, value);
     } else {

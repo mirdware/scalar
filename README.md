@@ -302,20 +302,28 @@ El soporte para plantillas JIT está aún en una etapa bastante temprana, pero s
 
 Siempre que se quiera manipular un arreglo desde el componente este debe estar indexado por `data-key` de esta manera es posible hacer uso del método getIndex.
 
-Tambien existe la posibilidad de realizar el enlace de datos directamente desde el template de esta manera se tomara al elemento padre como base; esto es especialmente útil cuando el elemento padre debe tener un enlace con otra propiedad, por ejemplo al manejar selects dependientes.
+Tambien existe la posibilidad de realizar un enlace directamente al template tomando de esta manera al elemento padre como base; esto es útil cuando un elemento debe tener un enlace con otra propiedad, pero su contenido se debe manejar dinamicamente (ej. selects dependientes).
 
 ```html
 <select data-bind="select">
     <option>One</option>
     <option>Two</option>
     <option>Three</option>
-    <script type="text/template" data-bind="dependency">
-        <option>${data}</option>
+    <script type="text/template" data-bind="dependencies">
+        <option>${data.name}</option>
     </script>
 </select>
 ```
 
 Se puede interpolar código javaScript mediante el uso de la notación [template string](https://developer.mozilla.org/es/docs/Web/JavaScript/Referencia/template_strings) `${}`; dentro de la plantilla es posible acceder a dos propiedades `index` y `data`, la primera indica el índice del array y la segunda la información contenida en el mismo.
+
+### Un/pairing mode
+
+La manera de enlazar datos a las propiedades del array es mediante emparejamiento (pairing) de datos, esto se da cuando el template y el contenido del elemento son _exactamente_ iguales y difieren solo en la iterpolación de datos, de esta manera los datos interpolados se combierten en propiedades del elemento del array, siempre y cuando el dato interpolado sea simplente una propiedad que inicie con data.
+
+En recientes versiones es posible realizar enlaces en las plantillas lo cual abre la posibilidad de realizar un enlace de propiedades diferente (unpairing).
+
+Para acceder a un elemento de un arreglo es posible hacer uso de la notación punto `dependencies.${index}.name`, esto desde javascript generaria una excepción pero desde enlaces scoop es posible y necesario. Al esta cargando desde el dat-bind la propiedad ya no es necesario que el template y el contenido del elemento coincidan en lo absoluto, solo se debe tener en cuenta que si se modifica un dato del arreglo, todo el contenido se transformara a lo que indique la plantilla.
 
 ### Hidden DOM
 
