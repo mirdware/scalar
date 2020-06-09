@@ -1,4 +1,4 @@
-import { setPropertyValue, clone } from '../util/stdlib';
+import { setPropertyValue, clone } from '../util/Element';
 import * as Attribute from './Attribute';
 import * as Template from '../view/Template';
 

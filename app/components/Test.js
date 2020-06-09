@@ -13,13 +13,13 @@ export default ($) => {
 
   function sendRequest() {
     $.action.replace('open', 'reset');
-    $.name = user.get();
+    $.people = user.get();
   }
 
   function reset() {
     $.action.replace('reset', 'open');
     Object.assign($, {
-      name: [],
+      people: [],
       squareStyle: {
         backgroundColor: 'black',
         borderRadius: 0

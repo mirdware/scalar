@@ -1,4 +1,5 @@
-import { addListeners, clone } from '../util/stdlib';
+import { clone } from '../util/Element';
+import { addListeners } from '../util/Event';
 import * as Privy from '../util/Wrapper';
 import * as Property from './Property';
 

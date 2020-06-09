@@ -319,11 +319,13 @@ Se puede interpolar código javaScript mediante el uso de la notación [template
 
 ### Un/pairing mode
 
-La manera de enlazar datos a las propiedades del array es mediante emparejamiento (pairing) de datos, esto se da cuando el template y el contenido del elemento son _exactamente_ iguales y difieren solo en la iterpolación de datos, de esta manera los datos interpolados se combierten en propiedades del elemento del array, siempre y cuando el dato interpolado sea simplente una propiedad que inicie con data.
+La forma común de enlazar datos a las propiedades de un array es mediante emparejamiento (pairing), esto se da cuando el template y el contenido del elemento son _exactamente_ iguales y difieren solo en la iterpolación; de esta manera los datos interpolados que inicien con data y no sean expresiones se combierten en parte del array.
 
-En recientes versiones es posible realizar enlaces en las plantillas lo cual abre la posibilidad de realizar un enlace de propiedades diferente (unpairing).
+El uso de data-attr en la fase de emparejamiento puede generar comportamientos inesperados por lo cual se desanconseja su uso y se recomienda la interpolación de attributos.
 
-Para acceder a un elemento de un arreglo es posible hacer uso de la notación punto `dependencies.${index}.name`, esto desde javascript generaria una excepción pero desde enlaces scoop es posible y necesario. Al esta cargando desde el dat-bind la propiedad ya no es necesario que el template y el contenido del elemento coincidan en lo absoluto, solo se debe tener en cuenta que si se modifica un dato del arreglo, todo el contenido se transformara a lo que indique la plantilla.
+En recientes versiones se puede hacer uso de data-bind en las plantillas, lo cual abre la posibilidad de realizar una tecnica de enlace diferente para el array.
+
+La manera de acceder a un elemento del arreglo desde  enlace es mediante notación de punto `dependencies.0.name` lo cual generaria error desde javascript pero no desde el data-bind. Ahora el enlace se realiza directamente por lo cual no es necesario que el template y el contenido del elemento coincidan en lo absoluto (unpairing), pero se debe tener en cuenta que si se modifica un dato del arreglo se renderizara en base a la plantilla.
 
 ### Hidden DOM
 

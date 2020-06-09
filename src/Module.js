@@ -1,4 +1,4 @@
-import { generateUUID } from './util/stdlib';
+import { generateUUID } from './util/Element';
 import { compose } from './observable/Component';
 import * as Privy from './util/Wrapper';
 

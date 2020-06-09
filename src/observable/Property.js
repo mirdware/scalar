@@ -1,4 +1,4 @@
-import { clone } from '../util/stdlib';
+import { clone } from '../util/Element';
 import * as Privy from '../util/Wrapper';
 import * as Node from './Node';
 import * as Attribute from './Attribute';

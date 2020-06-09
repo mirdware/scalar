@@ -14,13 +14,15 @@
       <thead>
         <tr>
           <th colspan="2">Name</th>
+          <th width="20">Age</th>
         </tr>
       </thead>
-      <tbody data-bind="name" class="alert">
+      <tbody data-bind="people" class="alert">
         <script type="text/template">
           <tr>
-            <td class="show">${data.first}</td>
-            <td class="paint">${data.last}</td>
+            <td class="show">${data.name.first}</td>
+            <td class="paint">${data.name.last}</td>
+            <td style="text-align:center">${data.age}</td>
           </tr>
         </script>
       </tbody>
@@ -28,7 +30,7 @@
   </div>
 
   <section>
-    <h2>Formularios</h2>
+    <h2>Forms</h2>
     <form id="hello-world">
       <input type="text" data-bind="name" value="init" disabled/>
       <label><input type="checkbox" data-bind="paint" checked/>Paint blue</label>
@@ -47,7 +49,8 @@
         </script>
       </select>
       <input type="text" name="select" data-bind="select"><br/>
-      <label><input type="radio" name="sexo" data-bind="sexo" value="F" checked/> Femenino</label> <label><input type="radio" name="sexo" data-bind="sexo" value="M"> Masculino</label><br/>
+      <label><input type="radio" name="sexo" data-bind="sexo" value="F" checked/> Femenino</label>
+      <label><input type="radio" name="sexo" data-bind="sexo" value="M"> Masculino</label><br/>
       <input type="password" data-bind="password"/> <input type="text" data-bind="password"/><br/>
       <input type="file" data-bind="file"/><br/>
       <input type="submit"/>

@@ -1,12 +1,13 @@
+import { setPropertyValue } from '../util/Element';
 import { watch } from "../observable/Component";
 import { updateNodes } from './DOM'; 
 
 const cache = {};
 
 function clean (str) {
-  return str.replace(/<\s*/g, '<')
-  .replace(/\s*\/?\s*>/g, '>')
-  .replace(/\s+/g, ' ');
+  return str.replace(/\s+/g, ' ')
+  .replace(/<\s/g, '<')
+  .replace(/\s?\/?\s?>/g, '>');
 }
 
 export function create(property, $node, $template) {
@@ -30,14 +31,15 @@ export function getValue(template) {
   if (!keys.length) return value;
   regex = new RegExp(template.tpl.trim()
   .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-  .replace(/\\\$\\\{data\\\.[\w\d\.]*\\\}/g, '(.*?)')
-  .replace(/\\\$\\\{[^\}]*\\\}/g, '.*?'), 'g');
+  .replace(/ /g, '\\s?')
+  .replace(/\\\$\\\{data\\\.[\w(\\\.)_]*\\\}/g, '(.*?)')
+  .replace(/\\\$\\\{.*?\\\}/g, '.*?'), 'g');
   while ((matches = regex.exec(template.base)) !== null) {
     const obj = {};
     keys.forEach((key, i) => {
-      obj[key] = matches[i + 1];
+      setPropertyValue(obj, key.split('.'), matches[i + 1]);
     });
-    value.push(obj);
+    value.push(obj.value);
   }
   return value;
 }

@@ -1,4 +1,5 @@
-import { addListeners, setPropertyValue } from '../util/stdlib';
+import { setPropertyValue } from '../util/Element';
+import { addListeners } from '../util/Event';
 
 function setAttribute($attribute, name, property) {
   if (property.constructor === Object) {

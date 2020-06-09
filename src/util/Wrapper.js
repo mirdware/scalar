@@ -1,4 +1,4 @@
-import { generateUUID } from './stdlib';
+import { generateUUID } from './Element';
 
 const correlation = {};
 
