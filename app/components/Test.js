@@ -38,14 +38,8 @@ export default ($) => {
   return {
     mount: () => message.my = $.my,
     mousemove: track,
-    '.open': {
-      click: sendRequest
-    },
-    '.paint': {
-      click: paint
-    },
-    '.reset': {
-      click: () => reset()
-    }
+    '.open': { click: sendRequest },
+    '.paint': { click: paint },
+    '.reset': { click: reset }
   };
 };

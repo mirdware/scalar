@@ -23,7 +23,7 @@ export function create(property, $node, $template) {
 export function getValue(template) {
   const keys = [];
   const value = [];
-  let regex = /\$\{data\.([\w\d\.]*)\}/g;
+  let regex = /\$\{data(?:\.)?([\w\d\.]*)\}/g;
   let matches;
   while ((matches = regex.exec(template.tpl)) !== null) {
     keys.push(matches[1]);
@@ -32,12 +32,12 @@ export function getValue(template) {
   regex = new RegExp(template.tpl.trim()
   .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
   .replace(/ /g, '\\s?')
-  .replace(/\\\$\\\{data\\\.[\w(\\\.)_]*\\\}/g, '(.*?)')
-  .replace(/\\\$\\\{.*?\\\}/g, '.*?'), 'g');
+  .replace(/\\\$\\\{data(\\\.)?(\w|_|(\\\.))*\\\}/g, '(.*?)')
+  .replace(/\\\$\\\{[^\}]*\}/g, '.*?'), 'g');
   while ((matches = regex.exec(template.base)) !== null) {
     const obj = {};
     keys.forEach((key, i) => {
-      setPropertyValue(obj, key.split('.'), matches[i + 1]);
+      setPropertyValue(obj, key ? key.split('.') : key, matches[i + 1]);
     });
     value.push(obj.value);
   }

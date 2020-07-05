@@ -1,16 +1,20 @@
 function updateProps(property, $target, newProps, oldProps) {
-  for (let i = 0, oldProp; oldProp = oldProps[i]; i++) {
-    const { name } = oldProp;
+  for (let i = oldProps.length - 1; i >= 0; i--) {
+    const { name, value } = oldProps[i];
     const newProp = newProps.getNamedItem(name);
-    if (!newProp || newProp.value !== oldProp.value) {
+    if (!newProp || newProp.value !== value) {
       if (name === 'data-bind') removeNode(property, $target);
-      newProp ? $target.setAttribute(name, newProp.value) : $target.removeAttribute(name);
+      if (!newProp) $target.removeAttribute(name);
     } else {
       newProps.removeNamedItem(name);
     }
   }
-  for (let i = 0, newProp; newProp = newProps[i]; i++) {
-    $target.setAttribute(newProp.name, newProp.value);
+  for (let i = 0; i < newProps.length; i++) {
+    const { name, value } = newProps[i];
+    if (name === 'selected') {
+      $target.parentNode.value = $target.value;
+    }
+    $target.setAttribute(name, value);
   }
 }
 
