@@ -9,7 +9,7 @@ function getObject(obj, props, value, index) {
 
 export function clone(object) {
   if (Array.isArray(object)) {
-    return object.map((obj) => obj);
+    return object.map((obj) => clone(obj));
   }
   return Object.assign({}, object);
 }

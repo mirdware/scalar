@@ -16,7 +16,9 @@ module.exports = [
     template: './app/index.html',
     favicon: './app/favicon.ico'
   }),
-  new CopyWebpackPlugin([
-    { from: './app/response.json', to: 'response.json' },
-  ])
+  new CopyWebpackPlugin({
+    patterns: [
+      { from: './app/response.json', to: 'response.json' },
+    ]
+  })
 ];
