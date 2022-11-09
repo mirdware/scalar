@@ -7,9 +7,24 @@ function isInput($node) {
   return nodeName === 'INPUT' || nodeName === 'TEXTAREA' || nodeName === 'SELECT';
 }
 
+function pad(num) {
+  return (num < 10 ? '0' : '') + num;
+}
+
 function setValue($node, value, attr) {
   attr = attr || 'value';
   const { type } = $node;
+  if (value instanceof Date) {
+    const date = value;
+    value = date.getFullYear() +
+    '-' + pad(date.getMonth() + 1) +
+    '-' + pad(date.getDate());
+    if (type === 'datetime-local') {
+      value += 'T' + pad(date.getHours()) +
+      ':' + pad(date.getMinutes()) +
+      ':' + pad(date.getSeconds());
+    }
+  }
   if (type === 'checkbox' || type === 'radio') {
     attr = 'checked';
     if (type === 'radio') {
@@ -68,7 +83,6 @@ export function create(property, $node, prop) {
     $node.addEventListener('keyup', (e) => {
       const { target } = e;
       changeContent(property, prop, target.value);
-      target.focus();
     });
     $node.addEventListener('change', (e) => {
       changeContent(property, prop, evalValue(e.target));

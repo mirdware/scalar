@@ -14,7 +14,7 @@ function sendRequest(request, callback) {
     }
     return variables.length ? sign + variables.join('&') : '';
   }
-  
+
   function formatURL(url, data) {
     for (const key in data) {
       const variable = '/{' + key + '}';
@@ -25,7 +25,7 @@ function sendRequest(request, callback) {
     }
     return url.replace(/\/\{(\w+)\}/gi, '');
   }
-  
+
   let { headers, data, queryString, url } = request;
   const xhr = new XMLHttpRequest();
   data = headers['Content-Type'] === 'application/json' ? JSON.stringify(data) : serialize(data);

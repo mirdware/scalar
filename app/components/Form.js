@@ -29,6 +29,7 @@ export default ($) => ({
     sexo: 'F',
     paint: true,
     select: '',
+    date: '',
     dependency: [''],
     select2: '',
     file: getEmptyFileList()
@@ -40,6 +41,7 @@ export default ($) => ({
       sexo: 'M',
       paint: false,
       select: 1,
+      date: new Date(),
       dependency: data[1],
       select2: 'Cali'
     })

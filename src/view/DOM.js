@@ -32,7 +32,7 @@ function removeNodes(property, $node) {
   for (let i = 0, $child; $child = $childrens[i]; i++) {
     removeNode(property, $child);
   }
-  removeNode(property, $node);  
+  removeNode(property, $node);
 }
 
 function updateElement(property, $parent, $newNode, $oldNode, index) {

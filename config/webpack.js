@@ -17,11 +17,12 @@ module.exports = {
   module: require('./module'),
   optimization: require('./optimization'),
   devServer: {
-    host: '0.0.0.0',
-    public: 'localhost:6969',
+    host: 'local-ip',
+    allowedHosts: ['all'],
+    hot:false,
+    liveReload: true,
     open: true,
-    port: 6969,
-    inline: true
+    port: 6969
   },
   devtool: 'source-map'
 };

@@ -20,7 +20,7 @@ export default class ToDo extends Component {
     const index = this.getIndex(e);
     this.tasks.splice(index, 1);
   }
-  
+
   add() {
     console.log(this);
     if (!this.task) return;
@@ -30,7 +30,7 @@ export default class ToDo extends Component {
     });
     this.task = '';
   }
-  
+
   crossOutItem(e) {
     const index = this.getIndex(e);
     const task = this.tasks[index];

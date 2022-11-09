@@ -33,7 +33,7 @@ export function getValue(template) {
   .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
   .replace(/\\\$\\\{data(\\\.)?(\w|(\\\.))*\\\}/g, '(.*?)')
   .replace(/\\\$\\\{[^\}]*\}/g, '.*?')
-  .replace(/ /g, '\\s?').replace('&', '[?&]amp;'), 'g');
+  .replace(/ /g, '\\s*').replace('&', '[?&]amp;'), 'g');
   while ((matches = regex.exec(template.base)) !== null) {
     const obj = {};
     keys.forEach((key, i) => {
