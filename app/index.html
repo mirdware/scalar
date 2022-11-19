@@ -52,7 +52,9 @@
       <label><input type="radio" name="sexo" data-bind="sexo" value="F" checked/> Femenino</label>
       <label><input type="radio" name="sexo" data-bind="sexo" value="M"> Masculino</label><br/>
       <input type="password" data-bind="password"/> <input type="text" data-bind="password"/><br/>
-      <input type="date" data-bind="date"/><br/>
+      <input type="date" class="timestamp" data-bind="date"/>
+      <input type="datetime-local" class="timestamp" data-bind="date"/>
+      <input type="text" data-bind="date"/><br/>
       <input type="file" data-bind="file"/><br/>
       <input type="submit"/>
       <input type="reset"/><br/>

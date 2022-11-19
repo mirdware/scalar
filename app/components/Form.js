@@ -49,5 +49,8 @@ export default ($) => ({
   '#select': {
     change: () => changeSelect2($),
     mutate: () => changeSelect2($)
+  },
+  '.timestamp': {
+    change: () => setTimeout(() => $.date = new Date($.date.length > 10 ? $.date : $.date + "T00:00"), 150)
   }
 });

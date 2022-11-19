@@ -7,25 +7,13 @@ function isInput($node) {
   return nodeName === 'INPUT' || nodeName === 'TEXTAREA' || nodeName === 'SELECT';
 }
 
-function pad(num) {
-  return (num < 10 ? '0' : '') + num;
-}
-
 function setValue($node, value, attr) {
   attr = attr || 'value';
   const { type } = $node;
   if (value instanceof Date) {
-    const date = value;
-    value = date.getFullYear() +
-    '-' + pad(date.getMonth() + 1) +
-    '-' + pad(date.getDate());
-    if (type === 'datetime-local') {
-      value += 'T' + pad(date.getHours()) +
-      ':' + pad(date.getMinutes()) +
-      ':' + pad(date.getSeconds());
-    }
-  }
-  if (type === 'checkbox' || type === 'radio') {
+    value = new Date(value.getTime() - value.getTimezoneOffset() * 60000)
+    .toJSON().slice(0, type === 'date' ? 10 : 16);
+  } else if (type === 'checkbox' || type === 'radio') {
     attr = 'checked';
     if (type === 'radio') {
       value = $node.value === value;
@@ -80,13 +68,12 @@ export function create(property, $node, prop) {
   }
   if (isInput($node)) {
     const inputValue = evalValue($node);
-    $node.addEventListener('keyup', (e) => {
-      const { target } = e;
-      changeContent(property, prop, target.value);
-    });
-    $node.addEventListener('change', (e) => {
-      changeContent(property, prop, evalValue(e.target));
-    });
+    $node.addEventListener('keyup',
+      (e) => changeContent(property, prop, e.target.value)
+    );
+    $node.addEventListener('change',
+      (e) => changeContent(property, prop, evalValue(e.target))
+    );
     if (inputValue === null) {
       setValue($node, value);
     } else {

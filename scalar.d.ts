@@ -2,30 +2,40 @@ declare module 'scalar' {
     const scalar: {
         Component: Class<Component>,
         Module: Class<Module>,
-        Resource: { new (url: string): Resource }
+        Resource: { new (url: string, header?: Payload): Resource }
     };
     export = scalar
 }
 
 declare class Component {
-    inject (provider: Class<any>): any
-    compose ($domElement: HTMLElement, behavioral: Class<Component>|BehavioralFunction): Component
+    inject<T> (provider: Class<T>): T
+    compose<T extends Component> ($domElement: HTMLElement, behavioral: Class<T>|BehavioralFunction): T
     getIndex (e: Event): number|void
 }
 
 declare class Module {
-    compose (selector: string, component: Class<Component>|BehavioralFunction): Module
-    bind (origin: Class<any>, replace: Class<any>): Module
+    compose<T extends Component> (selector: string, component: Class<T>|BehavioralFunction): Module
+    bind<T, R> (origin: Class<T>, replace: Class<R>): Module
 }
 
 declare class Resource {
-    get (queryString: string): Promise<any>
-    post (dataBody: any, queryString: any): Promise<any>
-    put (dataBody: any, queryString: any): Promise<any>
-    delete (queryString: any): Promise<any>
-    request (method: string, dataBody:any, queryString:any):Promise<any>
+    get (queryString?: Payload): Promise<Response>
+    post (dataBody: Payload, queryString?: Payload): Promise<Response>
+    put (dataBody: Payload, queryString?: Payload): Promise<Response>
+    delete (queryString?: Payload): Promise<Response>
+    request (method: string, dataBody?: Payload|null, queryString?: Payload): Promise<Response>
 }
 
-declare type BehavioralFunction = (compound: Component) => any
+declare type BehavioralFunction = (compound: Component) => Payload
 
 declare type Class<T> = { new (...args: Array<any>): T }
+
+declare type JSONValue = string|number|boolean|Payload|JSONArray;
+
+declare interface Paylod {
+    [x: string]: JSONValue
+}
+
+declare interface JSONArray extends Array<JSONValue> { }
+
+declare type Response = Payload|JSONArray|void;
