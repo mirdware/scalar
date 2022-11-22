@@ -52,10 +52,10 @@ function bindAttributes(component, parent, $domElement) {
 export function watch(component, parent, $node) {
   const dataBinds = Array.from($node.querySelectorAll('[data-bind]'));
   const dataAttributes = Array.from($node.querySelectorAll('[data-attr]'));
-  if ($node.dataset.bind) {
+  if ($node?.dataset?.bind) {
     dataBinds.push($node);
   }
-  if ($node.dataset.attr) {
+  if ($node?.dataset?.attr) {
     dataAttributes.push($node);
   }
   dataBinds.forEach(($bind) => {

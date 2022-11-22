@@ -1,6 +1,6 @@
 import { setPropertyValue } from '../util/Element';
 import { watch } from "../observable/Component";
-import { updateNodes } from './DOM'; 
+import { updateNodes } from './DOM';
 
 const cache = {};
 

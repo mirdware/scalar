@@ -80,3 +80,7 @@ section {
 .checked {
   text-decoration: line-through;
 }
+
+.external-component {
+  text-align: center;
+}

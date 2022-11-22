@@ -1,7 +1,7 @@
 # Scalar
 Scalar nace de la necesidad de crear sistemas escalables, de alto rendimiento y no obstructivos usando los últimos estándares de programación web, lo cual incluye el uso de las últimas características basadas en [ECMAScript](https://www.ecma-international.org/ecma-262/8.0/index.html).
 
-El desarrollo de aplicaciones con scalar se basa en componentes no obstructivos, lo cual quiere decir que su funcionamiento no depende enteramente de javascript. Otra premisa de scalar es la separación entre contenido, estilo y comportamiento.
+El desarrollo de aplicaciones con scalar se basa en componentes no obstructivos (o de backend), lo cual quiere decir que su funcionamiento no depende enteramente de javascript. Otra premisa de scalar es la separación entre contenido, estilo y comportamiento.
 
 ## Instalación
 
@@ -35,7 +35,11 @@ cd scalar && npm install
 Una vez instaladas es posible ejecutar un servidor webpack con el comando `npm start` o construir el proyecto con `npm run build`.
 
 ## Módulos
-Un módulo es un objeto javascript que se instancia de la clase Module de scalar, se deben proveer por constructor las dependencias para luego crear cada uno de los componentes mediante el método `compose`, esto se logra enviando como primer parámetro el selector del elemento y como segundo la función o clase conductual.
+Un módulo es un objeto javascript que se instancia de la clase Module de scalar, se deben proveer por constructor las dependencias para luego declarar cada uno de los componentes mediante el método `compose`, esto se logra enviando como primer parámetro el selector del elemento y como segundo la función o clase conductual.
+
+Con compose solo se declara el componente dentro del módulo pero no se compone dentro de la estructura de la página, para esto se debe ejecutar el método `execute`.
+
+Otro método a tener en cuenta al momento de usar modulos es `add` que genera una composición de estos, agregando todos los providers del modulo pasado como parametro a su propio sistema de inyección de dependencias.
 
 ```javascript
 import { Module } from '../scalar';
@@ -44,13 +48,17 @@ import Test from './components/Test';
 import ToDo from './components/ToDo';
 import Message from './services/Message';
 
-new Module(Message)
+const module = new Module(Message);
+
+new Module()
 .compose('#square', Test)
 .compose('#hello-world', Form)
-.compose('#todo', ToDo);
+.compose('#todo', ToDo)
+.add(module)
+.execute();
 ```
 
-La ejecución del método compose genera un `compound object`(Objeto compuesto) que contiene las propiedades enlazadas a la plantilla mediante `data-bind` y/o `data-attr`, este enlace varia de uno a doble sentido según sea el caso.
+La ejecución del componente genera un `compound object`(Objeto compuesto) que contiene las propiedades enlazadas a la plantilla mediante `data-bind` y/o `data-attr`, este enlace varia de uno a doble sentido según sea el caso.
 
 ```html
 <form id="hello-world">
@@ -329,7 +337,7 @@ La manera de acceder a un elemento del arreglo desde  enlace es mediante notaci�
 
 ### Hidden DOM
 
-En la actualidad se elimino la idea de usar virtual DOM como mecanismo de actualización para las plantillas JIT, en su lugar se esta experimentando con el uso de un hidden DOM. El cual funciona como un [documentFragment](https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment) que no es adicionado al DOM en ningún momento, si no que sirve como referencia para saber exactamente cuales son los cambios que se deben realizar. 
+En la actualidad se elimino la idea de usar virtual DOM como mecanismo de actualización para las plantillas JIT, en su lugar se esta experimentando con el uso de un hidden DOM. El cual funciona como un [documentFragment](https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment) que no es adicionado al DOM en ningún momento, si no que sirve como referencia para saber exactamente cuales son los cambios que se deben realizar.
 
 ## Solapamiento de componentes
 El solapamiento (overloaping) se presenta cuando se define un componente sobre otro ya establecido.
@@ -359,3 +367,36 @@ new Module()
 ```
 
 En este caso tanto el componente pageable como checkTable hacen uso de la propiedad data, a esto hace referencia el solapamiento a compartir propiedades gracias a su ubicación dentro del DOM; un cambio en una propiedad afectara a la propiedad del componente solapado. Se debe tener cuidado con los eventos al momento de solapar dado que un componente podría sobreescribir sin querer los eventos de otro.
+
+# aislamiento mediante web componentes
+En la última versión de scalar se da soporte al standard de [web components](https://developer.mozilla.org/en-US/docs/Web/Web_Components), con lo cual se agrega una dependencia a javascript; pero esta es una de las ideas de scalar, usar algunas u otras caracteristicas de la libreria e ir escalando según las necesidades del proyecto.
+
+La implementación del [custom element](https://developer.mozilla.org/en-US/docs/Web/Web_Components/Using_custom_elements) se realiza mediante el decorator `@customElement` los cuales reciben las propiedades styles, template y extends, este último es para soportar el estandard con el uso de diferentes elementos HTML.
+
+```javascript
+@customElement({
+    template: '<strong>Hola <span data-bind="name">mundo</span>!!</strong>' +
+    '<slot name="body"><p>Por favor de click <a href="">aquí</a></p></slot>',
+    styles: 'strong{color:#f58731;} ' +
+    'img{vertical-align: middle; margin-right: 1em;} ' +
+    ':host{border: 1px solid; display: block; border-radius: 1em; padding: .5em; margin: .5em;}'
+})
+export default class Greeting extends Component {}
+```
+
+Como se puede observar el web component debe extender de Component no de HTMLElement como lo hace el estandard, esto es para que la libreria pueda manejar cosas como el [shadown DOM](https://developer.mozilla.org/en-US/docs/Web/Web_Components/Using_shadow_DOM) y ciertas funciones del ciclo de vida del componente, que integran el comportamiento normal de un backend component al web component.
+
+Es importante mencionar que el componente puede hacer uso de todas los métodos del ciclo de vida del custom element como pueden ser `attributeChangedCallback`, `connectedCallback` o `disconnectedCallback`, al igual del método `onInit` el cual es implementación de la libreria y hace las funciones de lo que podría ser un evento mount, al basarse en el estandar es posible hacer uso de [slots y templates](https://developer.mozilla.org/en-US/docs/Web/Web_Components/Using_templates_and_slots).
+
+## Integración entre components
+Es posible hacer uso de ambos tipos de componentes dentro de una misma aplicación, supongamos un `.extenal-component` compuesto.
+
+```html
+<section class="external-component">
+  <input type="text" value="scalar" data-bind="name" />
+  <sc-hi data-attr="name:name" />
+</section>
+```
+
+# Todo
+* Verificar por que solo se toma el componente `.alert` cuando el componente es definido posterior a `#square`.
