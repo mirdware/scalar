@@ -58,7 +58,7 @@ export default function customElement(options) {
         _this.shadowRoot.innerHTML = '<style>' + options.styles + '</style>' + options.template;
         const props = {
           $node: _this.shadowRoot,
-          module: Class.module,
+          module: Privy.get(Class.module),
           properties: {},
           events: _this.listen ? _this.listen() : {},
           init: true
@@ -71,7 +71,7 @@ export default function customElement(options) {
       const old = Class.prototype[method];
       Class.prototype[method] = function (...args) {
         methods[method](this, ...args);
-        old && old(...args);
+        old && old.bind(this)(...args);
       }
     }
     return Class;

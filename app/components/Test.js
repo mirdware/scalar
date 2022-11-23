@@ -5,7 +5,7 @@ const { protocol, hostname, port } = window.location;
 const user = new Resource(protocol + '//' + hostname + ':' + port + '/response.json');
 
 export default ($) => {
-  const message = $.inject(Message);
+  $.inject(Message).listen((msg) => $.my.msg = msg);
 
   function track(e) {
     console.log($, e.clientX + ',' + e.clientY);
@@ -36,7 +36,6 @@ export default ($) => {
   }
 
   return {
-    mount: () => message.my = $.my,
     mousemove: track,
     '.open': { click: sendRequest },
     '.paint': { click: paint },

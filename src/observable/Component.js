@@ -50,20 +50,15 @@ function bindAttributes(component, parent, $domElement) {
 }
 
 export function watch(component, parent, $node) {
-  const dataBinds = Array.from($node.querySelectorAll('[data-bind]'));
-  const dataAttributes = Array.from($node.querySelectorAll('[data-attr]'));
-  if ($node?.dataset?.bind) {
-    dataBinds.push($node);
+  const { dataset } = $node;
+  if (dataset) {
+    const dataBinds = Array.from($node.querySelectorAll('[data-bind]'));
+    const dataAttributes = Array.from($node.querySelectorAll('[data-attr]'));
+    if (dataset.bind) dataBinds.push($node);
+    if (dataset.attr) dataAttributes.push($node);
+    dataBinds.forEach(($bind) => bindData(component, parent, $bind));
+    dataAttributes.forEach(($attr) => bindAttributes(component, parent, $attr));
   }
-  if ($node?.dataset?.attr) {
-    dataAttributes.push($node);
-  }
-  dataBinds.forEach(($bind) => {
-    bindData(component, parent, $bind);
-  });
-  dataAttributes.forEach(($attr) => {
-    bindAttributes(component, parent, $attr);
-  });
   addListeners($node, parent.events);
 }
 

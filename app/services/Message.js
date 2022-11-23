@@ -1,5 +1,11 @@
+const listeners = [];
+
 export default class Message {
-    set(msg) {
-        this.my.msg = msg;
+    emit(msg) {
+        listeners.forEach((listener) => listener(msg));
+    }
+
+    listen(fn) {
+        listeners.push(fn);
     }
 }

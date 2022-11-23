@@ -20,7 +20,7 @@ function changeSelect2($) {
 
 export default ($) => ({
   _submit: () => {
-    $.inject(Message).set($.name);
+    $.inject(Message).emit($.name);
     console.log($);
   },
   _reset: () => Object.assign($, {

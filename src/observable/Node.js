@@ -27,17 +27,11 @@ function setValue($node, value, attr) {
   }
 }
 
-function evalValue(target) {
-  if (target.type === 'radio') {
-    return target.checked ? target.value : null;
-  }
-  if (target.type === 'file' && target.files) {
-    return target.files;
-  }
-  if (target.type === 'checkbox') {
-    return target.checked;
-  }
-  return target.value || null;
+function evalValue({type, checked, value, files}) {
+  if (type === 'radio') return checked ? value : null;
+  if (type === 'file' && files) return files;
+  if (type === 'checkbox') return checked;
+  return value || null;
 }
 
 function changeContent(property, prop, value) {
@@ -68,12 +62,12 @@ export function create(property, $node, prop) {
   }
   if (isInput($node)) {
     const inputValue = evalValue($node);
-    $node.addEventListener('keyup',
-      (e) => changeContent(property, prop, e.target.value)
-    );
-    $node.addEventListener('change',
-      (e) => changeContent(property, prop, evalValue(e.target))
-    );
+    $node.addEventListener('keyup', (e) => {
+      changeContent(property, prop, e.target.value)
+    });
+    $node.addEventListener('change', (e) => {
+      changeContent(property, prop, evalValue(e.target))
+    });
     if (inputValue === null) {
       setValue($node, value);
     } else {

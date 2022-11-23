@@ -14,7 +14,7 @@ Para usar scalar en un proyecto solo basta con tener instalado node y npm para e
   new scalar.Module()
   .compose('#hello-world', ($) => ({
     mount: () => $.msg = 'Hello world!!!'
-  }));
+  })).execute();
 </script>
 ```
 
@@ -82,7 +82,7 @@ La ejecución del componente genera un `compound object`(Objeto compuesto) que c
 ```
 
 ## Componentes
-Existen dos maneras de generar un componente; la primera es extendiendo de la clase Component de escalar, la cual deberá implementar el método listen que retorna un `behavioral object`(Objeto conductual).
+Existen diferentes maneras de generar un componente; la primera es extendiendo de la clase Component de escalar, la cual deberá implementar el método listen que retorna un `behavioral object`(Objeto conductual).
 
 ```javascript
 export default class ToDo extends Component {
@@ -103,7 +103,9 @@ export default class ToDo extends Component {
 }
 ```
 
-La segunda manera es mediante `behavioral function`(función conductual) la cual es una función pura de javascript que retorna las acciones del componente; la función recibe como parámetro un objeto compuesto y retorna un objeto conductual.
+Para generar web components el funcionamiento es muy similar al de componentes basados en clases, con la diferencia que se debe agregar el decorator `@customElement` con los estilos y template para dicho componente.
+
+Otra manera es mediante `behavioral function`(función conductual) la cual es una función pura de javascript que retorna las acciones del componente; la función recibe como parámetro un objeto compuesto y retorna un objeto conductual.
 
 ```javascript
 export default ($) => ({
@@ -366,12 +368,12 @@ new Module()
 </div>
 ```
 
-En este caso tanto el componente pageable como checkTable hacen uso de la propiedad data, a esto hace referencia el solapamiento a compartir propiedades gracias a su ubicación dentro del DOM; un cambio en una propiedad afectara a la propiedad del componente solapado. Se debe tener cuidado con los eventos al momento de solapar dado que un componente podría sobreescribir sin querer los eventos de otro.
+En este caso tanto el componente pageable como checkTable hacen uso de la propiedad data, a esto hace referencia el solapamiento a compartir propiedades gracias a su ubicación dentro del DOM; un cambio en una propiedad afectara a la propiedad del componente solapado. Se debe tener cuidado al momento de solapar componentes pues es posible tener resultados inesperados, en muchas ocaciones lo recomendable es aislar cada componente.
 
-# aislamiento mediante web componentes
+# Aislamiento mediante web componentes
 En la última versión de scalar se da soporte al standard de [web components](https://developer.mozilla.org/en-US/docs/Web/Web_Components), con lo cual se agrega una dependencia a javascript; pero esta es una de las ideas de scalar, usar algunas u otras caracteristicas de la libreria e ir escalando según las necesidades del proyecto.
 
-La implementación del [custom element](https://developer.mozilla.org/en-US/docs/Web/Web_Components/Using_custom_elements) se realiza mediante el decorator `@customElement` los cuales reciben las propiedades styles, template y extends, este último es para soportar el estandard con el uso de diferentes elementos HTML.
+La implementación del [custom element](https://developer.mozilla.org/en-US/docs/Web/Web_Components/Using_custom_elements) se realiza mediante el decorator `@customElement` el cual recibe las propiedades styles, template y extends, este último es para soportar el estandard con el uso de diferentes elementos HTML.
 
 ```javascript
 @customElement({
@@ -386,7 +388,9 @@ export default class Greeting extends Component {}
 
 Como se puede observar el web component debe extender de Component no de HTMLElement como lo hace el estandard, esto es para que la libreria pueda manejar cosas como el [shadown DOM](https://developer.mozilla.org/en-US/docs/Web/Web_Components/Using_shadow_DOM) y ciertas funciones del ciclo de vida del componente, que integran el comportamiento normal de un backend component al web component.
 
-Es importante mencionar que el componente puede hacer uso de todas los métodos del ciclo de vida del custom element como pueden ser `attributeChangedCallback`, `connectedCallback` o `disconnectedCallback`, al igual del método `onInit` el cual es implementación de la libreria y hace las funciones de lo que podría ser un evento mount, al basarse en el estandar es posible hacer uso de [slots y templates](https://developer.mozilla.org/en-US/docs/Web/Web_Components/Using_templates_and_slots).
+Es importante mencionar que el componente puede hacer uso de todas los métodos del ciclo de vida del custom element como pueden ser `attributeChangedCallback`, `connectedCallback` o `disconnectedCallback`, al igual del método `onInit` el cual es implementación de la libreria y hace las funciones de lo que podría ser un evento mount; al basarse en el estandar es posible hacer uso de [slots y templates](https://developer.mozilla.org/en-US/docs/Web/Web_Components/Using_templates_and_slots).
+
+El uso de `observedAttributes` sigue siendo necesario para definir los attributos que el componente debe escuchar activamente.
 
 ## Integración entre components
 Es posible hacer uso de ambos tipos de componentes dentro de una misma aplicación, supongamos un `.extenal-component` compuesto.

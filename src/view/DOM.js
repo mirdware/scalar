@@ -11,10 +11,11 @@ function updateProps(property, $target, newProps, oldProps) {
   }
   for (let i = 0; i < newProps.length; i++) {
     const { name, value } = newProps[i];
-    if (name === 'selected') {
-      $target.parentNode.value = $target.value;
-    }
+    if (name === 'selected') $target.parentNode.value = $target.value;
     $target.setAttribute(name, value);
+  }
+  if ($target.type === 'checkbox') {
+    $target.checked = $target.hasAttribute('checked');
   }
 }
 
