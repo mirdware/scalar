@@ -28,11 +28,10 @@ function bindFunction(name, $element, fn) {
   $element.eventListenerList.push({ name, fn, opt });
 }
 
-export function addListeners($element, events, root) {
-  root = root || true;
+export function addListeners($element, events) {
   for (const selector in events) {
     const fn = events[selector];
-    if (root && fn instanceof Function) {
+    if (fn instanceof Function) {
       let binding = !$element.eventListenerList;
       if (binding) {
         $element.eventListenerList = [];

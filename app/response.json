@@ -1,5 +1,5 @@
 [
   {"name": {"first": "Robert", "last": "Red"}, "age": 53},
   {"name": {"first": "Deep", "last": "Blue"}, "age": 42},
-  {"name": {"first": "Jack", "last": "Black"}, "age": 31}
+  {"name": {"first": "Jack", "last": "Black"}, "age": null}
 ]

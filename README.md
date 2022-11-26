@@ -1,15 +1,15 @@
 # Scalar
 Scalar nace de la necesidad de crear sistemas escalables, de alto rendimiento y no obstructivos usando los últimos estándares de programación web, lo cual incluye el uso de las últimas características basadas en [ECMAScript](https://www.ecma-international.org/ecma-262/8.0/index.html).
 
-El desarrollo de aplicaciones con scalar se basa en componentes no obstructivos (o de backend), lo cual quiere decir que su funcionamiento no depende enteramente de javascript. Otra premisa de scalar es la separación entre contenido, estilo y comportamiento.
+El desarrollo de aplicaciones con scalar se basa en componentes no obstructivos o de backend, lo cual quiere decir que su funcionamiento no depende enteramente de javascript; obviamente muchas de las decisiones de que tan abstructivo puede llegar a ser scalar depende en gran medida del desarrollador. Otra premisa de scalar es la separación entre contenido, estilo y comportamiento.
 
 ## Instalación
 
-Para usar scalar en un proyecto solo basta con tener instalado node y npm para ejecutar el comando `npm install scalar` o usar el [CDN](https://unpkg.com/scalar@0.2.8/dist/js/scalar.min.js).
+Para usar scalar en un proyecto solo basta con tener instalado node y npm para ejecutar el comando `npm install scalar` o usar el [CDN](https://unpkg.com/scalar@0.3.0/dist/js/scalar.min.js).
 
 ```html
 <h1 data-bind="msg" id="hello-world"></h1>
-<script src="https://unpkg.com/scalar@0.2.8/dist/js/scalar.min.js"></script>
+<script src="https://unpkg.com/scalar@0.3.0/dist/js/scalar.min.js"></script>
 <script defer>
   new scalar.Module()
   .compose('#hello-world', ($) => ({
@@ -32,7 +32,7 @@ Ingresa a la carpeta del proyecto y descarga las dependencias.
 cd scalar && npm install
 ```
 
-Una vez instaladas es posible ejecutar un servidor webpack con el comando `npm start` o construir el proyecto con `npm run build`.
+Una vez instaladas es posible ejecutar un servidor webpack con el comando `npm run serve`, construir el proyecto con `npm run build` o ambas mediante `npm start`.
 
 ## Módulos
 Un módulo es un objeto javascript que se instancia de la clase Module de scalar, se deben proveer por constructor las dependencias para luego declarar cada uno de los componentes mediante el método `compose`, esto se logra enviando como primer parámetro el selector del elemento y como segundo la función o clase conductual.
@@ -42,12 +42,6 @@ Con compose solo se declara el componente dentro del módulo pero no se compone 
 Otro método a tener en cuenta al momento de usar modulos es `add` que genera una composición de estos, agregando todos los providers del modulo pasado como parametro a su propio sistema de inyección de dependencias.
 
 ```javascript
-import { Module } from '../scalar';
-import Form from './components/Form';
-import Test from './components/Test';
-import ToDo from './components/ToDo';
-import Message from './services/Message';
-
 const module = new Module(Message);
 
 new Module()
@@ -79,6 +73,38 @@ La ejecución del componente genera un `compound object`(Objeto compuesto) que c
     <input type="reset"/><br/>
     <input type="button" value="Fill data inside" class="fill"/>
 </form>
+```
+
+### Servicios y recursos
+Un servicio no es más que un objeto común al ámbito del módulo; este debe ser declarado al momento de realizar la instanciación del módulo al cual va a quedar asociado.
+
+```javascript
+import { Module } from 'scalar';
+import Message from './services/Message';
+
+const module = new Module(Message);
+```
+
+Una vez declarado el servicio es posible usarlo mediante el método inject del compound object o de la función enviada a cada servicio, teniendo siempre en cuenta en no generar dependencias ciclicas.
+
+```javascript
+import Service from './OtherService';
+
+class Service {
+  constructor(inject) {
+    this _service = inject(OtherService);
+  }
+}
+```
+
+### Reemplazo de dependencias
+Es posible mockear o falsear las dependencias mediante el método `bind`, de esta manera cada vez que se solicite la dependencia Message se entregara una instancia de Fake.
+
+```javascript
+import { Module } from 'scalar';
+import Message from './services/Message';
+
+const module = new Module(Message).bind(Message, Fake);
 ```
 
 ## Componentes
@@ -246,31 +272,66 @@ $.compose(modal.$dom, Modal)
 ...
 ```
 
-## Servicios y recursos
-Un servicio no es más que un objeto común al ámbito del módulo lo cual es especialmente útil para la creación de repositorios que se encuentran usualmente ligados a los recursos (Resources), estos artefactos se encargan de obtener información desde el servidor aunque es posible usar como origen de datos cualquier cosa incluso [localStorage](https://developer.mozilla.org/es/docs/Web/API/Storage/LocalStorage), pero lo normal es que se use una API Rest o GraphQL. Para utilizar un recurso basta con instanciar un objeto de la clase Resource que provee la librería.
+### Solapamiento de componentes
+El solapamiento (overloaping) se presenta cuando se define un componente sobre otro ya establecido.
 
 ```javascript
-import { Resource } from 'scalar';
-
-const user = new Resource('response.json');
+new Module()
+.compose('.pageable', pageable)
+.compose('.check-table', checkTable);
 ```
 
-Ya con el objeto se pueden invocar sus métodos get, post, put, delete y request, este último se usa para crear una petición personalizada (PATCH, OPTIONS, HEAD). Hasta acá no difiere mucho de lo que se puede hacer con la [API fetch](https://developer.mozilla.org/es/docs/Web/API/Fetch_API) pero también es posible extender la clase para realizar peticiones más personalizadas.
+```html
+<div class="pageable">
+    <form action="https://sespesoft.com">
+        <input type="search" name="name" data-bind="name"/>
+        <input type="submit" value="Buscar"/>
+    </form>
+    <table class="check-table" data-bind="data">
+        <script type="text/template">
+            <tr>
+              <td>${data.one}</td>
+              <td>${data.two}</td>
+              <td>${data.three}</td>
+            </tr>
+        </script>
+    </table>
+</div>
+```
+
+En este caso tanto el componente pageable como checkTable hacen uso de la propiedad data, a esto hace referencia el solapamiento a compartir propiedades gracias a su ubicación dentro del DOM; un cambio en una propiedad afectara a la propiedad del componente solapado. Se debe tener cuidado al momento de solapar componentes pues es posible tener resultados inesperados, en muchas ocaciones lo recomendable es aislar cada componente.
+
+### Aislamiento mediante web componentes
+En la última versión de scalar se da soporte al standard de [web components](https://developer.mozilla.org/en-US/docs/Web/Web_Components), con lo cual se agrega una dependencia a javascript; pero esta es una de las ideas de scalar, usar algunas u otras caracteristicas de la libreria e ir escalando según las necesidades del proyecto.
+
+La implementación del [custom element](https://developer.mozilla.org/en-US/docs/Web/Web_Components/Using_custom_elements) se realiza mediante el decorator `@customElement` el cual recibe las propiedades styles, template y extends, este último es para soportar el estandard con el uso de diferentes elementos HTML.
 
 ```javascript
-import { Resource } from 'scalar';
-
-class ServerConnection extends Resource {
-  constructor(path) {
-    super('http://localhost:8080/' + path);
-    this.headers = {
-      Authorization: "Basic YWxhZGRpbjpvcGVuc2VzYW1l"
-    }
-  }
-}
+@customElement({
+    template: '<strong>Hola <span data-bind="name">mundo</span>!!</strong>' +
+    '<slot name="body"><p>Por favor de click <a href="">aquí</a></p></slot>',
+    styles: 'strong{color:#f58731;} ' +
+    'img{vertical-align: middle; margin-right: 1em;} ' +
+    ':host{border: 1px solid; display: block; border-radius: 1em; padding: .5em; margin: .5em;}'
+})
+export default class Greeting extends Component {}
 ```
 
-A parte de sobrescribir propiedades como observamos en el ejemplo anterior también es posible utilizar el sistema de inversión de control para usar un solo objeto durante todo el ciclo de vida de la aplicación, solo basta con proveer la clase y scalar se encarga del resto. Cabe resaltar el uso de [web workers](https://developer.mozilla.org/es/docs/Web/Guide/Performance/Usando_web_workers) para enviar peticiones, esto hace que toda petición realizada con Resource se realice en segundo plano.
+Como se puede observar el web component debe extender de Component no de HTMLElement como lo hace el estandard, esto es para que la libreria pueda manejar cosas como el [shadown DOM](https://developer.mozilla.org/en-US/docs/Web/Web_Components/Using_shadow_DOM) y ciertas funciones del ciclo de vida del componente, que integran el comportamiento normal de un backend component al web component.
+
+Es importante mencionar que el componente puede hacer uso de todas los métodos del ciclo de vida del custom element como pueden ser `attributeChangedCallback`, `connectedCallback` o `disconnectedCallback`, al igual del método `onInit` el cual es implementación de la libreria y hace las funciones de lo que podría ser un evento mount; al basarse en el estandar es posible hacer uso de [slots y templates](https://developer.mozilla.org/en-US/docs/Web/Web_Components/Using_templates_and_slots).
+
+El uso de `observedAttributes` sigue siendo necesario para definir los attributos que el componente debe escuchar activamente.
+
+### Integración entre components
+Es posible hacer uso de ambos tipos de componentes dentro de una misma aplicación, supongamos un `.extenal-component` compuesto.
+
+```html
+<section class="external-component">
+  <input type="text" value="scalar" data-bind="name" />
+  <sc-hi data-attr="name:name" />
+</section>
+```
 
 ## Plantillas
 Las plantillas (Templates) representan la parte más básica del sistema y se pueden clasificar en: prerenderizadas y JIT (Just In Time).
@@ -340,67 +401,6 @@ La manera de acceder a un elemento del arreglo desde  enlace es mediante notaci�
 ### Hidden DOM
 
 En la actualidad se elimino la idea de usar virtual DOM como mecanismo de actualización para las plantillas JIT, en su lugar se esta experimentando con el uso de un hidden DOM. El cual funciona como un [documentFragment](https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment) que no es adicionado al DOM en ningún momento, si no que sirve como referencia para saber exactamente cuales son los cambios que se deben realizar.
-
-## Solapamiento de componentes
-El solapamiento (overloaping) se presenta cuando se define un componente sobre otro ya establecido.
-
-```javascript
-new Module()
-.compose('.pageable', pageable)
-.compose('.check-table', checkTable);
-```
-
-```html
-<div class="pageable">
-    <form action="https://sespesoft.com">
-        <input type="search" name="name" data-bind="name"/>
-        <input type="submit" value="Buscar"/>
-    </form>
-    <table class="check-table" data-bind="data">
-        <script type="text/template">
-            <tr>
-              <td>${data.one}</td>
-              <td>${data.two}</td>
-              <td>${data.three}</td>
-            </tr>
-        </script>
-    </table>
-</div>
-```
-
-En este caso tanto el componente pageable como checkTable hacen uso de la propiedad data, a esto hace referencia el solapamiento a compartir propiedades gracias a su ubicación dentro del DOM; un cambio en una propiedad afectara a la propiedad del componente solapado. Se debe tener cuidado al momento de solapar componentes pues es posible tener resultados inesperados, en muchas ocaciones lo recomendable es aislar cada componente.
-
-# Aislamiento mediante web componentes
-En la última versión de scalar se da soporte al standard de [web components](https://developer.mozilla.org/en-US/docs/Web/Web_Components), con lo cual se agrega una dependencia a javascript; pero esta es una de las ideas de scalar, usar algunas u otras caracteristicas de la libreria e ir escalando según las necesidades del proyecto.
-
-La implementación del [custom element](https://developer.mozilla.org/en-US/docs/Web/Web_Components/Using_custom_elements) se realiza mediante el decorator `@customElement` el cual recibe las propiedades styles, template y extends, este último es para soportar el estandard con el uso de diferentes elementos HTML.
-
-```javascript
-@customElement({
-    template: '<strong>Hola <span data-bind="name">mundo</span>!!</strong>' +
-    '<slot name="body"><p>Por favor de click <a href="">aquí</a></p></slot>',
-    styles: 'strong{color:#f58731;} ' +
-    'img{vertical-align: middle; margin-right: 1em;} ' +
-    ':host{border: 1px solid; display: block; border-radius: 1em; padding: .5em; margin: .5em;}'
-})
-export default class Greeting extends Component {}
-```
-
-Como se puede observar el web component debe extender de Component no de HTMLElement como lo hace el estandard, esto es para que la libreria pueda manejar cosas como el [shadown DOM](https://developer.mozilla.org/en-US/docs/Web/Web_Components/Using_shadow_DOM) y ciertas funciones del ciclo de vida del componente, que integran el comportamiento normal de un backend component al web component.
-
-Es importante mencionar que el componente puede hacer uso de todas los métodos del ciclo de vida del custom element como pueden ser `attributeChangedCallback`, `connectedCallback` o `disconnectedCallback`, al igual del método `onInit` el cual es implementación de la libreria y hace las funciones de lo que podría ser un evento mount; al basarse en el estandar es posible hacer uso de [slots y templates](https://developer.mozilla.org/en-US/docs/Web/Web_Components/Using_templates_and_slots).
-
-El uso de `observedAttributes` sigue siendo necesario para definir los attributos que el componente debe escuchar activamente.
-
-## Integración entre components
-Es posible hacer uso de ambos tipos de componentes dentro de una misma aplicación, supongamos un `.extenal-component` compuesto.
-
-```html
-<section class="external-component">
-  <input type="text" value="scalar" data-bind="name" />
-  <sc-hi data-attr="name:name" />
-</section>
-```
 
 # Todo
 * Verificar por que solo se toma el componente `.alert` cuando el componente es definido posterior a `#square`.

@@ -1,8 +1,6 @@
 function getObject(obj, props, value, index) {
-  index = index || 0;
-  const prop = obj[props[index]];
   obj[props[index]] = ++index < props.length ?
-  getObject(prop || {}, props, value, index) :
+  getObject(obj[props[index]] || {}, props, value, index) :
   value;
   return obj;
 }
@@ -30,7 +28,7 @@ export function generateUUID(obj) {
 }
 
 export function setPropertyValue(property, prop, value) {
-  property.value = prop.length ?
-  getObject(property.value || {}, prop, value) :
+  property.v = prop.length ?
+  getObject(property.v || {}, prop, value, 0) :
   value;
 }

@@ -1,25 +1,32 @@
 import { setPropertyValue, clone } from '../util/Element';
 import * as Attribute from './Attribute';
 import * as Template from '../view/Template';
-
-function isInput($node) {
-  const nodeName = $node.nodeName;
+/**
+ *
+ * @var {node.ct} complexType Define cuando una propiedad es un array
+ * @var {node.$} $node Elemento HTML que es encapsulado por el nodo
+ * @var {node.pn_} propertyNames Nombres que componen el nombre del nodo?
+ * @var {property.v} value Valor de la propiedad
+ * @var {property.n_} nodes Elementos del dom que se controlan mediante la propiedad
+ * @var {property.a_} attributes Atributos que controla la propiedad
+ */
+function isInput({ nodeName }) {
   return nodeName === 'INPUT' || nodeName === 'TEXTAREA' || nodeName === 'SELECT';
 }
 
 function setValue($node, value, attr) {
-  attr = attr || 'value';
   const { type } = $node;
-  if (value instanceof Date) {
-    value = new Date(value.getTime() - value.getTimezoneOffset() * 60000)
-    .toJSON().slice(0, type === 'date' ? 10 : 16);
-  } else if (type === 'checkbox' || type === 'radio') {
+  if (type === 'checkbox' || type === 'radio') {
     attr = 'checked';
     if (type === 'radio') {
       value = $node.value === value;
     }
   } else if (type === 'file') {
     attr = 'files';
+  }
+  if (value instanceof Date && !isNaN(value)) {
+    value = new Date(value.getTime() - value.getTimezoneOffset() * 60000)
+    .toJSON().slice(0, type === 'date' ? 10 : 16);
   }
   if ($node[attr] !== value) {
     $node[attr] = value;
@@ -35,13 +42,13 @@ function evalValue({type, checked, value, files}) {
 }
 
 function changeContent(property, prop, value) {
-  const state = clone(property.value);
+  const state = clone(property.v);
   setPropertyValue(property, prop, value);
-  value = property.value;
-  property.nodes.forEach((node) => {
+  value = property.v;
+  property.n_.forEach((node) => {
     execute(node, state, value);
   });
-  property.attributes.forEach((attr) => {
+  property.a_.forEach((attr) => {
     Attribute.execute(property, attr, value);
   });
 }
@@ -55,7 +62,7 @@ function getObjectValue(obj, props) {
 }
 
 export function create(property, $node, prop) {
-  let { value } = property;
+  let value = property.v;
   let complexType = null;
   if (value instanceof Object) {
     value = getObjectValue(value, prop);
@@ -63,13 +70,13 @@ export function create(property, $node, prop) {
   if (isInput($node)) {
     const inputValue = evalValue($node);
     $node.addEventListener('keyup', (e) => {
-      changeContent(property, prop, e.target.value)
+      changeContent(property, prop, e.target.value);
     });
     $node.addEventListener('change', (e) => {
-      changeContent(property, prop, evalValue(e.target))
+      changeContent(property, prop, evalValue(e.target));
     });
     if (inputValue === null) {
-      setValue($node, value);
+      setValue($node, value, 'value');
     } else {
       value = inputValue;
     }
@@ -87,19 +94,19 @@ export function create(property, $node, prop) {
     setValue($node, value, 'innerHTML');
   }
   setPropertyValue(property, prop, value);
-  return { prop, $node, complexType };
+  return { pn_: prop, $: $node, ct: complexType };
 }
 
 export function execute(node, state, value) {
-  const { $node, complexType } = node;
-  const attr = isInput($node) ? 'value' : 'innerHTML';
-  node.prop.forEach((prop) => {
-    value = value[prop];
-    state = state[prop];
+  const $node = node.$;
+  const complexType = node.ct;
+  node.pn_.forEach((propName) => {
+    value = value[propName];
+    state = state[propName];
   });
   if (value !== state) {
     complexType && value ?
     Template.render(complexType, value) :
-    setValue($node, value, attr);
+    setValue($node, value, isInput($node) ? 'value' : 'innerHTML');
   }
 }

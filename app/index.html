@@ -80,7 +80,7 @@
           <a class="check" href="#">✔</a>
           <a class="close" href="#">[x]</a>
         </li>
-        <script type="text/template">
+        <script type="text/template" data-pairing>
           <li data-key="${index}">
             <span class="${data.checked}">${data.content}</span>
             <a class="check" href="#">✔</a>
@@ -91,11 +91,13 @@
     </form>
   </section>
   <section>
-    <sc-hi />
+    <sc-hi></sc-hi>
   </section>
   <section class="external-component">
     <input type="text" value="scalar" data-bind="name" />
-    <sc-hi data-attr="name:name" />
+    <sc-hi data-attr="name:name">
+      <p slot="body">Probando <a href="">link</a> desde fuera.</p>
+    </sc-hi>
   </section>
 </body>
 </html>

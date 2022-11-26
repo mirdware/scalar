@@ -2,6 +2,14 @@
 /src
 /app
 /config
+/lib/css
+/lib/app
+/lib/favicon.ico
+/lib/index.html
+/lib/response.json
+.gitattributes
+.gitignore
+jsonconfig.json
 *.lock
 *.log
 !.gitkeep

@@ -25,13 +25,13 @@ export default ($) => ({
   },
   _reset: () => Object.assign($, {
     name: 'init',
-    password: '',
+    password: null,
     sexo: 'F',
     paint: true,
-    select: '',
-    date: '',
+    select: null,
+    date: null,
     dependency: [''],
-    select2: '',
+    select2: null,
     file: getEmptyFileList()
   }),
   '.fill': {
@@ -51,6 +51,6 @@ export default ($) => ({
     mutate: () => changeSelect2($)
   },
   '.timestamp': {
-    change: () => setTimeout(() => $.date = new Date($.date.length > 10 ? $.date : $.date + "T00:00"), 150)
+    change: () => $.date = new Date($.date?.length > 10 ? $.date : $.date + "T00:00")
   }
 });

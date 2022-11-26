@@ -22,8 +22,8 @@ function updateProps(property, $target, newProps, oldProps) {
 function removeNode(property, $node) {
   const name = $node.getAttribute('data-bind');
   if (!name || $node.tagName === 'SCRIPT') return;
-  const { nodes } = property.parent.properties[name.split('.')[0]];
-  const node = nodes.find((node) => node.$node === $node);
+  const nodes = property.pc.p_[name.split('.')[0]].n_;
+  const node = nodes.find((node) => node.$ === $node);
   nodes.splice(nodes.indexOf(node), 1);
 }
 

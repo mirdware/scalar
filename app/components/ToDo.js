@@ -1,4 +1,4 @@
-import { Component } from "../../scalar";
+import { Component } from "../../src/scalar";
 
 export default class ToDo extends Component {
   listen() {

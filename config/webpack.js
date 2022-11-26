@@ -3,12 +3,12 @@ const config = require('../package.json');
 
 module.exports = {
   entry: {
-    scalar: ['./' + config.name + '.js'],
+    scalar: ['./src/' + config.name + '.js'],
     app: './app/app.js'
   },
   output: {
-    path: path.resolve(__dirname, '../dist'),
-    filename: './js/[name].min.js',
+    path: path.resolve(__dirname, '../lib'),
+    filename: './[name]/[name].min.js',
     library: config.name,
     libraryTarget: 'umd',
     umdNamedDefine: true

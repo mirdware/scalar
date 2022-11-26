@@ -1,5 +1,5 @@
 import './styles/theme.css';
-import { Module } from '../scalar';
+import { Module } from '../src/scalar';
 import Form from './components/Form';
 import Test from './components/Test';
 import ToDo from './components/ToDo';
@@ -12,7 +12,7 @@ new Module(Message)
 .compose('#todo', ToDo)
 .compose('sc-hi', Greeting)
 .compose('.external-component', ($) => ({
-  mount: () => console.log($)
+  'a': { _click: () => console.log($) }
 }))
 .compose('.alert', () => ({
   '.show': { click: (e) => alert(e.target.innerText) }
