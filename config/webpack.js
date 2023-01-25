@@ -16,13 +16,7 @@ module.exports = {
   plugins: require('./plugins'),
   module: require('./module'),
   optimization: require('./optimization'),
-  devServer: {
-    host: 'local-ip',
-    allowedHosts: ['all'],
-    hot:false,
-    liveReload: true,
-    open: true,
-    port: 6969
-  },
-  devtool: 'source-map'
+  devServer: require('./dev-server'),
+  devtool: 'source-map',
+  watchOptions: { poll: true }
 };

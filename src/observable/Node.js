@@ -23,6 +23,13 @@ function setValue($node, value, attr) {
     }
   } else if (type === 'file') {
     attr = 'files';
+  } else if (type === 'select-multiple') {
+    for (let i = 0, option; option = $node.options[i]; i++) {
+      if (value.find((v) => v === option.value)) {
+        option.selected = true;
+      }
+    }
+    return;
   }
   if (value instanceof Date && !isNaN(value)) {
     value = new Date(value.getTime() - value.getTimezoneOffset() * 60000)
@@ -34,7 +41,8 @@ function setValue($node, value, attr) {
   }
 }
 
-function evalValue({type, checked, value, files}) {
+function evalValue({type, checked, value, files, selectedOptions}) {
+  if (type === 'select-multiple') return Array.from(selectedOptions).map(({ value }) => value);
   if (type === 'radio') return checked ? value : null;
   if (type === 'file' && files) return files;
   if (type === 'checkbox') return checked;
@@ -70,7 +78,7 @@ export function create(property, $node, prop) {
   if (isInput($node)) {
     const inputValue = evalValue($node);
     $node.addEventListener('keyup', (e) => {
-      changeContent(property, prop, e.target.value);
+      changeContent(property, prop, evalValue(e.target));
     });
     $node.addEventListener('change', (e) => {
       changeContent(property, prop, evalValue(e.target));
