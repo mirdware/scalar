@@ -16,6 +16,12 @@ function isInput({ nodeName }) {
 
 function setValue($node, value, attr) {
   const { type } = $node;
+  if (type === 'select-multiple') {
+    for (let i = 0, option; option = $node.options[i]; i++) {
+      option.selected = value.find((v) => v === option.value);
+    }
+    return;
+  }
   if (type === 'checkbox' || type === 'radio') {
     attr = 'checked';
     if (type === 'radio') {
@@ -23,13 +29,6 @@ function setValue($node, value, attr) {
     }
   } else if (type === 'file') {
     attr = 'files';
-  } else if (type === 'select-multiple') {
-    for (let i = 0, option; option = $node.options[i]; i++) {
-      if (value.find((v) => v === option.value)) {
-        option.selected = true;
-      }
-    }
-    return;
   }
   if (value instanceof Date && !isNaN(value)) {
     value = new Date(value.getTime() - value.getTimezoneOffset() * 60000)

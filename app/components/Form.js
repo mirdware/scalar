@@ -32,6 +32,7 @@ export default ($) => ({
     date: null,
     dependency: [''],
     select2: null,
+    multi: [],
     file: getEmptyFileList()
   }),
   '.fill': {
