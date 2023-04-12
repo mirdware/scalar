@@ -9,7 +9,7 @@ import { addListeners } from '../util/Event';
  * @var {attribute.exp} expression? Expresión que se debe evaluar para que tome el valor el atributo
  */
 function setAttribute($attribute, name, property) {
-  if (property.constructor === Object) {
+  if (property && property.constructor === Object) {
     for (const key in property) {
       setAttribute($attribute[name], key, property[key]);
     }

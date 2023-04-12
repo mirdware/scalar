@@ -76,7 +76,7 @@ export function create(property, $node, prop) {
   }
   if (isInput($node)) {
     const inputValue = evalValue($node);
-    $node.addEventListener('keyup', (e) => {
+    $node.type.indexOf('date') && $node.addEventListener('keyup', (e) => {
       changeContent(property, prop, evalValue(e.target));
     });
     $node.addEventListener('change', (e) => {

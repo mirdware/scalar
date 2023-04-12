@@ -52,6 +52,11 @@ export default ($) => ({
     mutate: () => changeSelect2($)
   },
   '.timestamp': {
-    change: () => $.date = new Date($.date?.length > 10 ? $.date : $.date + "T00:00")
+    change: () => $.date = new Date($.date?.length > 10 ? $.date : $.date + "T00:00"),
+    paste: async () => {
+      const date = await navigator.clipboard.readText();
+      $.date = new Date(date);
+    },
+    copy: (e) => $.date && navigator.clipboard.writeText($.date.toJSON())
   }
 });
