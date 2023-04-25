@@ -1,6 +1,7 @@
 function getObject(obj, props, value, index) {
-  obj[props[index]] = ++index < props.length ?
-  getObject(obj[props[index]] || {}, props, value, index) :
+  const key = props[index];
+  obj[key] = ++index < props.length ?
+  getObject(obj[key] || (isNaN(key) ? {} : []), props, value, index) :
   value;
   return obj;
 }
