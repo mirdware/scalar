@@ -1,7 +1,7 @@
 function getObject(obj, props, value, index) {
   const key = props[index];
   obj[key] = ++index < props.length ?
-  getObject(obj[key] || (isNaN(key) ? {} : []), props, value, index) :
+  getObject(obj[key] || (isNaN(props[index]) ? {} : []), props, value, index) :
   value;
   return obj;
 }
