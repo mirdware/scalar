@@ -1,10 +1,10 @@
 # Scalar
 Scalar nace de la necesidad de crear sistemas escalables, de alto rendimiento y no obstructivos usando los últimos estándares de programación web, lo cual incluye el uso de las últimas características basadas en [ECMAScript](https://www.ecma-international.org/ecma-262/8.0/index.html).
 
-El desarrollo de aplicaciones con scalar se basa en componentes no obstructivos o de backend, lo cual quiere decir que su funcionamiento no depende enteramente de javascript; obviamente muchas de las decisiones de que tan abstructivo puede llegar a ser scalar depende en gran medida del desarrollador. Otra premisa de scalar es la separación entre contenido, estilo y comportamiento.
+El desarrollo de aplicaciones con scalar se basa en componentes no obstructivos o de backend, lo cual quiere decir que su funcionamiento no depende enteramente de javascript; obviamente muchas de las decisiones de que tan obstructivo puede llegar a ser scalar depende en gran medida del desarrollador. Otra premisa de scalar es la separación entre contenido, estilo y comportamiento.
 
 ## Instalación
-Para usar scalar en un proyecto solo basta con tener instalado node y npm para ejecutar el comando `npm i scalar` o usar el [CDN](https://unpkg.com/scalar).
+Existen diferentes formas de usar scalar en un proyecto; la primera es tener instalado node y npm para ejecutar el comando `npm i scalar`, la segunda es usar el [CDN](https://unpkg.com/scalar).
 
 ```html
 <h1 data-bind="msg" id="hello-world"></h1>
@@ -36,9 +36,9 @@ Una vez instaladas es posible ejecutar un servidor webpack con el comando `npm r
 ## Módulos
 Un módulo es un objeto javascript que se instancia de la clase Module de scalar, se deben proveer por constructor las dependencias para luego declarar cada uno de los componentes mediante el método `compose('#selector', customComponent)`, esto se logra enviando como primer parámetro el selector del elemento y como segundo la función o clase conductual.
 
-El método `add(module)` se encarga de agregar todos los servicios del módulo pasado como parámetro al sistema de inyección de dependencias del módulo que invocó el método.
+El método `add(module)` se encarga de agregar un módulo junto a todos sus servicios al sistema de inyección de dependencias del módulo que invocó el método.
 
-Mediante compose solo se declara el componente dentro del módulo pero no se ejecuta dentro de la estructura de la página; para esto se debe hacer uso el método `execute()`.
+Mediante compose solo se declara el componente en el módulo pero no se ejecuta dentro de la estructura de la página; para esto se debe hacer uso el método `execute()`.
 
 ```javascript
 import { Module } from 'scalar';
@@ -101,7 +101,7 @@ export default class ToDo extends Component {
 }
 ```
 
-Para generar web components el funcionamiento es muy similar al de componentes basados en clases, con la diferencia que se debe agregar el decorator `@customElement` con los estilos y template para dicho componente.
+Para generar web components el funcionamiento es muy similar al de componentes basados en clases, con la diferencia que se debe agregar el decorator `@customElement` con los estilos y template para dicho componente, más adelante se detallara el uso de este método.
 
 Otra manera es mediante `behavioral function`(función conductual) la cual es una función pura de javascript que retorna las acciones del componente; la función recibe como parámetro un objeto compuesto y retorna un objeto conductual.
 
@@ -231,12 +231,12 @@ execute();
 </div>
 ```
 
-En este caso tanto el componente pageable como checkTable hacen uso de la propiedad data, a esto hace referencia el solapamiento a compartir propiedades gracias a su ubicación dentro del DOM; un cambio en una propiedad afectara a la propiedad del componente solapado. Se debe tener cuidado al momento de solapar componentes pues es posible tener resultados inesperados, en muchas ocaciones lo recomendable es aislar cada componente.
+En este caso tanto el componente pageable como checkTable hacen uso de la propiedad data, a esto hace referencia el solapamiento a compartir propiedades gracias a su ubicación dentro del DOM; un cambio en una propiedad afectara a la propiedad del componente solapado. Se debe tener cuidado al momento de solapar componentes pues es posible tener resultados inesperados, en muchas ocaciones lo recomendable es aislar cada comportamiento.
 
 ### Aislamiento mediante web componentes
-En la última versión de scalar se da soporte al standard de [web components](https://developer.mozilla.org/en-US/docs/Web/Web_Components), con lo cual se agrega una dependencia a javascript; pero esta es una de las ideas de scalar, usar algunas u otras caracteristicas de la libreria e ir escalando según las necesidades del proyecto.
+En la versión `0.3.0` de scalar se da soporte al standard de [web components](https://developer.mozilla.org/en-US/docs/Web/Web_Components), lo cual se genera una dependencia hacia javascript; a pesar que esto va en contra de generar componentes no obstructivos se puede agregar o no estas caracteristicas e ir escalando según las necesidades del proyecto.
 
-La implementación del [custom element](https://developer.mozilla.org/en-US/docs/Web/Web_Components/Using_custom_elements) se realiza mediante el decorator `@customElement` el cual recibe las propiedades styles, template y extends, este último es para soportar el estandard con el uso de diferentes elementos HTML.
+La implementación del [custom element](https://developer.mozilla.org/en-US/docs/Web/Web_Components/Using_custom_elements) se realiza mediante el decorator `@customElement` el cual recibe las propiedades styles, template y type, este último es para soportar el estandard con el uso de diferentes elementos HTML.
 
 ```javascript
 @customElement({
@@ -253,7 +253,45 @@ Como se puede observar el web component debe extender de Component no de HTMLEle
 
 Es importante mencionar que el componente puede hacer uso de todas los métodos del ciclo de vida del custom element como pueden ser `attributeChangedCallback(name, oldValue, newValue)`, `connectedCallback()` o `disconnectedCallback()`, al igual del método `onInit()` el cual es implementado por la libreria y se ejcuta cuando el componente es montado; al basarse en el estandar es posible hacer uso de [slots y templates](https://developer.mozilla.org/en-US/docs/Web/Web_Components/Using_templates_and_slots).
 
-El uso de `observedAttributes` sigue siendo necesario para definir los attributos que el componente debe escuchar activamente.
+El uso de `observedAttributes` se reemplaza por la declaración explicita de la priopiedad dentro de la clase.
+
+```javascript
+export default class MultiSelect extends Component {
+  constructor() {
+    super();
+    this._currentFocus = -1;
+    this.placeholder = '';
+    this.required = false;
+    this.value = [];
+  }
+}
+```
+
+El constructor debe llamar al padre y proceder a declarar las propiedades, cabe resaltar el uso del caracter `_` para iniciar ciertas declaraciones, estas son propiedades que no se exponen al custom element, al igual que aquellas que inicien con `$`, las propiedades deben inicializarse para indicar como debe observedAttributes tratar el nuevo valor, así cuando es booleano y se aplica al elemento este lo convertira a `true` o si es un objeto `[]` o `{}` se tratara de hacer un `JSON.parse`.
+
+```html
+<multi-select placeholder="Seleccionar tipo de items" _current-focus="0" required>
+  <option value="0" selected>Card</option>
+  <option value="1" selected>Table</option>
+  <option value="2" selected>Column</option>
+</multi-select>
+```
+
+La propiedad `_currentFocus` no sera enlazada al custom element. El paso de attributos dinamicos se sigue usando mediante `data-attr` como se haria con cualquier componente, cabe resaltar que es posible enviar datos complejos como objetos o arrays, los cuales seran codificados en JSON para enviar, por lo cual estos pasaran como valor y cualquier modifificación dentro del custom element no se vera reflejada en el componente padre que envio el objeto (inmutabilidad).
+
+```html
+<auto-complete required="" placeholder="Countries" data-attr="data:countries"></auto-complete>
+```
+
+Las unicas vias de comunicación entre custom element y componente padre son los atributos y [CustomEvent](https://developer.mozilla.org/en-US/docs/Web/API/CustomEvent/CustomEvent), por lo tanto el enlace en doble vía no es posible en este tipo de comunicación y se debe de hacer de manera explicita.
+
+```javascript
+{
+  'multi-select': {
+    changed: (e) => $.multi = e.detail
+  }
+}
+```
 
 ### Integración entre components
 Es posible hacer uso de ambos tipos de componentes dentro de una misma aplicación, supongamos un `.extenal-component` compuesto.

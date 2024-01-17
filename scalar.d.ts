@@ -2,7 +2,7 @@ declare module 'scalar' {
     const scalar: {
         Component: Class<Component>,
         Module: Class<Module>,
-        customElement: function ({template: string, styles: string, extends: string}): ClassDecorator
+        customElement: function ({template?: string, styles?: string, type?: string}): ClassDecorator
     };
     export = scalar
 }
@@ -10,7 +10,7 @@ declare module 'scalar' {
 declare class Component {
     inject<T> (provider: Class<T>): T
     compose<T extends Component> ($domElement: HTMLElement, behavioral: Class<T>|BehavioralFunction): T
-    getIndex (e: Event): number|void
+    getIndex (e: Event): string|undenined
 }
 
 declare class Module {

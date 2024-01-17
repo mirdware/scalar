@@ -34,7 +34,7 @@ function calculateAllSelector($) {
 }
 
 function refresh($) {
-  const $selectedOptions = $.checkList.filter((check) => check.selected && !check.all);
+  const $selectedOptions = $._data.filter((check) => check.selected && !check.all);
   $.numSelected = $selectedOptions.length;
   $.showItems = $.numSelected <= $.maxItems;
   $.badgeList = $.showItems ? $selectedOptions : [];
