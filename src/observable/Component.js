@@ -38,7 +38,7 @@ function bindAttributes(component, privyComponent, $domElement) {
     const index = attribute.indexOf(':');
     const properties = [];
     let exp = attribute.substr(index + 1).trim();
-    exp.replace(/'[^']*'/g, '').match(/\w[\w\._]+/g)
+    exp.replace(/'[^']*'/g, '').match(/(^\w[\w\._]+)(?!\${index})/g)
     .forEach((prop) => {
       const props = prop.split('.');
       const name = props.shift();

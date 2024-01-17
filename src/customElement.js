@@ -9,16 +9,17 @@ import * as Privy from "./util/Wrapper"
  * @var {m} module Referencia al módulo que esta componiendo la clase
  * @var {i} initialized Flag que indica si el web component ha sido inicializado
  */
-const TYPES = [
-  {E: HTMLElement},
-  {E: HTMLParagraphElement, t: 'p'},
-  {E: HTMLUListElement, t: 'ul'},
-  {E: HTMLButtonElement, t: 'button'}
-];
+const TYPES = {
+  p: HTMLParagraphElement,
+  ul: HTMLUListElement,
+  button: HTMLButtonElement,
+  select: HTMLSelectElement,
+  image: HTMLImageElement
+};
 
 export default function customElement(options) {
-  const type = options.extends;
-  const fetch = type ? TYPES.find((type) => type.t === type) : TYPES[0];
+  const type = options.type;
+  const fetch = TYPES[type] ? { t: type, E: TYPES[type] } : { E: HTMLElement };
   let component = fetch.C;
   if (!component) {
     component = class extends fetch.E {
@@ -41,12 +42,24 @@ export default function customElement(options) {
     }
     Object.setPrototypeOf(prototype, component);
     Object.setPrototypeOf(prototype.prototype, component.prototype);
+    Object.defineProperty(Class, 'observedAttributes', {
+      get: function () {
+        const properties = this.toString().match(/(?:this\.)(?![_\$])(.+?(?= ))/g) || [];
+        return properties.map((property) => property.substr(5).replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase());
+      }
+    });
     const methods = {
       connectedCallback: function (_this) {
         if (!Privy.get(_this).i) _this.onInit();
       },
       attributeChangedCallback: function (_this, name, oldValue, newValue) {
         if (!Privy.get(_this).i) _this.onInit();
+        name = name.replace(/-./g, (x) => x[1].toUpperCase());
+        if (typeof _this[name] === 'boolean') {
+          newValue = true;
+        } else if (_this[name] instanceof Object) {
+          newValue = JSON.parse(newValue);
+        }
         _this[name] = newValue;
       },
       onInit: function (_this) {
@@ -57,7 +70,7 @@ export default function customElement(options) {
           e_: _this.listen ? _this.listen() : {},
           i: true
         };
-        props.$.appendChild(createFragment('<style>' + options.styles + '</style>' + options.template));
+        props.$.appendChild(createFragment('<style>' + (options.styles || '') + '</style>' + (options.template || '')));
         Privy.set(_this, props);
         watch(_this, props, props.$);
       }

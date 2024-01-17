@@ -9,7 +9,13 @@ import { addListeners } from '../util/Event';
  * @var {attribute.exp} expression? Expresión que se debe evaluar para que tome el valor el atributo
  */
 function setAttribute($attribute, name, property) {
-  if (property && property.constructor === Object) {
+  const isObject = property instanceof Object;
+  if ($attribute.tagName?.includes("-")) {
+    if (isObject) {
+      property = JSON.stringify(property);
+    }
+    $attribute.setAttribute(name, property || '');
+  } else if (isObject && $attribute[name] instanceof Object) {
     for (const key in property) {
       setAttribute($attribute[name], key, property[key]);
     }
@@ -48,7 +54,7 @@ export function execute(property, attribute, value) {
   Function('p', 'return ' + attribute.exp)(property.c) :
   getPropertyValue(value, attribute.pn);
   setAttribute(attribute.a, name, value);
-  if (eventListenerList && name.indexOf('class') === 0 || name === 'id') {
+  if (eventListenerList && (name.indexOf('class') === 0 || name === 'id')) {
     while (eventListenerList.length) {
       const listener = eventListenerList.shift();
       $element.removeEventListener(listener.name, listener.fn, listener.opt);

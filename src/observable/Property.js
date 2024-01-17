@@ -102,7 +102,7 @@ export function create(component, name) {
   const property = {
     c: component,
     pc: privyComponent,
-    v: '',
+    v: component[name] ?? '',
     n_: [],
     a_: [],
     o_: []

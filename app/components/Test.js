@@ -10,6 +10,7 @@ export default ($) => {
   function sendRequest() {
     $.action.replace('open', 'reset');
     $.people = user.get();
+    setTimeout(() => console.log($.people), 100);
   }
 
   function reset() {
