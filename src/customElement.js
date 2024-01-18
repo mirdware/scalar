@@ -44,8 +44,10 @@ export default function customElement(options) {
     Object.setPrototypeOf(prototype.prototype, component.prototype);
     Object.defineProperty(Class, 'observedAttributes', {
       get: function () {
-        const properties = this.toString().match(/(?:this\.)(?![_\$])(.+?(?= ))/g) || [];
-        return properties.map((property) => property.substr(5).replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase());
+        const str = this.toString();
+        const _this = /(\w+)\s*=.+this[^\.]/.exec(str);
+        const properties = str.match(new RegExp('(?<=' + (_this ? _this[1] : 'this') + '\\.)[^_\\$](\\w+(?=\\s*=))', 'g')) || [];
+        return properties.map((property) => property.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase());
       }
     });
     const methods = {

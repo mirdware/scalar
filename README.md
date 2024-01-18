@@ -4,7 +4,7 @@ Scalar nace de la necesidad de crear sistemas escalables, de alto rendimiento y 
 El desarrollo de aplicaciones con scalar se basa en componentes no obstructivos o de backend, lo cual quiere decir que su funcionamiento no depende enteramente de javascript; obviamente muchas de las decisiones de que tan obstructivo puede llegar a ser scalar depende en gran medida del desarrollador. Otra premisa de scalar es la separación entre contenido, estilo y comportamiento.
 
 ## Instalación
-Existen diferentes formas de usar scalar en un proyecto; la primera es tener instalado node y npm para ejecutar el comando `npm i scalar`, la segunda es usar el [CDN](https://unpkg.com/scalar).
+Existen dos formas de usar scalar en un proyecto; la primera es mediante node y npm ejecutando el comando `npm i scalar`, la segunda es usar el [CDN](https://unpkg.com/scalar).
 
 ```html
 <h1 data-bind="msg" id="hello-world"></h1>
@@ -249,9 +249,9 @@ La implementación del [custom element](https://developer.mozilla.org/en-US/docs
 export default class Greeting extends Component {}
 ```
 
-Como se puede observar el web component debe extender de Component no de HTMLElement como lo hace el estandard, esto es para que la libreria pueda manejar cosas como el [shadown DOM](https://developer.mozilla.org/en-US/docs/Web/Web_Components/Using_shadow_DOM) y ciertas funciones del ciclo de vida del componente, que integran el comportamiento normal de un backend component al web component.
+Como se puede observar el web component debe extender de Component y no de HTMLElement como lo hace el estandard, esto es para que la libreria pueda manejar cosas como el [shadown DOM](https://developer.mozilla.org/en-US/docs/Web/Web_Components/Using_shadow_DOM) y ciertas funciones del ciclo de vida que se integran en el comportamiento normal de un backend component.
 
-Es importante mencionar que el componente puede hacer uso de todas los métodos del ciclo de vida del custom element como pueden ser `attributeChangedCallback(name, oldValue, newValue)`, `connectedCallback()` o `disconnectedCallback()`, al igual del método `onInit()` el cual es implementado por la libreria y se ejcuta cuando el componente es montado; al basarse en el estandar es posible hacer uso de [slots y templates](https://developer.mozilla.org/en-US/docs/Web/Web_Components/Using_templates_and_slots).
+Es importante mencionar que el componente puede hacer uso de todos los métodos del ciclo de vida del custom element como: `attributeChangedCallback(name, oldValue, newValue)`, `connectedCallback()` o `disconnectedCallback()`, al igual que del método `onInit()` el cual es implementado por la libreria y se ejcuta cuando el componente es montado; al basarse en el estandar es posible hacer uso de [slots y templates](https://developer.mozilla.org/en-US/docs/Web/Web_Components/Using_templates_and_slots).
 
 El uso de `observedAttributes` se reemplaza por la declaración explicita de la priopiedad dentro de la clase.
 
@@ -280,16 +280,14 @@ El constructor debe llamar al padre y proceder a declarar las propiedades, cabe 
 La propiedad `_currentFocus` no sera enlazada al custom element. El paso de attributos dinamicos se sigue usando mediante `data-attr` como se haria con cualquier componente, cabe resaltar que es posible enviar datos complejos como objetos o arrays, los cuales seran codificados en JSON para enviar, por lo cual estos pasaran como valor y cualquier modifificación dentro del custom element no se vera reflejada en el componente padre que envio el objeto (inmutabilidad).
 
 ```html
-<auto-complete required="" placeholder="Countries" data-attr="data:countries"></auto-complete>
+<auto-complete required="required" placeholder="Countries" data-attr="data:countries"></auto-complete>
 ```
 
 Las unicas vias de comunicación entre custom element y componente padre son los atributos y [CustomEvent](https://developer.mozilla.org/en-US/docs/Web/API/CustomEvent/CustomEvent), por lo tanto el enlace en doble vía no es posible en este tipo de comunicación y se debe de hacer de manera explicita.
 
 ```javascript
 {
-  'multi-select': {
-    changed: (e) => $.multi = e.detail
-  }
+  'multi-select': { changed: (e) => $.multi = e.detail }
 }
 ```
 
@@ -307,7 +305,7 @@ Es posible hacer uso de ambos tipos de componentes dentro de una misma aplicaci�
 Las plantillas (Templates) representan la parte más básica del sistema y se pueden clasificar en: prerenderizadas y JIT (Just In Time).
 
 ### Prerenderizadas
-Las plantillas prerenderizadas son aquellas suministradas por el servidor y hacen parte integral del cuerpo de la petición, de esta manera se puede garantizar el funcionamiento de la aplicación aun si el cliente no activa JavaScript; en parte la idea de la librería es ir _"escalando"_ un proyecto según la limitación del cliente (accesibilidad).
+Las plantillas prerenderizadas son aquellas suministradas por el servidor y hacen parte integral del cuerpo de la respuesta, de esta manera se puede garantizar el funcionamiento de la aplicación aun si el cliente no activa JavaScript; en parte la idea de la librería es ir _"escalando"_ un proyecto según la limitación del cliente (accesibilidad).
 
 Una plantilla scalar podría contener atributos `data-bind` y/o `data-attr`, los primeros generan un enlace en dos direcciones entre el objeto compuesto y la plantilla, siempre y cuando el elemento al cual se enlaza pueda introducir información, en caso contrario dicho enlace se establecerá en una sola dirección; el segundo modifica los atributos del elemento según se modifique alguna propiedad y por su naturaleza es unidireccional.
 
@@ -355,15 +353,15 @@ Se puede interpolar código javaScript mediante el uso de la notación [template
 
 ### Un/pairing mode
 
-Antes de la versión `0.3.0` laa forma común de enlazar datos a las propiedades de un array era mediante emparejamiento (pairing), esto se da cuando el template y el contenido del elemento son _exactamente_ iguales y difieren solo en la iterpolación; de esta manera los datos interpolados que partan del objeto `data` y no sean expresiones se combierten en parte del array.
+Antes de la versión `0.3.0` la forma común de enlazar datos a las propiedades de un array era mediante emparejamiento (pairing), esto se da cuando el template y el contenido del elemento son _exactamente_ iguales y difieren solo en la iterpolación; de esta manera los datos interpolados que partan del objeto `data` y no sean expresiones se combierten en parte del array.
 
 El uso de data-attr en la fase de emparejamiento puede generar comportamientos inesperados por lo cual se desanconseja su uso y se recomienda la interpolación de attributos.
 
-En anteriores versiones se puede hacer uso de data-bind en las plantillas, lo cual abre la posibilidad de realizar una tecnica de enlace diferente para el array y en la actualidad es el método por defecto a utilizar.
+En recientes versiones se puede hacer uso de una nueva tecnica de enlace para datos complejos `array.${index}.name` y en la actualidad es el método por defecto a utilizar para poblar dinamicamente el array.
 
-La manera de acceder a un elemento del arreglo desde  enlace es mediante notación de punto `dependencies.0.name` lo cual generaria error desde javascript pero no desde el data-bind. Ahora el enlace se realiza directamente por lo cual no es necesario que el template y el contenido del elemento coincidan en lo absoluto (unpairing), pero se debe tener en cuenta que si se modifica un dato del arreglo se renderizara en base a la plantilla.
+La notación de punto podría generar error al usar directamente desde javascript pero no desde el data-bind; con esto el enlace se realiza directamente por lo cual no es necesario que el template y el contenido del elemento coincidan en lo absoluto (unpairing). Aunque ya no sea necesario realizar emparejamiento, la hidatación de la pantalla continua realizandose desde el template por lo cual este debe ser bastante parecido al cargue inicial.
 
-Para poder usar el modo emparejamiento es necesario colocarlo explicitamente en el script de la plantilla mediante el atributo `data-pairing`.
+Para poder usar el modo de emparejamiento es necesario colocarlo explicitamente en el script de la plantilla mediante el atributo `data-pairing`.
 
 ```html
 <script type="text/template" data-pairing>
@@ -377,7 +375,9 @@ Para poder usar el modo emparejamiento es necesario colocarlo explicitamente en 
 
 ### Hidden DOM
 
-En la actualidad se elimino la idea de usar virtual DOM como mecanismo de actualización para las plantillas JIT, en su lugar se esta experimentando con el uso de un hidden DOM. El cual funciona como un [documentFragment](https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment) que no es adicionado al DOM en ningún momento, si no que sirve como referencia para saber exactamente cuales son los cambios que se deben realizar.
+Actualmente la idea de usar virtual DOM como mecanismo de actualización para las plantillas JIT se encuentra pospuesto, en su lugar se esta experimentando con el uso de un hidden DOM. El cual funciona como un [documentFragment](https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment) que no es adicionado al DOM en ningún momento, si no que sirve como referencia para saber exactamente cuales son los cambios que se deben realizar.
 
 # Todo
-* Verificar por que solo se toma el componente `.alert` cuando el componente es definido posterior a `#square`.
+* :bug: `required` dentro de la plantilla se empareja con `required=""` fuera de la plantilla. _El error solo se presenta en paring mode_.
+* :bug: al usar interpolaciones seguidas en una plantilla `${var1} ${var2}`. _El error solo se presenta en paring mode_.
+* :bug: al realizar solapamientos. _Se re comienda no realizar solapamientos usando web components_

@@ -46,7 +46,7 @@ function bindAttributes(component, privyComponent, $domElement) {
       if (!privy[name]) {
         privy[name] = getProperty(component, name);
       }
-      exp = (exp !== prop) ? exp.replace(prop, 'p.' + prop.replace(/\.([\w_]+)/g, "['$1']")) : null;
+      exp = (exp !== prop) ? exp.replaceAll(prop, 'p.' + prop.replace(/\.([\w_]+)/g, "['$1']")) : null;
       properties.push({
         p_: props,
         v: privy[name]
