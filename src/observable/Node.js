@@ -91,7 +91,7 @@ export function create(property, $node, prop) {
     complexType = Template.create(property, $node.parentNode, $node);
     value = Template.getValue(complexType);
   } else if ($node.innerHTML) {
-    const $template = $node.querySelector('script[type="text/template"]');
+    const $template = $node.querySelector(':scope>script[type="text/template"]');
     value = $node.innerHTML;
     if ($template) {
       complexType = Template.create(property, $node, $template);

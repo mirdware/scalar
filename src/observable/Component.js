@@ -21,53 +21,47 @@ function getProperty(component, name) {
   return prop;
 }
 
-function bindData(component, privyComponent, $domElement) {
-  let name = $domElement.dataset.bind;
-  const properties = privyComponent.p_;
-  const propertyObj = name.split('.');
-  name = propertyObj.shift();
-  if (!properties[name]) {
-    properties[name] = getProperty(component, name);
+function bind($node, name, fn) {
+  const dataBinds = Array.from($node.querySelectorAll('[data-' + name + ']'));
+  if ($node.dataset && $node.dataset[name]) {
+    dataBinds.push($node);
   }
-  Property.addNode(properties[name], $domElement, propertyObj);
-}
-
-function bindAttributes(component, privyComponent, $domElement) {
-  $domElement.dataset.attr.split(';')
-  .forEach((attribute) => {
-    const index = attribute.indexOf(':');
-    const properties = [];
-    let exp = attribute.substr(index + 1).trim();
-    exp.replace(/'[^']*'/g, '').match(/(^\w[\w\._]+)(?!\${index})/g)
-    .forEach((prop) => {
-      const props = prop.split('.');
-      const name = props.shift();
-      const privy = privyComponent.p_;
-      if (!privy[name]) {
-        privy[name] = getProperty(component, name);
-      }
-      exp = (exp !== prop) ? exp.replaceAll(prop, 'p.' + prop.replace(/\.([\w_]+)/g, "['$1']")) : null;
-      properties.push({
-        p_: props,
-        v: privy[name]
-      });
-    });
-    properties.forEach((prop) => {
-      Property.addAttribute(prop.v, attribute.substr(0, index).trim(), $domElement, prop.p_, exp);
-    });
-  });
+  dataBinds.forEach(fn);
 }
 
 export function watch(component, privyComponent, $node) {
-  const { dataset } = $node;
-  const dataBinds = Array.from($node.querySelectorAll('[data-bind]'));
-  const dataAttributes = Array.from($node.querySelectorAll('[data-attr]'));
-  if (dataset) {
-    if (dataset.bind) dataBinds.push($node);
-    if (dataset.attr) dataAttributes.push($node);
-  }
-  dataBinds.forEach(($bind) => bindData(component, privyComponent, $bind));
-  dataAttributes.forEach(($attr) => bindAttributes(component, privyComponent, $attr));
+  const privy = privyComponent.p_;
+  bind($node, 'bind', ($domElement) => {
+    const propertyObj = $domElement.dataset.bind.split('.');
+    const name = propertyObj.shift();
+    if (!privy[name]) {
+      privy[name] = getProperty(component, name);
+    }
+    Property.addNode(privy[name], $domElement, propertyObj);
+  });
+  bind($node, 'attr', ($domElement) => {
+    $domElement.dataset.attr.split(';').forEach((attribute) => {
+      const index = attribute.indexOf(':');
+      const properties = [];
+      const prop = attribute.substr(index + 1).trim();
+      const exp = prop.replace(/(\$\{index\}|'.*?')|\w[\w\.]+/g, (match, group) => {
+        if (group) return group;
+        const props = match.split('.');
+        const name = props.shift();
+        if (!privy[name]) {
+          privy[name] = getProperty(component, name);
+        }
+        properties.push({
+          p_: props,
+          v: privy[name]
+        });
+        return prop !== match ? 'p.' + match.replace(/\.(\w+)/g, "['$1']") : '';
+      });
+      properties.forEach((p) => {
+        Property.addAttribute(p.v, attribute.substr(0, index).trim(), $domElement, p.p_, exp);
+      });
+    });
+  });
   addListeners($node, privyComponent.e_);
 }
 
