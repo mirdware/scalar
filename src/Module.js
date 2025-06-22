@@ -8,25 +8,23 @@ import * as Privy from './util/Wrapper';
  * @var {module.i_} instances Objetos creados por el contenedor de dependencias
  */
 export default class Module {
-  constructor(...providers) {
+  constructor() {
     this.c_ = [];
     const properties = {C: {}, i_: {}, c_: {},
       inject: (provider) => {
         const instances = properties.i_;
-        const { uuid } = provider;
+        const uuid = provider.uuid ?? generateUUID(provider);
         if (!instances[uuid]) {
-          instances[uuid] = new properties.C[uuid](properties.inject);
+          if (properties.C[uuid]) {
+            provider = properties.C[uuid];
+          }
+          instances[uuid] = new provider(properties.inject);
           instances[uuid].uuid = uuid;
         };
         return instances[uuid];
       }
     };
     Privy.set(this, properties);
-    providers.forEach((provider) => {
-      if (!provider.uuid) {
-        properties.C[generateUUID(provider)] = provider;
-      }
-    });
   }
 
   compose(selector, behavioral) {
@@ -56,7 +54,9 @@ export default class Module {
         if (element[1].t) {
           element.push({ extends: element[1].t });
         }
-        customElements.define(...element);
+        if (!customElements.get(element[0])) {
+          customElements.define(...element);
+        }
       } else {
         const $nodes = document.querySelectorAll(element[0]);
         for (let i = 0, $node; $node = $nodes[i]; i++) {
