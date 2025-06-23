@@ -1,6 +1,6 @@
 const MiniCSSExtractPlugin = require('mini-css-extract-plugin');
 
-module.exports = {
+module.exports = () => ({
   rules: [{
     test: /\.js$/,
     exclude: /node_modules/,
@@ -20,4 +20,4 @@ module.exports = {
       "css-loader"
     ]
   }]
-};
+});

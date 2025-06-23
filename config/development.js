@@ -36,9 +36,9 @@ module.exports = {
       filename: './css/[name].min.css'
     })
   ],
-  module: require('./module'),
-  optimization: require('./optimization'),
-  devServer: require('./dev-server'),
+  module: require('./module')(),
+  optimization: require('./optimization')(),
+  devServer: require('./dev-server')(),
   devtool: 'eval-source-map',
   watchOptions: { poll: true }
 };

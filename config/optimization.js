@@ -1,7 +1,7 @@
 const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
 const TerserWebpackPlugin = require('terser-webpack-plugin');
 
-module.exports = {
+module.exports = () => ({
   splitChunks: {
     chunks: 'async',
     maxInitialRequests: Infinity,
@@ -11,4 +11,4 @@ module.exports = {
     new CssMinimizerPlugin(),
     new TerserWebpackPlugin()
   ]
-};
+});

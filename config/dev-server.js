@@ -1,6 +1,6 @@
 const port = process.env.port || 6969;
 
-module.exports = {
+module.exports = () => ({
   host: '0.0.0.0',
   allowedHosts: 'all',
   hot:false,
@@ -12,4 +12,4 @@ module.exports = {
     target: ['http://localhost:' + port]
   },
   port: port
-};
+});

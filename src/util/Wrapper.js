@@ -18,3 +18,10 @@ export function get(object) {
   }
   return correlation[uuid];
 }
+
+export function remove(object) {
+  const { uuid } = object;
+  if (uuid) {
+    delete correlation[uuid]
+  }
+}

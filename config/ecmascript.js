@@ -1,8 +1,9 @@
 const path = require('path');
 const config = require('../package.json');
+const getProductionConfig = require('./production');
 
-module.exports = {
-  ...require('./production'),
+module.exports = () => ({
+  ...getProductionConfig(),
   output: {
     path: path.resolve(__dirname, '../lib'),
     filename: `mjs/${config.name}.min.js`,
@@ -13,4 +14,4 @@ module.exports = {
   experiments: {
     outputModule: true
   }
-};
+});

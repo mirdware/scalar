@@ -1,22 +1,17 @@
 import './styles/theme.css';
-import { Module } from '../src/scalar';
-import Form from './components/Form';
-import Test from './components/Test';
-import ToDo from './components/ToDo';
-import Greeting from './components/Greeting';
-import MultiSelect from './components/MultiSelect';
-import AutoComplete from './components/AutoComplete';
+import mainModule from './main-module';
 
-new Module()
-.compose('#square', Test)
-.compose('#hello-world', Form)
-.compose('#todo', ToDo)
-.compose('sc-hi', Greeting)
-.compose('multi-select', MultiSelect)
-.compose('auto-complete', AutoComplete)
-.compose('.external-component', ($) => ({
-  'a': { _click: () => console.log($) }
-}))
-.compose('.alert', () => ({
-  '.show': { click: (e) => alert(e.target.innerText) }
-})).execute();
+const originalPushState = history.pushState;
+history.pushState = function(state, title, url) {
+  const result = originalPushState.apply(history, arguments);
+  const event = new Event('pushstate');
+  event.state = state;
+  event.title = title;
+  event.url = url;
+  window.dispatchEvent(event);
+  return result;
+};
+window.addEventListener('pushstate', () => mainModule.execute());
+window.addEventListener('popstate', () => mainModule.execute());
+
+mainModule.execute();

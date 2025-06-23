@@ -9,7 +9,7 @@ module.exports = (env, argv) => {
     const libraries = ['common', 'ecmascript', 'universal'];
     return libraries.map(name => {
       console.log(`📦 Building library ${name} in mode: ${mode}`);
-      const config = require(`./${name}`);
+      const config = require(`./${name}`)();
       config.mode = mode;
       return config;
     });
