@@ -2,6 +2,7 @@ import { clone } from '../util/Element';
 import * as Privy from '../util/Wrapper';
 import * as Node from './Node';
 import * as Attribute from './Attribute';
+import { __components__ } from '../Module';
 /**
  *
  * @var {property.c} component Referencia al componente que pertence la propiedad
@@ -84,13 +85,13 @@ function addOverloap(component, property, name) {
 }
 
 function findComponent(property, $node, name) {
-  const components = property.pc.m.c_;
   if ($node.parentNode) {
     const { parentNode } = $node;
-    if (parentNode.dataset && parentNode.dataset.component){
+    if (parentNode.dataset?.component){
       const uuid = parentNode.dataset.component;
-      if (components[uuid][name]) {
-        addOverloap(components[uuid], property, name);
+      const component = __components__.get(uuid).c;
+      if (component[name]) {
+        addOverloap(component, property, name);
       }
     }
     findComponent(property, $node.parentNode, name);

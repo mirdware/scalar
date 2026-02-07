@@ -20,11 +20,24 @@ function updateProps(property, $target, newProps, oldProps) {
 }
 
 function removeNode(property, $node) {
-  const name = $node.getAttribute('data-bind');
-  if (!name || $node.tagName === 'SCRIPT') return;
-  const nodes = property.pc.p_[name.split('.')[0]].n_;
-  const node = nodes.find((node) => node.$ === $node);
-  nodes.splice(nodes.indexOf(node), 1);
+  const { dataset } = $node;
+  if (
+    $node.nodeType === 3 ||
+    $node.tagName === 'SCRIPT' ||
+    !dataset ||
+    (!dataset.bind &&
+    !dataset.attr)
+  ) return;
+  for (const key in property.pc.p_) {
+    const prop = property.pc.p_[key];
+    clearElements($node, prop.n_);
+    clearElements($node, prop.a_);
+  }
+}
+
+function clearElements($node, array) {
+  const index = array.findIndex((element) => element.$ === $node);
+  index !== -1 && array.splice(index, 1);
 }
 
 function removeNodes(property, $node) {

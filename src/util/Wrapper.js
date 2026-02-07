@@ -1,27 +1,28 @@
 import { generateUUID } from './Element';
+import { __components__ } from '../Module';
 
-const correlation = {};
+const correlation = new WeakMap();
 
 export function set(object, properties) {
   let { uuid } = object;
   if (!uuid) {
     uuid = generateUUID(object);
   }
-  correlation[uuid] = properties;
+  correlation.set(object, properties);
   return uuid;
 }
 
 export function get(object) {
-  let { uuid } = object;
-  if (!uuid) {
-    uuid = set(object, {});
+  if (!correlation.has(object)) {
+    set(object, {});
   }
-  return correlation[uuid];
+  return correlation.get(object);
 }
 
 export function remove(object) {
   const { uuid } = object;
+  correlation.delete(object);
   if (uuid) {
-    delete correlation[uuid]
+     __components__.delete(uuid);
   }
 }

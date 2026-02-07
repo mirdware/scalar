@@ -1,6 +1,9 @@
 import { generateUUID } from './util/Element';
 import { compose } from './observable/Component';
 import * as Privy from './util/Wrapper';
+
+export const __components__ = new Map();
+
 /**
  *
  * @var {module.c_} components Componentes generados por el módulo
@@ -18,8 +21,11 @@ export default class Module {
           if (properties.C[uuid]) {
             provider = properties.C[uuid];
           }
-          instances[uuid] = new provider(properties.inject);
-          instances[uuid].uuid = uuid;
+          instances[uuid] = {};
+          const instance = new provider(properties.inject);
+          instance.uuid = uuid;
+          Object.setPrototypeOf(instances[uuid], Object.getPrototypeOf(instance));
+          Object.defineProperties(instances[uuid], Object.getOwnPropertyDescriptors(instance));
         };
         return instances[uuid];
       }
@@ -60,11 +66,11 @@ export default class Module {
     for (const { s: selector, b: behavioral, c_: components } of module.c_) {
       if (/^[a-z]+-/.test(selector)) {
         const options = {};
-        behavioral.m = this;
-        if (behavioral.t) {
-          options["extends"] = behavioral.t;
+        if (behavioral.type) {
+          options["extends"] = behavioral.type;
         }
         if (!customElements.get(selector)) {
+          behavioral.m = module;
           customElements.define(selector, behavioral, options);
         }
       } else {
@@ -73,6 +79,7 @@ export default class Module {
           const component = compose($node, behavioral, module);
           components.push(component);
           $node.dataset.component = component.uuid;
+          __components__.set(component.uuid, {c: component, b: behavioral, s: selector});
         }
       }
     }
@@ -90,11 +97,14 @@ if (process.env.NODE_ENV !== 'production') {
         const element = module.c_.find(element => element.b === _old);
         if (element) {
           if (/^[a-z]+-/.test(element.s)) {
-            _new.m = _old.m;
             Object.getOwnPropertyNames(_new.prototype).forEach(key => {
               if (key !== 'constructor') {
                 Object.defineProperty(_old.prototype, key, Object.getOwnPropertyDescriptor(_new.prototype, key));
               }
+            });
+            document.querySelectorAll(element.s).forEach(component => {
+              Object.assign(component.constructor, _new);
+              component.onInit();
             });
           } else {
             element.c_.forEach((oldComponent, index) => {
@@ -127,6 +137,16 @@ if (process.env.NODE_ENV !== 'production') {
       }
     }
   });
+
+  window.queryComponent = (target) => {
+    let uuid = target;
+    if (target instanceof HTMLElement) {
+        const $el = target.closest('[data-component]');
+        if (!$el) return null;
+        uuid = $el.dataset.component;
+    }
+    return __components__.get(uuid);
+  }
 
   function clearEventListeners($component) {
     const $components = Array.from($component.querySelectorAll('*'));

@@ -1,5 +1,6 @@
 import Component, { watch } from "./observable/Component";
 import { createFragment } from './view/Template';
+import { updateNodes } from './view/DOM';
 import * as Privy from "./util/Wrapper"
 /**
  *
@@ -35,8 +36,9 @@ export default function customElement(options) {
     fetch.C = component;
   }
   return function decorator(Class) {
-    if (type) Class.t = type;
+    Object.assign(Class, options);
     let prototype = Class;
+    const properties = Object.keys(new Class()).filter(p => !p.startsWith('_') && !p.startsWith('$'));
     while (prototype.__proto__ !== Component) {
       prototype = prototype.__proto__;
     }
@@ -44,9 +46,6 @@ export default function customElement(options) {
     Object.setPrototypeOf(prototype.prototype, component.prototype);
     Object.defineProperty(Class, 'observedAttributes', {
       get: function () {
-        const str = this.toString();
-        const _this = /(\w+)\s*=.+this[^\.]/.exec(str);
-        const properties = str.match(new RegExp('(?<=' + (_this ? _this[1] : 'this') + '\\.)[^_\\$](\\w+(?=\\s*=))', 'g')) || [];
         return properties.map((property) => property.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase());
       }
     });
@@ -58,22 +57,26 @@ export default function customElement(options) {
         if (!Privy.get(_this).i) _this.onInit();
         name = name.replace(/-./g, (x) => x[1].toUpperCase());
         if (typeof _this[name] === 'boolean') {
-          newValue = true;
+          newValue = (newValue !== null && newValue !== 'false');
         } else if (_this[name] instanceof Object) {
           newValue = JSON.parse(newValue);
         }
         _this[name] = newValue;
       },
       onInit: function (_this) {
-        const props = {
-          $: _this.shadowRoot,
-          m: Privy.get(Class.m),
-          p_: {},
-          e_: _this.listen ? _this.listen() : {},
-          i: true
-        };
-        props.$.appendChild(createFragment('<style>' + (options.styles || '') + '</style>' + (options.template || '')));
-        Privy.set(_this, props);
+        const props = Privy.get(_this);
+        const { template, styles, m } = _this.constructor;
+        if (!props.$) {
+          Object.assign(props, {
+            m: m,
+            $: _this.shadowRoot,
+            p_: {},
+            e_: _this.listen ? _this.listen() : {},
+            i: true
+          });
+        }
+        const $fragment = createFragment('<style>' + (styles || '') + '</style>' + (template || ''));
+        updateNodes({ pc: props }, props.$, $fragment);
         watch(_this, props, props.$);
       }
     };
