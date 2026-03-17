@@ -93,7 +93,7 @@ export default class Component {
   }
 
   /**
-   * @deprecated use index parameter instead
+   * @deprecated use context parameter instead
    */
   getIndex(e) {
     const $node = Privy.get(this).$;

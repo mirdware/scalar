@@ -76,7 +76,9 @@ class Service {
 }
 ```
 
-Es posible mockear o falsear las dependencias mediante el método `bind(Message, Fake)`, de esta manera cada vez que se solicite la dependencia Message se entregara una instancia de Fake. En futuras versiones se plantea el uso de decoradores o propiedades estaticas para la inyección de dependencias.
+Es posible mockear o falsear las dependencias mediante el método `bind(Message, Fake)`, de esta manera cada vez que se solicite la dependencia Message se entregara una instancia de Fake.
+
+:warning: Desde la versión `0.3.5` se recomienda el uso de decoradores o propiedades estaticas para la inyección de dependencias otros métodos estan deprecados.
 
 ```javascript
 import { inject } from 'scalar';
@@ -226,9 +228,11 @@ return {
 ### Métodos del objeto compuesto
 Es posible hacer uso de servicios mediante el método `inject(Message)` enviando como parámetro la clase que fue proveída al módulo, si esta no fue declarada se retornara undefined.
 
+:warning: Desde la versión `0.3.5` no se debe usar inject en su lugar se debe usar el decorador `@inject` o directamente la función inject para behavioral function.
+
 Para hacer uso de un arreglo dentro de un componente se debe establecer un data-key que sirva como índice del elemento, posteriormente se obtiene mediante el método `getIndex(e)` el cual recibe el evento como parámetro.
 
-:warning: Desde la versión `0.3.5` no se debe usar getIndex en su lugar se debe incluir el contexto en el listener del elemento, en un futuro se cambiara el uso de data-key a keyed reconciliation.
+:warning: Desde la versión `0.3.5` no se debe usar getIndex en su lugar se debe incluir el `context parameter`, en un futuro se cambiara el comportamiento de data-key para soportar keyed reconciliation.
 
 ```javascript
 '.list label': { change: (_, item) => toogleItem(item, this) },
@@ -317,7 +321,7 @@ El constructor debe llamar al padre y proceder a declarar las propiedades, cabe 
 </multi-select>
 ```
 
-La propiedad `_currentFocus` no sera enlazada al custom element. El paso de attributos dinamicos se sigue usando mediante `data-attr` como se haria con cualquier componente, cabe resaltar que es posible enviar datos complejos como objetos o arrays, los cuales seran codificados en JSON para enviar, por lo cual estos pasaran como valor y cualquier modifificación dentro del custom element no se vera reflejada en el componente padre que envio el objeto (inmutabilidad).
+La propiedad `_currentFocus` no sera enlazada al custom element. El paso de attributos dinamicos se sigue usando mediante `data-attr` como se haria con cualquier componente, cabe resaltar que es posible enviar datos complejos como objetos o arrays, los cuales seran codificados en JSON para enviar, por lo cual estos pasaran como valor y cualquier modificación dentro del custom element no se vera reflejada en el componente padre que envio el objeto (inmutabilidad).
 
 ```html
 <auto-complete required="required" placeholder="Countries" data-attr="data:countries"></auto-complete>
@@ -345,9 +349,9 @@ Es posible hacer uso de ambos tipos de componentes dentro de una misma aplicaci�
 Las plantillas (Templates) representan la parte más básica del sistema y se pueden clasificar en: prerenderizadas y JIT (Just In Time).
 
 ### Prerenderizadas
-Las plantillas prerenderizadas son aquellas suministradas por el servidor y hacen parte integral del cuerpo de la respuesta, de esta manera se puede garantizar el funcionamiento de la aplicación aun si el cliente no activa JavaScript; en parte la idea de la librería es ir _"escalando"_ un proyecto según la limitación del cliente (accesibilidad).
+Las plantillas prerenderizadas son aquellas suministradas por el servidor y hacen parte integral del cuerpo de la respuesta, de esta manera se puede garantizar el funcionamiento de la aplicación si el cliente no activa JavaScript; la idea de la librería es ir _"escalando"_ un proyecto según la limitación del cliente (accesibilidad).
 
-Una plantilla scalar podría contener atributos `data-bind` y/o `data-attr`, los primeros generan un enlace en dos direcciones entre el objeto compuesto y la plantilla, siempre y cuando el elemento al cual se enlaza pueda introducir información, en caso contrario dicho enlace se establecerá en una sola dirección; el segundo modifica los atributos del elemento según se modifique alguna propiedad y por su naturaleza es unidireccional.
+Una plantilla scalar podría contener atributos `data-bind` y/o `data-attr`, los primeros generan un enlace en dos direcciones entre el objeto compuesto y la plantilla, siempre y cuando el elemento al cual se enlaza pueda introducir información; en caso contrario dicho enlace se establecerá en una sola dirección; el segundo modifica los atributos del elemento según se modifique alguna propiedad y por su naturaleza es unidireccional.
 
 Mediante data-bind se crea un enlace a una propiedad del componente, por lo tanto debe tener el formato de una [propiedad javascript](https://developer.mozilla.org/es/docs/Web/JavaScript/Data_structures#Objetos), mientras data-attr puede tener tantos atributos separados por `;` como se desee, un atributo es un par clave valor en donde la clave es el nombre del atributo y el valor la propiedad del componente o una expresión javascript que manejará los cambios de estado, en caso de ser una propiedad no definida en un data-bind esta se creara en el componente, si la propiedad se encuentra dentro de una expresión esto no será posible.
 
@@ -360,7 +364,7 @@ Cuando se desea declarar un objeto desde el sistema de plantillas se debe separa
 </div>
 ```
 ### JIT
-El soporte para plantillas JIT está aún en una etapa bastante temprana, pero se están haciendo progresos. Su principal uso se encuentra restringido al enlace de datos cuando la propiedad de un componente es compleja (principalmente arreglos) y su función es generar código HTML de manera dinámica. Una propiedad es definida como compleja cuando dentro se haya un script tipo `text/template`.
+El principal uso de las plantillas JIT se encuentra restringido al enlace de datos cuando la propiedad de un componente es compleja (principalmente arreglos) y su función es generar código HTML de manera dinámica. Una propiedad es definida como compleja cuando dentro se haya un script tipo `text/template`.
 
 ```html
 <ul data-bind="tasks">
@@ -374,7 +378,7 @@ El soporte para plantillas JIT está aún en una etapa bastante temprana, pero s
 </ul>
 ```
 
-Siempre que se quiera manipular un arreglo desde el componente este debe estar indexado por `data-key` de esta manera es posible hacer uso del método getIndex.
+Siempre que se quiera manipular un arreglo desde el componente este debe estar indexado por `data-key` de esta manera es posible hacer uso del método getIndex (en versiones futuras se usara para keyed reconciliation).
 
 Tambien existe la posibilidad de realizar un enlace directamente al template tomando de esta manera al elemento padre como base; esto es útil cuando un elemento debe tener un enlace con otra propiedad, pero su contenido se debe manejar dinamicamente (ej. selects dependientes).
 
@@ -399,7 +403,9 @@ El uso de data-attr en la fase de emparejamiento puede generar comportamientos i
 
 En recientes versiones se puede hacer uso de una nueva tecnica de enlace para datos complejos `array.${index}.name` y en la actualidad es el método por defecto a utilizar para poblar dinamicamente el array.
 
-La notación de punto podría generar error al usar directamente desde javascript pero no desde el data-bind; con esto el enlace se realiza directamente por lo cual no es necesario que el template y el contenido del elemento coincidan en lo absoluto (unpairing). Aunque ya no sea necesario realizar emparejamiento, la hidatación de la pantalla continua realizandose desde el template por lo cual este debe ser bastante parecido al cargue inicial.
+La notación de punto que incluye indices númericos generá error al usarse directamente desde javascript pero no desde el data-bind. Con esto el enlace se realiza directamente por lo cual no es necesario que el template y el contenido del elemento coincidan en lo absoluto (unpairing).
+
+Aunque ya no sea necesario realizar emparejamiento, la hidratación de la pantalla continua realizandose desde el template por lo cual este debe ser bastante parecido al cargue inicial.
 
 Para poder usar el modo de emparejamiento es necesario colocarlo explicitamente en el script de la plantilla mediante el atributo `data-pairing`.
 

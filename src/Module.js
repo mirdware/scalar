@@ -74,6 +74,13 @@ export default class Module {
         if (!customElements.get(selector)) {
           behavioral.m = module;
           customElements.define(selector, behavioral, options);
+          if (process.env.NODE_ENV !== 'production') {
+            document.querySelectorAll(selector).forEach((element) => {
+              element.shadowRoot.adoptedStyleSheets = [debug.sheet];
+              element.dataset.webcomponent = element.uuid;
+              __components__.set(element.uuid, {c: element, b: behavioral, s: selector});
+            });
+          }
         }
       } else {
         const $nodes = document.querySelectorAll(selector);
@@ -140,14 +147,85 @@ if (process.env.NODE_ENV !== 'production') {
     }
   });
 
-  window.queryComponent = (target) => {
-    let uuid = target;
-    if (target instanceof HTMLElement) {
-        const $el = target.closest('[data-component]');
-        if (!$el) return null;
-        uuid = $el.dataset.component;
+  window.addEventListener('keydown', function (e) {
+    if (e.altKey && e.code === 'KeyS') debug.enable();
+    if (e.altKey && e.code === 'KeyX') debug.disable();
+  });
+
+  window.queryComponent = (target) => __components__.get(getComponentId(target));
+
+  window.debug = {
+    sheet: new CSSStyleSheet(),
+    enable() {
+      this.sheet.replaceSync(`
+      [data-component]::after, [data-webcomponent]::after {
+        position: absolute;
+        display: block;
+        background: rgba(0, 0, 0, .5);
+        color: #fff;
+        z-index: 1;
+      }
+      [data-component]:hover::after {
+        content: attr(data-component);
+      }
+      [data-webcomponent]:hover::after {
+        content: attr(data-webcomponent);
+      }
+      [data-webcomponent] {
+        outline: 2px dashed #2196F3;
+      }
+      [data-component] {
+        outline: 2px dashed #f58731;
+      }
+      [data-component] [data-component] {
+        outline: 2px dashed #F00;
+      }
+      [data-bind] {
+        outline: 1px solid #f58731;
+        outline-offset: -1px;
+      }
+      [data-bind]::before, [data-action]::after {
+        font-size: 10px;
+        color: #fff;
+        position: absolute;
+        z-index: 2;
+      }
+      [data-bind]::before {
+        content: "🔗";
+        background: #f58731;
+      }
+      [data-bind]:hover::before {
+        content: "🔗 " attr(data-bind);
+      }
+      [data-action]::after {
+        content: "⚡";
+        background: #2196F3;
+      }
+      [data-action]:hover::after {
+        content: "⚡ " attr(data-action);
+      }
+      `);
+      if (document.adoptedStyleSheets.indexOf(this.sheet) === -1) {
+        document.adoptedStyleSheets = [...document.adoptedStyleSheets, this.sheet];
+      }
+    },
+    disable() {
+      this.sheet.replaceSync('');
     }
-    return __components__.get(uuid);
+  }
+
+  function getComponentId(target) {
+    if (target instanceof HTMLElement) {
+      const $el = target.closest('[data-component]');
+      if ($el) {
+        return $el.dataset.component;
+      }
+      const root = target.getRootNode();
+      if (root instanceof ShadowRoot) {
+        return root.host.uuid;
+      }
+    }
+    return target;
   }
 
   function clearEventListeners($component) {
