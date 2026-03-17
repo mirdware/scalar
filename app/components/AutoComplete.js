@@ -9,7 +9,7 @@ function search(e, $) {
     .map((item) => Object.assign(item, {
         mask: `<b>${item.value.substr(0, length)}</b>${item.value.substr(length)}`
     })) : [];
-    $._timeout && clearTimeout($._timeout); 
+    $._timeout && clearTimeout($._timeout);
     if (values.length > $.maxItems) {
         values.length = $.maxItems;
     }
@@ -19,8 +19,7 @@ function search(e, $) {
     })), 200);
 }
 
-function selectItem(index, $) {
-    const item = $._values[index];
+function selectItem(item, $) {
     $.value = item.value;
     $._index = item.index;
     $._values = [];
@@ -52,7 +51,7 @@ function toDown($) {
 function enter($) {
     const currentFocus = $._currentFocus;
     if (currentFocus > -1) {
-        selectItem(currentFocus, $);
+        selectItem($._values[currentFocus], $);
     }
 }
 
@@ -166,6 +165,6 @@ export default class AutoComplete extends Component {
         },
         _keydown: (e) => controlKey(e, this)
     },
-    '.autocomplete-items div': { click: (e) => selectItem(this.getIndex(e), this) }
+    '.autocomplete-items div': { click: (_, item) => selectItem(item, this) }
   });
 }

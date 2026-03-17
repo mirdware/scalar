@@ -1,3 +1,5 @@
+import { nodeContext } from "./Template";
+
 function updateProps(property, $target, newProps, oldProps) {
   for (let i = oldProps.length - 1; i >= 0; i--) {
     const { name, value } = oldProps[i];
@@ -64,6 +66,13 @@ function updateElement(property, $parent, $newNode, $oldNode, index) {
     $parent.replaceChild($newNode, $oldNode);
     removeNodes(property, $oldNode);
   } else if ($newNode.nodeType !== 3) {
+    /**
+     * @todo Keyed Reconciliation
+     */
+    const newContext = nodeContext.get($newNode);
+    if (newContext !== undefined) {
+      nodeContext.set($oldNode, newContext);
+    }
     updateProps(property, $parent.childNodes[index], $newNode.attributes, $oldNode.attributes);
     updateNodes(property, $oldNode, $newNode);
   }

@@ -8,14 +8,13 @@ function loadOptions($) {
   }
 }
 
-function toogleItem(index, $) {
-  const item = $.checkList[index];
+function toogleItem(item, $) {
   item.selected = !item.selected;
   if ($.selectAll) {
-    if (parseInt(index)) {
-      calculateAllSelector($);
-    } else {
+    if (item.text === 'All') {
       $._data.forEach((i) => i.selected = item.selected);
+    } else {
+      calculateAllSelector($);
     }
   }
 }
@@ -42,8 +41,7 @@ function refresh($) {
   dispatchEvent($);
 }
 
-function removeBadge(e, $) {
-  const badge = $.badgeList[$.getIndex(e)];
+function removeBadge(e, badge, $) {
   badge.selected = false;
   refresh($);
   e.stopPropagation();
@@ -139,7 +137,7 @@ function close($) {
       max-width: 100%;
     }
     .optext, .placeholder {
-      margin-right:0.5em; 
+      margin-right:0.5em;
       margin-bottom:2px;
       padding:1px 0;
       border-radius: 4px;
@@ -147,7 +145,7 @@ function close($) {
     }
     .optext {
       background-color:lightgray;
-      padding:1px 0.75em; 
+      padding:1px 0.75em;
     }
     .optdel {
       float: right;
@@ -206,7 +204,7 @@ function close($) {
     .list input {
       height: 1.15em;
       width: 1.15em;
-      margin-right: 0.35em;  
+      margin-right: 0.35em;
     }
     .list label:hover, #active {
       background-color: #ced4da;
@@ -260,8 +258,8 @@ export default class MultiSelect extends Component {
     slotchange: () => loadOptions(this),
     '.dropdown': { click: () => show(this), keydown: (e) => e.keyCode === 13 && show(this) },
     '.list-wrapper': { _keydown: (e) => controlKey(e, this) },
-    '.list label': { change: (e) => toogleItem(this.getIndex(e), this) },
-    '.optext span': { _click: (e) => removeBadge(e, this) },
+    '.list label': { change: (_, item) => toogleItem(item, this) },
+    '.optext span': { _click: (e, badge) => removeBadge(e, badge, this) },
     '.search': { input: (e) => search(e, this) }
   });
 }

@@ -22,7 +22,9 @@ export default class Module {
             provider = properties.C[uuid];
           }
           instances[uuid] = {};
-          const instance = new provider(properties.inject);
+          const tokens = provider._providers || [];
+          const dependencies = tokens.map(token => properties.inject(token));
+          const instance = new provider(...dependencies);
           instance.uuid = uuid;
           Object.setPrototypeOf(instances[uuid], Object.getPrototypeOf(instance));
           Object.defineProperties(instances[uuid], Object.getOwnPropertyDescriptors(instance));

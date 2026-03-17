@@ -9,7 +9,7 @@ import { updateNodes } from './DOM';
  * @var {template.ip} isParing Valida si la platilla de debe emparejar
  * @var {template.b} base Plantilla base?
  */
-const cache = {};
+export const nodeContext = new WeakMap();
 
 export function create(property, $node, $template) {
   return {
@@ -55,14 +55,24 @@ export function getValue(template) {
 export function render(template, param) {
   const $node = template.$;
   const property = template.p;
-  template = template.t;
-  if (!cache[template]) {
-    cache[template] = Function('data,index', 'return `' + template + '`');
+  const fn = Function('data,index', 'return `' + template.t + '`');
+  let $fragment;
+  if (Array.isArray(param)) {
+    $fragment = createFragment(param.map(fn).join(''));
+    let index = 0;
+    for (let i = 0, $node; $node = $fragment.childNodes[i]; i++) {
+      if ($node.nodeType === 1) {
+        nodeContext.set($node, param[index++]);
+      }
+    }
+  } else {
+    $fragment = createFragment(fn(param));
+    nodeContext.set($fragment.firstElementChild, param);
   }
   updateNodes(
     property,
     $node,
-    createFragment(Array.isArray(param) ? param.map(cache[template]).join('') : cache[template](param))
+    $fragment
   );
   $node.dispatchEvent(new Event('mutate'));
   watch(property.c, property.pc, $node);

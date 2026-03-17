@@ -12,14 +12,13 @@ declare module 'scalar' {
     }
 
     export interface BehavioralObject {
-        mount?: () => void;
-        mutate?: (e: MutationRecord | Event) => void;
+        mount?: (e: Event) => void | boolean;
+        mutate?: (e: Event) => void | boolean;
         [key: string]: ((e: Event) => void | boolean) | BehavioralObject | any;
     }
 
     export class Component {
         [key: string]: any;
-
         inject<T>(provider: Class<T>): T;
         compose<T extends Component>($domElement: HTMLElement, behavioral: Class<T> | BehavioralFunction): T;
         getIndex(e: Event): string | undefined;
@@ -37,9 +36,9 @@ declare module 'scalar' {
         execute(): void;
     }
 
-     export type BehavioralFunction = ($: Component & any) => BehavioralObject;
+    export type BehavioralFunction = ($: Component & any) => BehavioralObject;
 
-     export type Class<T> = { new (...args: any[]): T };
+    export type Class<T> = { new (...args: any[]): T };
 
     export type ClassDecorator = <TFunction extends Function>(target: TFunction) => TFunction | void;
 }

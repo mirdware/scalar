@@ -1,4 +1,5 @@
 import { generateUUID } from './Element';
+import { nodeContext } from '../view/Template';
 
 let hasObjectConfig = false;
 document.createElement('b')
@@ -8,17 +9,27 @@ document.createElement('b')
   }
 }));
 
-function bindFunction(name, $element, fn) {
+function bindFunction(name, $element, originalFunction) {
   const lastChar = name.length - 1;
+  const handler = (e) => {
+    let $target = e.target;
+    let context;
+    while ($target && !$target.dataset?.component) {
+      context = nodeContext.get($target);
+      if (context) break;
+      $target = $target.parentNode;
+    }
+    return originalFunction.call($element, e, context);
+  };
   let capture = false;
   let passive = true;
+  let fn = handler;
   if (name.indexOf('_') === 0) {
-    const method = fn;
-    fn = (e) => method.call($element, e) !== true && e.preventDefault();
-    fn.uuid = method.uuid;
+    fn = (e) => handler(e) !== true && e.preventDefault();
     passive = false;
     name = name.substring(1);
   }
+  fn.uuid = originalFunction.uuid;
   if (name.lastIndexOf('_') === lastChar) {
     capture = true;
     name = name.substring(0, lastChar);

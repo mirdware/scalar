@@ -62,28 +62,61 @@ La ejecución del componente genera un `compound object`(Objeto compuesto) que c
 ```
 
 ### Servicios
-Un servicio no es más que un objeto común al ámbito del módulo al que pertenece. Este debe ser declarado al momento de realizar la instanciación del módulo al cual va a quedar asociado.
+Los servicios en scalar desde la versión `0.3.4` son autowire y no se necesitan declarar dentro del modulo, si se usan en modulo simplemente se registran al mismo, se debe tener cuidado con esto, ya que es posible registrar el mismo servicio en diferentes modulos, creando instancias diferentes.
+
+El servicio es inyectado mediante el método inject del compound object o de la función enviada a cada servicio, pudiendo solucionar incluso dependencias ciclicas en actuales versiones de la libreria.
 
 ```javascript
-import { Module } from 'scalar';
-import Message from './services/Message';
-
-const module = new Module(Message);
-```
-
-Una vez declarado el servicio es posible usarlo mediante el método inject del compound object o de la función enviada a cada servicio, teniendo siempre en cuenta el no generar dependencias cíclicas.
-
-```javascript
-import Service from './OtherService';
+import Logger from './logger';
 
 class Service {
   constructor(inject) {
-    this _service = inject(OtherService);
+    this._logger = inject(Logger);
   }
 }
 ```
 
-Es posible mockear o falsear las dependencias mediante el método `bind(Message, Fake)`, de esta manera cada vez que se solicite la dependencia Message se entregara una instancia de Fake.
+Es posible mockear o falsear las dependencias mediante el método `bind(Message, Fake)`, de esta manera cada vez que se solicite la dependencia Message se entregara una instancia de Fake. En futuras versiones se plantea el uso de decoradores o propiedades estaticas para la inyección de dependencias.
+
+```javascript
+import { inject } from 'scalar';
+import Logger from './logger';
+
+@inject(Logger)
+class Service {
+  constructor(logger) {
+    this._logger = logger;
+  }
+}
+```
+
+De esta manera se logra desacoplar el framework de los servicios, en caso de no querer importar inject se puede hacer mediante propiedades estaticas.
+
+```javascript
+import Logger from './logger';
+
+class Service {
+  static _providers = [Logger];
+
+  constructor(logger) {
+    this._logger = logger;
+  }
+}
+```
+
+Finalmente para usarse en `behavioral functions` se usa como decorador de la función.
+
+```javascript
+import { inject } from 'scalar';
+import Logger from './logger';
+
+export default inject(Logger)(($, logger) => ({
+  mount: () => {
+    logger.info("¡Inyectado!");
+    $.msg = "Datos listos";
+  }
+}));
+```
 
 ## Componentes
 Existen diferentes maneras de generar un componente; la primera es extendiendo de la clase Component de scalar con lo que deberá implementar el método listen que retorna un `behavioral object`(Objeto conductual).
@@ -194,6 +227,13 @@ return {
 Es posible hacer uso de servicios mediante el método `inject(Message)` enviando como parámetro la clase que fue proveída al módulo, si esta no fue declarada se retornara undefined.
 
 Para hacer uso de un arreglo dentro de un componente se debe establecer un data-key que sirva como índice del elemento, posteriormente se obtiene mediante el método `getIndex(e)` el cual recibe el evento como parámetro.
+
+:warning: Desde la versión `0.3.5` no se debe usar getIndex en su lugar se debe incluir el contexto en el listener del elemento, en un futuro se cambiara el uso de data-key a keyed reconciliation.
+
+```javascript
+'.list label': { change: (_, item) => toogleItem(item, this) },
+'.optext span': { _click: (e, badge) => removeBadge(e, badge, this) },
+```
 
 Un componente puede generar otro mediante el método `compose($domElement, customComponent)`, este último se denomina **componente derivado**, ya que su creación no se realizó desde un módulo sino que deriva de un similar. Se puede hacer uso de los métodos de un derivado ya que compose retorna el objeto compuesto.
 

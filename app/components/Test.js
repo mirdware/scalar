@@ -1,11 +1,12 @@
 import Resource from '@spawm/resource';
 import Message from '../services/Message';
+import { inject } from '../../src/scalar';
 
 const { protocol, hostname, port } = window.location;
 const user = new Resource(protocol + '//' + hostname + ':' + port + '/response.json');
 
-export default ($) => {
-  $.inject(Message).listen((msg) => $.my.msg = msg);
+export default inject(Message)(($, message) => {
+  message.listen((msg) => $.my.msg = msg);
 
   function sendRequest() {
     $.action.replace('open', 'reset');
@@ -37,4 +38,4 @@ export default ($) => {
     '.paint': { click: paint },
     '.reset': { click: reset }
   };
-};
+});
