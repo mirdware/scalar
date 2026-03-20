@@ -4,6 +4,18 @@ import * as Privy from './util/Wrapper';
 
 export const __components__ = new Map();
 
+function clearEventListeners($node) {
+  const elements = [$node, ...$node.querySelectorAll('*')];
+  elements.forEach(el => {
+    if (el.eventListenerList) {
+      el.eventListenerList.forEach(item => {
+        el.removeEventListener(item.name, item.fn, item.opt);
+      });
+      delete el.eventListenerList;
+    }
+  });
+}
+
 /**
  *
  * @var {module.c_} components Componentes generados por el módulo
@@ -51,9 +63,25 @@ export default class Module {
     return this;
   }
 
+  /** @deprecated */
   add(url, loader, options) {
     Privy.get(this).m_[url] = [loader, options || {}];
     return this;
+  }
+
+  dispose() {
+    const properties = Privy.get(this);
+    properties.c_.forEach(component => {
+      const compProps = Privy.get(component);
+      const $node = compProps.$;
+      if ($node) {
+        clearEventListeners($node);
+        delete $node.dataset.component;
+      }
+      Privy.remove(component);
+    });
+    properties.i_ = {};
+    properties.c_ = [];
   }
 
   execute() {
@@ -226,18 +254,5 @@ if (process.env.NODE_ENV !== 'production') {
       }
     }
     return target;
-  }
-
-  function clearEventListeners($component) {
-    const $components = Array.from($component.querySelectorAll('*'));
-    $components.unshift($component);
-    $components.forEach($ => {
-      if ($.eventListenerList) {
-        $.eventListenerList.forEach(listener => {
-          $.removeEventListener(listener.name, listener.fn, listener.opt);
-        });
-        delete $.eventListenerList;
-      }
-    });
   }
 }

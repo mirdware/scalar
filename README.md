@@ -36,7 +36,9 @@ Una vez instaladas es posible ejecutar un servidor webpack con el comando `npm r
 ## Módulos
 Un módulo es un objeto javascript que se instancia de la clase Module de scalar, se deben proveer por constructor las dependencias para luego declarar cada uno de los componentes mediante el método `compose('#selector', customComponent)`, esto se logra enviando como primer parámetro el selector del elemento y como segundo la función o clase conductual.
 
-El método `add(module)` se encarga de agregar un módulo junto a todos sus servicios al sistema de inyección de dependencias del módulo que invocó el método.
+El método `add(url, loader)` se encarga de cargar un módulo junto a todos sus componentes cuando el navegador esta en la url especificada.
+
+> **Nota:** Desde la versión `0.3.5` el método `add(url, loader)` ha sido declarado obsoleto y no debe usarse bajo ninguna condición ya que sera eliminado sin ningún reemplazo.
 
 Mediante compose solo se declara el componente en el módulo pero no se ejecuta dentro de la estructura de la página; para esto se debe hacer uso el método `execute()`.
 
@@ -53,6 +55,8 @@ new Module()
 ```
 
 La ejecución del componente genera un `compound object`(Objeto compuesto) que contiene las propiedades enlazadas a la plantilla mediante `data-bind` y/o `data-attr`, este enlace varia de uno a doble sentido según sea el caso.
+
+Finalmente si se esta construyendo un SPA o se desea eliminar la huella de memoria de un modulo se puede hacer mediante el método `dispose()` pero se debe tener cuidado con esto, ya que al ejecutarse el módulo queda completamente inutilizable.
 
 ```html
 <input type="text" value="scalar" data-bind="name" />
@@ -78,7 +82,7 @@ class Service {
 
 Es posible mockear o falsear las dependencias mediante el método `bind(Message, Fake)`, de esta manera cada vez que se solicite la dependencia Message se entregara una instancia de Fake.
 
-:warning: Desde la versión `0.3.5` se recomienda el uso de decoradores o propiedades estaticas para la inyección de dependencias otros métodos estan deprecados.
+> **Nota:**  Desde la versión `0.3.5` se recomienda el uso de decoradores o propiedades estaticas para la inyección de dependencias otros métodos estan deprecados.
 
 ```javascript
 import { inject } from 'scalar';
@@ -228,11 +232,11 @@ return {
 ### Métodos del objeto compuesto
 Es posible hacer uso de servicios mediante el método `inject(Message)` enviando como parámetro la clase que fue proveída al módulo, si esta no fue declarada se retornara undefined.
 
-:warning: Desde la versión `0.3.5` no se debe usar inject en su lugar se debe usar el decorador `@inject` o directamente la función inject para behavioral function.
+> **Nota:**  Desde la versión `0.3.5` no se debe usar inject en su lugar se debe usar el decorador `@inject` o directamente la función inject para behavioral function.
 
 Para hacer uso de un arreglo dentro de un componente se debe establecer un data-key que sirva como índice del elemento, posteriormente se obtiene mediante el método `getIndex(e)` el cual recibe el evento como parámetro.
 
-:warning: Desde la versión `0.3.5` no se debe usar getIndex en su lugar se debe incluir el `context parameter`, en un futuro se cambiara el comportamiento de data-key para soportar keyed reconciliation.
+> **Nota:**  Desde la versión `0.3.5` no se debe usar getIndex en su lugar se debe incluir el `context parameter`, en un futuro se cambiara el comportamiento de data-key para soportar keyed reconciliation.
 
 ```javascript
 '.list label': { change: (_, item) => toogleItem(item, this) },
@@ -278,9 +282,9 @@ execute();
 En este caso tanto el componente pageable como checkTable hacen uso de la propiedad data, a esto hace referencia el solapamiento a compartir propiedades gracias a su ubicación dentro del DOM; un cambio en una propiedad afectara a la propiedad del componente solapado. Se debe tener cuidado al momento de solapar componentes pues es posible tener resultados inesperados, en muchas ocaciones lo recomendable es aislar cada comportamiento.
 
 ### Aislamiento mediante web componentes
-En la versión `0.3.0` de scalar se da soporte al standard de [web components](https://developer.mozilla.org/en-US/docs/Web/Web_Components), lo cual se genera una dependencia hacia javascript; a pesar que esto va en contra de generar componentes no obstructivos se puede agregar o no estas caracteristicas e ir escalando según las necesidades del proyecto.
+En la versión `0.3.0` de scalar se da soporte al standard de [web components](https://developer.mozilla.org/en-US/docs/Web/Web_Components), lo cual generá una dependencia a javascript; esto va en contra de generar componentes no obstructivos, así que se puede agregar o no esta caracteristica e ir _escalando_ según las necesidades del proyecto.
 
-La implementación del [custom element](https://developer.mozilla.org/en-US/docs/Web/Web_Components/Using_custom_elements) se realiza mediante el decorator `@customElement` el cual recibe las propiedades styles, template y type, este último es para soportar el estandard con el uso de diferentes elementos HTML.
+La implementación de [custom elements](https://developer.mozilla.org/en-US/docs/Web/Web_Components/Using_custom_elements) se realiza mediante el decorator `@customElement` el cual recibe las propiedades styles, template y type, este último es para soportar el estandard con el uso de diferentes elementos HTML.
 
 ```javascript
 @customElement({
@@ -327,6 +331,22 @@ La propiedad `_currentFocus` no sera enlazada al custom element. El paso de attr
 <auto-complete required="required" placeholder="Countries" data-attr="data:countries"></auto-complete>
 ```
 
+Al no poderse hacer inyección de dependencias por constructor, este comportamiento queda delegado al método `onInit`.
+
+```javascript
+@inject(Message)
+export default class MultiSelect extends Component {
+  constructor() {
+    super();
+    this.data = [];
+  }
+
+  onInit(message) {
+    this._message = message;
+  }
+}
+```
+
 Las unicas vias de comunicación entre custom element y componente padre son los atributos y [CustomEvent](https://developer.mozilla.org/en-US/docs/Web/API/CustomEvent/CustomEvent), por lo tanto el enlace en doble vía no es posible en este tipo de comunicación y se debe de hacer de manera explicita.
 
 ```javascript
@@ -354,6 +374,8 @@ Las plantillas prerenderizadas son aquellas suministradas por el servidor y hace
 Una plantilla scalar podría contener atributos `data-bind` y/o `data-attr`, los primeros generan un enlace en dos direcciones entre el objeto compuesto y la plantilla, siempre y cuando el elemento al cual se enlaza pueda introducir información; en caso contrario dicho enlace se establecerá en una sola dirección; el segundo modifica los atributos del elemento según se modifique alguna propiedad y por su naturaleza es unidireccional.
 
 Mediante data-bind se crea un enlace a una propiedad del componente, por lo tanto debe tener el formato de una [propiedad javascript](https://developer.mozilla.org/es/docs/Web/JavaScript/Data_structures#Objetos), mientras data-attr puede tener tantos atributos separados por `;` como se desee, un atributo es un par clave valor en donde la clave es el nombre del atributo y el valor la propiedad del componente o una expresión javascript que manejará los cambios de estado, en caso de ser una propiedad no definida en un data-bind esta se creara en el componente, si la propiedad se encuentra dentro de una expresión esto no será posible.
+
+> **Nota:** Aunque en la versión actual es posible usar cualquier propiedad desde la vista y automaticamente se crea en el componente, este comportamiento puede cambiar en futuras versiones en favor de evitar el solapamiento (overlaping) de propiedades.
 
 Cuando se desea declarar un objeto desde el sistema de plantillas se debe separar con `.` cada una de las propiedades del mismo, esto aplica también para modificaciones de atributos como estilos.
 
@@ -399,7 +421,9 @@ Se puede interpolar código javaScript mediante el uso de la notación [template
 
 Antes de la versión `0.3.0` la forma común de enlazar datos a las propiedades de un array era mediante emparejamiento (pairing), esto se da cuando el template y el contenido del elemento son _exactamente_ iguales y difieren solo en la iterpolación; de esta manera los datos interpolados que partan del objeto `data` y no sean expresiones se combierten en parte del array.
 
-El uso de data-attr en la fase de emparejamiento puede generar comportamientos inesperados por lo cual se desanconseja su uso y se recomienda la interpolación de attributos.
+Se debe tener en cuenta que al usar paring mode no es posible realizar interpolaciones seguidas en una plantilla `<p>${var1} ${var2}</p>` ya que el remplazo podrian ser palabras con espacios o una de las interpolaciones estar vacia lo cual generaría efectos inesperados; en este punto lo recomendable seria usar una sola interpolación `<p>${var1 + ' ' + var2}</p>` o separarlas `<p>${var1}<span>${var2}</span></p>`.
+
+> **Nota:** El uso de data-attr en la fase de emparejamiento puede generar comportamientos inesperados por lo cual se desanconseja su uso y se recomienda la interpolación de attributos.
 
 En recientes versiones se puede hacer uso de una nueva tecnica de enlace para datos complejos `array.${index}.name` y en la actualidad es el método por defecto a utilizar para poblar dinamicamente el array.
 
@@ -424,6 +448,7 @@ Para poder usar el modo de emparejamiento es necesario colocarlo explicitamente 
 Actualmente la idea de usar virtual DOM como mecanismo de actualización para las plantillas JIT se encuentra pospuesto, en su lugar se esta experimentando con el uso de un hidden DOM. El cual funciona como un [documentFragment](https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment) que no es adicionado al DOM en ningún momento, si no que sirve como referencia para saber exactamente cuales son los cambios que se deben realizar.
 
 # Todo
+* :key: modificar el reordenamiento de elementos HTML por `keyed conciliation`.
+* :id: Cambiar la identificación de clases y objetos de uuid por Map.
 * :bug: `required` dentro de la plantilla se empareja con `required=""` fuera de la plantilla. _El error solo se presenta en paring mode_.
-* :bug: al usar interpolaciones seguidas en una plantilla `${var1} ${var2}`. _El error solo se presenta en paring mode_.
-* :bug: al realizar solapamientos. _Se re comienda no realizar solapamientos usando web components_
+* :back: Eliminar solapamientos mediante declaración explícita de propiedades en el componente y notación `^` para delegar control; se deben colocar tantos signos como niveles en la jerarquia se deseen subir. Si el componente no declara la propiedad en el nivel indicado (o si el nivel no existe) el enlace será ignorado. En modo desarrollo los enlaces huérfanos serán marcados visualmente mediante el modo debug.

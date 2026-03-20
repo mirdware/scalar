@@ -98,7 +98,7 @@ export function create(property, $node, prop) {
       value = Template.getValue(complexType);
     }
   } else {
-    setValue($node, value, 'innerHTML');
+    setValue($node, value, 'innerText');
   }
   setPropertyValue(property, prop, value);
   return { pn_: prop, $: $node, ct: complexType };
@@ -114,6 +114,6 @@ export function execute(node, state, value) {
   if (value !== state) {
     complexType && value ?
     Template.render(complexType, value) :
-    setValue($node, value, isInput($node) ? 'value' : 'innerHTML');
+    setValue($node, value, isInput($node) ? 'value' : 'innerText');
   }
 }

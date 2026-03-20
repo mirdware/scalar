@@ -20,10 +20,10 @@ const TYPES = {
 
 export default function customElement(options) {
   const type = options.type;
-  const fetch = TYPES[type] ? { t: type, E: TYPES[type] } : { E: HTMLElement };
-  let component = fetch.C;
+  const element = TYPES[type] ? TYPES[type] : HTMLElement;
+  let component = element.C;
   if (!component) {
-    component = class extends fetch.E {
+    component = class extends element {
       constructor() {
         super();
         this.attachShadow({mode: 'open'});
@@ -33,9 +33,9 @@ export default function customElement(options) {
     for (let i = 0, method; method = componentMethods[i]; i++) {
       component.prototype[method] = Component.prototype[method];
     }
-    fetch.C = component;
+    element.C = component;
   }
-  return function decorator(Class) {
+  return function (Class) {
     Object.assign(Class, options);
     let prototype = Class;
     const properties = Object.keys(new Class()).filter(p => !p.startsWith('_') && !p.startsWith('$'));
@@ -53,7 +53,9 @@ export default function customElement(options) {
       connectedCallback: function (_this) {
         if (!Privy.get(_this).i) _this.onInit();
       },
-      attributeChangedCallback: function (_this, name, oldValue, newValue) {
+      attributeChangedCallback: function (_this, args) {
+        let name = args[0];
+        let newValue = args[2];
         if (!Privy.get(_this).i) _this.onInit();
         name = name.replace(/-./g, (x) => x[1].toUpperCase());
         if (typeof _this[name] === 'boolean') {
@@ -62,13 +64,14 @@ export default function customElement(options) {
           newValue = JSON.parse(newValue);
         }
         _this[name] = newValue;
+        return args;
       },
       onInit: function (_this) {
         const props = Privy.get(_this);
         const { template, styles, m } = _this.constructor;
         if (!props.$) {
           Object.assign(props, {
-            m: m,
+            m,
             $: _this.shadowRoot,
             p_: {},
             e_: _this.listen ? _this.listen() : {},
@@ -78,13 +81,17 @@ export default function customElement(options) {
         const $fragment = createFragment('<style>' + (styles || '') + '</style>' + (template || ''));
         updateNodes({ pc: props }, props.$, $fragment);
         watch(_this, props, props.$);
+        if (m) {
+          const tokens = Class._providers || [];
+          return tokens.map(token => m.inject(token));
+        }
       }
     };
     for (const method in methods) {
       const userMethod = Class.prototype[method];
       Class.prototype[method] = function (...args) {
-        methods[method](this, ...args);
-        userMethod && userMethod.bind(this)(...args);
+        args = methods[method](this, args);
+        userMethod && userMethod.bind(this)(...(args || []));
       }
     }
     return Class;
