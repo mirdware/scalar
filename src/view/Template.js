@@ -39,9 +39,10 @@ export function getValue(template) {
   if (!template.ip || !keys.length) return value;
   regex = new RegExp(template.t.trim()
   .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  .replace(/&/g, '(?:&amp;|&)')
   .replace(/\\\$\\\{data(\\\.)?(\w|(\\\.))*\\\}/g, '(.*?)')
   .replace(/\\\$\\\{[^\}]*\}/g, '.*?')
-  .replace(/ /g, '\\s*').replace('&', '[?&]amp;'), 'g');
+  .replace(/ /g, '\\s*'), 'g');
   while ((matches = regex.exec(template.b)) !== null) {
     const obj = {};
     keys.forEach((key, i) => {

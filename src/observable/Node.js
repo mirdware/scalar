@@ -62,7 +62,7 @@ function changeContent(property, prop, value) {
 
 function getObjectValue(obj, props) {
   for (let i = 0, prop; prop = props[i]; i++) {
-    if (!obj[prop]) return '';
+    if (obj[prop] == null) return '';
     obj = obj[prop];
   }
   return obj;
@@ -107,10 +107,8 @@ export function create(property, $node, prop) {
 export function execute(node, state, value) {
   const $node = node.$;
   const complexType = node.ct;
-  node.pn_.forEach((propName) => {
-    value = value[propName];
-    state = state[propName];
-  });
+  value = getObjectValue(value, node.pn_);
+  state = getObjectValue(state, node.pn_);
   if (value !== state) {
     complexType && value ?
     Template.render(complexType, value) :

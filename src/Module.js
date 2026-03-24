@@ -71,14 +71,15 @@ export default class Module {
 
   dispose() {
     const properties = Privy.get(this);
-    properties.c_.forEach(component => {
-      const compProps = Privy.get(component);
-      const $node = compProps.$;
-      if ($node) {
-        clearEventListeners($node);
-        delete $node.dataset.component;
-      }
-      Privy.remove(component);
+    properties.c_.forEach(wrapper => {
+      wrapper.c_.forEach(component => {
+        const compProps = Privy.get(component);
+        if (compProps?.$) {
+          clearEventListeners(compProps.$);
+          delete compProps.$.dataset.component;
+        }
+        Privy.remove(component);
+      });
     });
     properties.i_ = {};
     properties.c_ = [];
@@ -144,8 +145,9 @@ if (process.env.NODE_ENV !== 'production') {
               component.onInit();
             });
           } else {
-            element.c_.forEach((oldComponent, index) => {
+            for (let index = element.c_.length - 1, oldComponent; oldComponent = element.c_[index]; index--) {
               const $component = document.querySelector(`[data-component="${oldComponent.uuid}"]`);
+              if (!$component) continue;
               clearEventListeners($component);
               const component = compose($component, _new, module);
               element.c_.splice(index, 1);
@@ -153,7 +155,7 @@ if (process.env.NODE_ENV !== 'production') {
               $component.dataset.component = component.uuid;
               console.log(`[HMR] updated component ${oldComponent.uuid} to ${component.uuid}`);
               Privy.remove(oldComponent);
-            });
+            }
           }
           element.b = _new;
         }

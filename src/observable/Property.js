@@ -30,6 +30,7 @@ const getPropertyHandler = (property, root) => ({
     if (Reflect.set(target, prop, value)) {
       return set(property, root, state);
     }
+    return false;
   },
   get: (target, prop, receiver) => {
     const value = Reflect.get(target, prop, receiver);
@@ -70,7 +71,7 @@ function changeContent(property, value, state) {
   return true;
 }
 
-function addOverloap(component, property, name) {
+function addOverlap(component, property, name) {
   component = Privy.get(component);
   const prop = component.p_[name];
   const events = Object.assign({}, property.pc.e_);
@@ -91,7 +92,7 @@ function findComponent(property, $node, name) {
       const uuid = parentNode.dataset.component;
       const component = __components__.get(uuid).c;
       if (component[name]) {
-        addOverloap(component, property, name);
+        addOverlap(component, property, name);
       }
     }
     findComponent(property, $node.parentNode, name);

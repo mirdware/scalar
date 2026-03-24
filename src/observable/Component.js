@@ -44,7 +44,7 @@ export function watch(component, privyComponent, $node) {
       const index = attribute.indexOf(':');
       const properties = [];
       const prop = attribute.substr(index + 1).trim();
-      const exp = prop.replace(/(\$\{index\}|'.*?')|\w[\w\.]+/g, (match, group) => {
+      const exp = prop.replace(/(\$\{index\}|'.*?')|\w[\w\.]*/g, (match, group) => {
         if (group) return group;
         const props = match.split('.');
         const name = props.shift();

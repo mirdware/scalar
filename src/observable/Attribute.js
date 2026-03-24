@@ -26,7 +26,7 @@ function setAttribute($attribute, name, property) {
 
 function getPropertyValue(value, properties) {
   for (let i = 0, prop; prop = properties[i]; i++) {
-    if (!value[prop]) return false;
+    if (value[prop] == null) return;
     value = value[prop];
   }
   return value;
@@ -41,7 +41,7 @@ export function create(property, name, $element, prop, exp) {
     $attribute = $attribute[k];
   });
   const attribute = { n: name, a: $attribute, $: $element, pn: prop, exp };
-  exp || getPropertyValue(value, prop) ? execute(property, attribute, value) : setPropertyValue(property, prop, $attribute[name]);
+  exp || getPropertyValue(value, prop) !== undefined ? execute(property, attribute, value) : setPropertyValue(property, prop, $attribute[name]);
   return attribute;
 }
 

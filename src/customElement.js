@@ -15,7 +15,7 @@ const TYPES = {
   ul: HTMLUListElement,
   button: HTMLButtonElement,
   select: HTMLSelectElement,
-  image: HTMLImageElement
+  img: HTMLImageElement
 };
 
 export default function customElement(options) {
