@@ -10,7 +10,6 @@ document.createElement('b')
 }));
 
 function bindFunction(name, $element, originalFunction) {
-  const lastChar = name.length - 1;
   const handler = (e) => {
     let $target = e.target;
     let context;
@@ -30,6 +29,7 @@ function bindFunction(name, $element, originalFunction) {
     name = name.substring(1);
   }
   fn.uuid = originalFunction.uuid;
+  const lastChar = name.length - 1;
   if (name.lastIndexOf('_') === lastChar) {
     capture = true;
     name = name.substring(0, lastChar);

@@ -16,8 +16,7 @@ function getProperty(component, name) {
   const prop = Property.create(component, name);
   Object.defineProperty(component, name, {
     get: () => Property.get(prop),
-    set: (value) => Property.set(prop, value, clone(prop.v)),
-    configurable: true
+    set: (value) => Property.set(prop, value, clone(prop.v))
   });
   return prop;
 }
@@ -45,7 +44,7 @@ export function watch(component, privyComponent, $node) {
       const index = attribute.indexOf(':');
       const properties = [];
       const prop = attribute.substr(index + 1).trim();
-      const exp = prop.replace(/(\$\{index\}|'.*?')|\w[\w\.]*/g, (match, group) => {
+      const exp = prop.replace(/(\$\{index\}|'.*?'|\d+(?:\.\d*)?)|([a-zA-Z_$][\w\.]*)/g, (match, group) => {
         if (group) return group;
         const props = match.split('.');
         const name = props.shift();

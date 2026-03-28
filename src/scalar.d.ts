@@ -3,15 +3,18 @@ declare module 'scalar' {
         [key: string]: any;
         /** @deprecated use constructor dependencies instead */
         inject<T>(provider: Class<T>): T;
-        compose<T extends Component>($domElement: HTMLElement, behavioral: Class<T>): T;
+        compose<T extends Component>($domElement: HTMLElement, component: Class<T>): T;
         compose<P extends any[]>($domElement: HTMLElement, component: BehavioralFunction<P>): Component;
         /** @deprecated use context parameter instead */
         getIndex(e: Event): string | undefined;
         listen?(): BehavioralObject;
+    }
+
+    export interface CustomElementComponent extends Component {
+        onInit?(...providers: any[]): void;
         connectedCallback?(): void;
         disconnectedCallback?(): void;
         attributeChangedCallback?(name: string, oldVal: any, newVal: any): void;
-        onInit?(...providers: any[]): void;
     }
 
     export class Module {
@@ -25,11 +28,13 @@ declare module 'scalar' {
 
     export function inject<T extends any[]>(
         ...providers: { [K in keyof T]: Class<T[K]> }
-    ): ClassDecorator & {
+    ): {
+        <TFunction extends Function>(target: TFunction): TFunction | void;
         <P extends T>(fn: BehavioralFunction<P>): BehavioralFunction<P>;
     };
 
-    export function customElement(options: CustomElementOptions): ClassDecorator;
+    export function customElement(options: CustomElementOptions):
+    <T extends new(...args: any[]) => CustomElementComponent>(target: T) => T;
 
     export interface CustomElementOptions {
         template?: string;
@@ -49,6 +54,4 @@ declare module 'scalar' {
         new (...args: P): T;
         _providers?: { [K in keyof P]: Class<P[K]> };
     };
-
-    type ClassDecorator = <TFunction extends Function>(target: TFunction) => TFunction | void;
 }

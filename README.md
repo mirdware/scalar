@@ -63,6 +63,8 @@ Finalmente si se esta construyendo un SPA o se desea eliminar la huella de memor
 </sc-hi>
 ```
 
+> **Nota:** Las expresiones JavaScript en `data-attr` también se evalúan mediante Function, por lo cual aplica la misma restricción CSP. Si solo se usan propiedades simples sin expresiones (data-attr="class:active") esta evaluación no ocurre.
+
 ### Servicios
 Los servicios en scalar desde la versión `0.3.4` son autowire y no se necesitan declarar dentro del modulo, si se usan en modulo simplemente se registran al mismo, se debe tener cuidado con esto, ya que es posible registrar el mismo servicio en diferentes modulos, creando instancias diferentes.
 
@@ -315,6 +317,8 @@ export default class MultiSelect extends Component {
 
 El constructor debe llamar al padre y proceder a declarar las propiedades, cabe resaltar el uso del caracter `_` para iniciar ciertas declaraciones, estas son propiedades que no se exponen al custom element, al igual que aquellas que inicien con `$`, las propiedades deben inicializarse para indicar como debe observedAttributes tratar el nuevo valor, así cuando es booleano y se aplica al elemento este lo convertira a `true` o si es un objeto `[]` o `{}` se tratara de hacer un `JSON.parse`.
 
+El framework convierte internamente el nombre del atributo de kebab-case a camelCase para la asignación de la propiedad. El método `attributeChangedCallback` del usuario, si se implementa, recibe el nombre original en kebab-case conforme al estándar Web Components.
+
 ```html
 <multi-select placeholder="Seleccionar tipo de items" _current-focus="0" required>
   <option value="0" selected>Card</option>
@@ -415,6 +419,8 @@ Tambien existe la posibilidad de realizar un enlace directamente al template tom
 
 Se puede interpolar código javaScript mediante el uso de la notación [template string](https://developer.mozilla.org/es/docs/Web/JavaScript/Referencia/template_strings) `${}`; dentro de la plantilla es posible acceder a dos propiedades `index` y `data`, la primera indica el índice del array y la segunda la información contenida en el mismo.
 
+> **Nota:** Las plantillas JIT utilizan Function internamente para evaluar interpolaciones `${}`. Esto requiere que la política CSP del proyecto permita unsafe-eval. Si tu entorno tiene restricciones estrictas de CSP, las plantillas prerenderizadas no tienen esta limitación.
+
 ### Un/pairing mode
 
 Antes de la versión `0.3.0` la forma común de enlazar datos a las propiedades de un array era mediante emparejamiento (pairing), esto se da cuando el template y el contenido del elemento son _exactamente_ iguales y difieren solo en la iterpolación; de esta manera los datos interpolados que partan del objeto `data` y no sean expresiones se combierten en parte del array.
@@ -447,6 +453,5 @@ Actualmente la idea de usar virtual DOM como mecanismo de actualización para la
 
 # Todo
 * :key: modificar el reordenamiento de elementos HTML por `keyed conciliation`.
-* :id: Cambiar la identificación de clases y objetos de uuid por Map.
 * :bug: `required` dentro de la plantilla se empareja con `required=""` fuera de la plantilla. _El error solo se presenta en paring mode_.
 * :back: Eliminar solapamientos mediante declaración explícita de propiedades en el componente y notación `^` para delegar control; se deben colocar tantos signos como niveles en la jerarquia se deseen subir. Si el componente no declara la propiedad en el nivel indicado (o si el nivel no existe) el enlace será ignorado. En modo desarrollo los enlaces huérfanos serán marcados visualmente mediante el modo debug.

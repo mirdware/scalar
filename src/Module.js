@@ -1,4 +1,3 @@
-import { generateUUID } from './util/Element';
 import { compose } from './observable/Component';
 import * as Privy from './util/Wrapper';
 
@@ -25,23 +24,22 @@ function clearEventListeners($node) {
  */
 export default class Module {
   constructor() {
-    const properties = {C: {}, i_: {}, c_: [], m_: {},
+    const properties = {C: new WeakMap(), i_: new WeakMap(), c_: [], m_: {},
       inject: (provider) => {
         const instances = properties.i_;
-        const uuid = provider.uuid ?? generateUUID(provider);
-        if (!instances[uuid]) {
-          if (properties.C[uuid]) {
-            provider = properties.C[uuid];
+        if (!instances.has(provider)) {
+          if (properties.C.has(provider)) {
+            provider = properties.C.get(provider);
           }
-          instances[uuid] = {};
+          const payload = {};
+          instances.set(provider, payload);
           const tokens = provider._providers || [];
           const dependencies = tokens.map(token => properties.inject(token));
           const instance = new provider(...dependencies);
-          instance.uuid = uuid;
-          Object.setPrototypeOf(instances[uuid], Object.getPrototypeOf(instance));
-          Object.defineProperties(instances[uuid], Object.getOwnPropertyDescriptors(instance));
+          Object.setPrototypeOf(payload, Object.getPrototypeOf(instance));
+          Object.defineProperties(payload, Object.getOwnPropertyDescriptors(instance));
         };
-        return instances[uuid];
+        return instances.get(provider);
       }
     };
     Privy.set(this, properties);
@@ -59,7 +57,7 @@ export default class Module {
   }
 
   bind(origin, replace) {
-    Privy.get(this).C[origin.uuid] = replace;
+    Privy.get(this).C.set(origin, replace);
     return this;
   }
 
@@ -81,7 +79,7 @@ export default class Module {
         Privy.remove(component);
       });
     });
-    properties.i_ = {};
+    properties.i_ = new WeakMap();
     properties.c_ = [];
   }
 
@@ -141,7 +139,9 @@ if (process.env.NODE_ENV !== 'production') {
               }
             });
             document.querySelectorAll(element.s).forEach(component => {
-              delete Privy.get(component).$;
+              const props = Privy.get(component);
+              props.e_ = component.listen ? component.listen() : {};
+              props.p_ = {};
               Object.assign(component.constructor, _new);
               component.onInit();
             });
