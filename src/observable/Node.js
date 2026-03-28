@@ -31,8 +31,10 @@ function setValue($node, value, attr) {
     attr = 'files';
   }
   if (value instanceof Date && !isNaN(value)) {
-    value = new Date(value.getTime() - value.getTimezoneOffset() * 60000)
-    .toJSON().slice(0, type === 'date' ? 10 : 16);
+    const iso = new Date(value.getTime() - value.getTimezoneOffset() * 60000).toJSON();
+    value = type === 'date' ? iso.slice(0, 10)
+          : type === 'time' ? iso.slice(11, 16)
+          : iso.slice(0, 16);
   }
   if ($node[attr] !== value) {
     $node[attr] = value;
@@ -76,12 +78,18 @@ export function create(property, $node, prop) {
   }
   if (isInput($node)) {
     const inputValue = evalValue($node);
-    $node.type.indexOf('date') && $node.addEventListener('keyup', (e) => {
+    const changeHandler = function (e) {
       changeContent(property, prop, evalValue(e.target));
-    });
-    $node.addEventListener('change', (e) => {
-      changeContent(property, prop, evalValue(e.target));
-    });
+    };
+    if (!$node.eventListenerList) {
+      $node.eventListenerList = [];
+    }
+    if (!['date', 'time', 'month', 'week', 'datetime-local'].includes($node.type)) {
+      $node.addEventListener('keyup', changeHandler);
+      $node.eventListenerList.push({ name: 'keyup', fn: changeHandler, opt: false });
+    }
+    $node.addEventListener('change', changeHandler);
+    $node.eventListenerList.push({ name: 'change', fn: changeHandler, opt: false });
     if (inputValue === null) {
       setValue($node, value, 'value');
     } else {

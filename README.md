@@ -44,13 +44,11 @@ Mediante compose solo se declara el componente en el módulo pero no se ejecuta 
 
 ```javascript
 import { Module } from 'scalar';
-import Message from './services/Message';
 import formComponent from './components/form';
 
-const module = new Module(Message);
+const module = new Module();
 new Module()
 .compose('#hello-world', formComponent)
-.add(module)
 .execute();
 ```
 

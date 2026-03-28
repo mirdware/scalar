@@ -16,7 +16,8 @@ function getProperty(component, name) {
   const prop = Property.create(component, name);
   Object.defineProperty(component, name, {
     get: () => Property.get(prop),
-    set: (value) => Property.set(prop, value, clone(prop.v))
+    set: (value) => Property.set(prop, value, clone(prop.v)),
+    configurable: true
   });
   return prop;
 }

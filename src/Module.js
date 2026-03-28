@@ -141,6 +141,7 @@ if (process.env.NODE_ENV !== 'production') {
               }
             });
             document.querySelectorAll(element.s).forEach(component => {
+              delete Privy.get(component).$;
               Object.assign(component.constructor, _new);
               component.onInit();
             });
