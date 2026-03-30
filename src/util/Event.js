@@ -39,6 +39,18 @@ function bindFunction(name, $element, originalFunction) {
   $element.eventListenerList.push({ name, fn, opt });
 }
 
+export function clearEventListeners($node) {
+  if ($node.nodeType === 3) return;
+  [$node, ...$node.querySelectorAll('*')].forEach(el => {
+    if (el.eventListenerList) {
+      el.eventListenerList.forEach(item => {
+        el.removeEventListener(item.name, item.fn, item.opt);
+      });
+      delete el.eventListenerList;
+    }
+  });
+}
+
 export function addListeners($element, events) {
   for (const selector in events) {
     const fn = events[selector];

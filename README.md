@@ -453,5 +453,4 @@ Actualmente la idea de usar virtual DOM como mecanismo de actualización para la
 
 # Todo
 * :key: modificar el reordenamiento de elementos HTML por `keyed conciliation`.
-* :bug: `required` dentro de la plantilla se empareja con `required=""` fuera de la plantilla. _El error solo se presenta en paring mode_.
-* :back: Eliminar solapamientos mediante declaración explícita de propiedades en el componente y notación `^` para delegar control; se deben colocar tantos signos como niveles en la jerarquia se deseen subir. Si el componente no declara la propiedad en el nivel indicado (o si el nivel no existe) el enlace será ignorado. En modo desarrollo los enlaces huérfanos serán marcados visualmente mediante el modo debug.
+* :back: Reemplazar el sistema de solapamientos por un modelo de ownership explícito mediante notación `^`; cada `^` representa un nivel de componente hacia arriba en la jerarquía. El componente del nivel indicado es el dueño del binding — si no tiene la propiedad, la crea; si el nivel no existe en la jerarquía el enlace es ignorado. Aplica tanto para `data-bind` como `data-attr`. En modo desarrollo los enlaces huérfanos serán marcados visualmente mediante el modo debug.

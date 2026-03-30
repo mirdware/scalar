@@ -21,7 +21,7 @@ declare module 'scalar' {
         compose<T extends Component>(selector: string, component: Class<T> | BehavioralFunction<any[]>): this;
         bind<T, R>(origin: Class<T>, replace: Class<R>): this;
         /** @deprecated */
-        add(path: string, loader: Function): this;
+        add(path: string, loader: Function, options: ?{ middleware?: boolean }): this;
         execute(): void;
         dispose(): void;
     }

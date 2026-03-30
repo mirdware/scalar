@@ -20,11 +20,7 @@ export function generateUUID(obj) {
     const v = c == 'x' ? r : (r & 0x3 | 0x8);
     return v.toString(16);
   });
-  Object.defineProperty(obj, 'uuid', {
-    value: uuid,
-    configurable: false,
-    writable: false
-  });
+  Object.defineProperty(obj, 'uuid', { value: uuid });
   return uuid;
 }
 

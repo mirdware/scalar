@@ -22,11 +22,9 @@ function getProperty(component, name) {
 }
 
 function bind($node, name, fn) {
-  const dataBinds = Array.from($node.querySelectorAll('[data-' + name + ']'));
-  if ($node.dataset && $node.dataset[name]) {
-    dataBinds.push($node);
-  }
-  dataBinds.forEach(fn);
+  const $nodes = $node.querySelectorAll('[data-' + name + ']');
+  for (let i = 0; i < $nodes.length; i++) fn($nodes[i]);
+  if ($node.dataset?.[name]) fn($node);
 }
 
 export function watch(component, privyComponent, $node) {
@@ -44,7 +42,7 @@ export function watch(component, privyComponent, $node) {
       const index = attribute.indexOf(':');
       const properties = [];
       const prop = attribute.substr(index + 1).trim();
-      const exp = prop.replace(/(\$\{index\}|'.*?'|\d+(?:\.\d*)?)|([a-zA-Z_$][\w\.]*)/g, (match, group) => {
+      const exp = prop.replace(/('.*?'|\d+(?:\.\d*)?)|([a-zA-Z_$][\w\.]*)/g, (match, group) => {
         if (group) return group;
         const props = match.split('.');
         const name = props.shift();

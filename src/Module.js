@@ -1,19 +1,8 @@
 import { compose } from './observable/Component';
+import { clearEventListeners } from './util/Event';
 import * as Privy from './util/Wrapper';
 
 export const __components__ = new Map();
-
-function clearEventListeners($node) {
-  const elements = [$node, ...$node.querySelectorAll('*')];
-  elements.forEach(el => {
-    if (el.eventListenerList) {
-      el.eventListenerList.forEach(item => {
-        el.removeEventListener(item.name, item.fn, item.opt);
-      });
-      delete el.eventListenerList;
-    }
-  });
-}
 
 /**
  *
@@ -140,6 +129,7 @@ if (process.env.NODE_ENV !== 'production') {
             });
             document.querySelectorAll(element.s).forEach(component => {
               const props = Privy.get(component);
+              clearEventListeners(props.$);
               props.e_ = component.listen ? component.listen() : {};
               props.p_ = {};
               Object.assign(component.constructor, _new);

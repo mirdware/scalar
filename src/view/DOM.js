@@ -1,4 +1,5 @@
 import { nodeContext } from "./Template";
+import { clearEventListeners } from "../util/Event";
 
 function updateProps(property, $target, newProps, oldProps) {
   for (let i = oldProps.length - 1; i >= 0; i--) {
@@ -58,6 +59,7 @@ function updateElement(property, $parent, $newNode, $oldNode, index) {
   } else if (!$newNode) {
     $parent.removeChild($oldNode);
     removeNodes(property, $oldNode);
+    clearEventListeners($oldNode);
   } else if (
     $newNode.nodeType !== $oldNode.nodeType ||
     $newNode.nodeType === 3 && $newNode.nodeValue !== $oldNode.nodeValue ||

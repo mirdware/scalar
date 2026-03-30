@@ -10,21 +10,21 @@ import { updateNodes } from './DOM';
  * @var {template.b} base Plantilla base?
  */
 export const nodeContext = new WeakMap();
+const range = document.createRange();
+range.selectNodeContents(document.createElement('template'));
 
 export function create(property, $node, $template) {
+  const normalize = (str) => str
+  .replace(/\s+/g, ' ')
+  .replace(/<\s/g, '<')
+  .replace(/\s?\/?\s?>/g, '>')
+  .replace(/(\w+)=""/g, '$1');
   return {
     p: property,
     $: $node,
     ip: $template.hasAttribute('data-pairing'),
-    t: $template.innerHTML
-    .replace(/\s+/g, ' ')
-    .replace(/<\s/g, '<')
-    .replace(/\s?\/?\s?>/g, '>'),
-    b: $node.innerHTML
-    .replace($template.outerHTML, '')
-    .replace(/\s+/g, ' ')
-    .replace(/<\s/g, '<')
-    .replace(/\s?\/?\s?>/g, '>')
+    t: normalize($template.innerHTML),
+    b: normalize($node.innerHTML)
   };
 }
 
@@ -80,7 +80,5 @@ export function render(template, param) {
 }
 
 export function createFragment(str) {
-  const range = document.createRange();
-  range.selectNodeContents(document.createElement('template'));
   return range.createContextualFragment(str);
 }
