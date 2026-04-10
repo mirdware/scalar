@@ -17,14 +17,13 @@ export function create(property, $node, $template) {
   const normalize = (str) => str
   .replace(/\s+/g, ' ')
   .replace(/<\s/g, '<')
-  .replace(/\s?\/?\s?>/g, '>')
-  .replace(/(\w+)=""/g, '$1');
+  .replace(/\s?\/?\s?>/g, '>');
   return {
     p: property,
     $: $node,
     ip: $template.hasAttribute('data-pairing'),
     t: normalize($template.innerHTML),
-    b: normalize($node.innerHTML)
+    b: normalize($node.innerHTML.replace($template.outerHTML, ''))
   };
 }
 
@@ -42,6 +41,7 @@ export function getValue(template) {
   .replace(/&/g, '(?:&amp;|&)')
   .replace(/\\\$\\\{data(\\\.)?(\w|(\\\.))*\\\}/g, '(.*?)')
   .replace(/\\\$\\\{[^\}]*\}/g, '.*?')
+  .replace(/ ([\w-]+)(?=[ >])/g, ' $1(?:="")?')
   .replace(/ /g, '\\s*'), 'g');
   while ((matches = regex.exec(template.b)) !== null) {
     const obj = {};

@@ -12,6 +12,8 @@ import * as Property from './Property';
  * @var {property.v} value Valor de la propiedad
  *
  */
+const reserved = {undefined: 1, NaN: 1, Infinity: 1};
+
 function getProperty(component, name) {
   const prop = Property.create(component, name);
   Object.defineProperty(component, name, {
@@ -29,6 +31,7 @@ function bind($node, name, fn) {
 
 export function watch(component, privyComponent, $node) {
   const privy = privyComponent.p_;
+  const noReserved = {};
   bind($node, 'bind', ($domElement) => {
     const propertyObj = $domElement.dataset.bind.split('.');
     const name = propertyObj.shift();
@@ -42,10 +45,24 @@ export function watch(component, privyComponent, $node) {
       const index = attribute.indexOf(':');
       const properties = [];
       const prop = attribute.substr(index + 1).trim();
-      const exp = prop.replace(/('.*?'|\d+(?:\.\d*)?)|([a-zA-Z_$][\w\.]*)/g, (match, group) => {
+      const exp = prop.replace(/('.*?')|[a-zA-Z_$][\w\.]*/g, (match, group) => {
         if (group) return group;
         const props = match.split('.');
         const name = props.shift();
+        if (!reserved[name] && !noReserved[name]) {
+          try {
+            Function('"use strict";var ' + name);
+            const global = globalThis[name];
+            if (Object(global) === global) {
+              reserved[name] = 1;
+            } else {
+              noReserved[name] = 1;
+            }
+          } catch(_) {
+            reserved[name] = 1;
+          }
+        }
+        if (reserved[name]) return match;
         if (!privy[name]) {
           privy[name] = getProperty(component, name);
         }

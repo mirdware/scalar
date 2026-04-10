@@ -144,8 +144,9 @@ if (process.env.NODE_ENV !== 'production') {
               element.c_.splice(index, 1);
               element.c_.push(component);
               $component.dataset.component = component.uuid;
-              console.log(`[HMR] updated component ${oldComponent.uuid} to ${component.uuid}`);
               Privy.remove(oldComponent);
+              __components__.set(component.uuid, { c: component, b: _new, s: element.s });
+              console.log(`[HMR] updated component ${oldComponent.uuid} to ${component.uuid}`);
             }
           }
           element.b = _new;

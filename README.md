@@ -38,7 +38,8 @@ Un módulo es un objeto javascript que se instancia de la clase Module de scalar
 
 El método `add(url, loader)` se encarga de cargar un módulo junto a todos sus componentes cuando el navegador esta en la url especificada.
 
-> **Nota:** Desde la versión `0.3.5` el método `add(url, loader)` ha sido declarado obsoleto y no debe usarse bajo ninguna condición ya que sera eliminado sin ningún reemplazo.
+> [!CAUTION]
+> Desde la versión `0.3.5` el método `add(url, loader)` ha sido declarado obsoleto y no debe usarse bajo ninguna condición ya que sera eliminado sin ningún reemplazo.
 
 Mediante compose solo se declara el componente en el módulo pero no se ejecuta dentro de la estructura de la página; para esto se debe hacer uso el método `execute()`.
 
@@ -63,7 +64,8 @@ Finalmente si se esta construyendo un SPA o se desea eliminar la huella de memor
 </sc-hi>
 ```
 
-> **Nota:** Las expresiones JavaScript en `data-attr` también se evalúan mediante Function, por lo cual aplica la misma restricción CSP. Si solo se usan propiedades simples sin expresiones (data-attr="class:active") esta evaluación no ocurre.
+> [!NOTE]
+> Las expresiones JavaScript en `data-attr` también se evalúan mediante Function, por lo cual aplica la misma restricción CSP. Si solo se usan propiedades simples sin expresiones (data-attr="class:active") esta evaluación no ocurre.
 
 ### Servicios
 Los servicios en scalar desde la versión `0.3.4` son autowire y no se necesitan declarar dentro del modulo, si se usan en modulo simplemente se registran al mismo, se debe tener cuidado con esto, ya que es posible registrar el mismo servicio en diferentes modulos, creando instancias diferentes.
@@ -82,7 +84,8 @@ class Service {
 
 Es posible mockear o falsear las dependencias mediante el método `bind(Message, Fake)`, de esta manera cada vez que se solicite la dependencia Message se entregara una instancia de Fake.
 
-> **Nota:**  Desde la versión `0.3.5` se recomienda el uso de decoradores o propiedades estaticas para la inyección de dependencias otros métodos estan deprecados.
+> [!IMPORTANT]
+> Desde la versión `0.3.5` se recomienda el uso de decoradores o propiedades estaticas para la inyección de dependencias otros métodos estan deprecados.
 
 ```javascript
 import { inject } from 'scalar';
@@ -232,11 +235,13 @@ return {
 ### Métodos del objeto compuesto
 Es posible hacer uso de servicios mediante el método `inject(Message)` enviando como parámetro la clase que fue proveída al módulo, si esta no fue declarada se retornara undefined.
 
-> **Nota:**  Desde la versión `0.3.5` no se debe usar inject en su lugar se debe usar el decorador `@inject` o directamente la función inject para behavioral function.
+> [!IMPORTANT]
+> Desde la versión `0.3.5` no se debe usar inject en su lugar se debe usar el decorador `@inject` o directamente la función inject para behavioral function.
 
 Para hacer uso de un arreglo dentro de un componente se debe establecer un data-key que sirva como índice del elemento, posteriormente se obtiene mediante el método `getIndex(e)` el cual recibe el evento como parámetro.
 
-> **Nota:**  Desde la versión `0.3.5` no se debe usar getIndex en su lugar se debe incluir el `context parameter`, en un futuro se cambiara el comportamiento de data-key para soportar keyed reconciliation.
+> [!IMPORTANT]
+> Desde la versión `0.3.5` no se debe usar getIndex en su lugar se debe incluir el `context parameter`, en un futuro se cambiara el comportamiento de data-key para soportar keyed reconciliation.
 
 ```javascript
 '.list label': { change: (_, item) => toogleItem(item, this) },
@@ -377,7 +382,8 @@ Una plantilla scalar podría contener atributos `data-bind` y/o `data-attr`, los
 
 Mediante data-bind se crea un enlace a una propiedad del componente, por lo tanto debe tener el formato de una [propiedad javascript](https://developer.mozilla.org/es/docs/Web/JavaScript/Data_structures#Objetos), mientras data-attr puede tener tantos atributos separados por `;` como se desee, un atributo es un par clave valor en donde la clave es el nombre del atributo y el valor la propiedad del componente o una expresión javascript que manejará los cambios de estado, en caso de ser una propiedad no definida en un data-bind esta se creara en el componente, si la propiedad se encuentra dentro de una expresión esto no será posible.
 
-> **Nota:** Aunque en la versión actual es posible usar cualquier propiedad desde la vista y automaticamente se crea en el componente, este comportamiento puede cambiar en futuras versiones en favor de evitar el solapamiento (overlaping) de propiedades.
+> [!WARNING]
+> Aunque en la versión actual es posible usar cualquier propiedad desde la vista y automaticamente se crea en el componente, este comportamiento puede cambiar en futuras versiones en favor de evitar el solapamiento (overlaping) de propiedades.
 
 Cuando se desea declarar un objeto desde el sistema de plantillas se debe separar con `.` cada una de las propiedades del mismo, esto aplica también para modificaciones de atributos como estilos.
 
@@ -419,7 +425,8 @@ Tambien existe la posibilidad de realizar un enlace directamente al template tom
 
 Se puede interpolar código javaScript mediante el uso de la notación [template string](https://developer.mozilla.org/es/docs/Web/JavaScript/Referencia/template_strings) `${}`; dentro de la plantilla es posible acceder a dos propiedades `index` y `data`, la primera indica el índice del array y la segunda la información contenida en el mismo.
 
-> **Nota:** Las plantillas JIT utilizan Function internamente para evaluar interpolaciones `${}`. Esto requiere que la política CSP del proyecto permita unsafe-eval. Si tu entorno tiene restricciones estrictas de CSP, las plantillas prerenderizadas no tienen esta limitación.
+> [!TIP]
+> Las plantillas JIT utilizan Function internamente para evaluar interpolaciones `${}`. Esto requiere que la política CSP del proyecto permita unsafe-eval. Si tu entorno tiene restricciones estrictas de CSP, las plantillas prerenderizadas no tienen esta limitación.
 
 ### Un/pairing mode
 
@@ -427,7 +434,8 @@ Antes de la versión `0.3.0` la forma común de enlazar datos a las propiedades 
 
 Se debe tener en cuenta que al usar paring mode no es posible realizar interpolaciones seguidas en una plantilla `<p>${var1} ${var2}</p>` ya que el remplazo podrian ser palabras con espacios o una de las interpolaciones estar vacia lo cual generaría efectos inesperados; en este punto lo recomendable seria usar una sola interpolación `<p>${var1 + ' ' + var2}</p>` o separarlas `<p>${var1}<span>${var2}</span></p>`.
 
-> **Nota:** El uso de data-attr en la fase de emparejamiento puede generar comportamientos inesperados por lo cual se desanconseja su uso y se recomienda la interpolación de attributos.
+> [!WARNING]
+> El uso de data-attr en la fase de emparejamiento puede generar comportamientos inesperados por lo cual se desanconseja su uso y se recomienda la interpolación de attributos.
 
 En recientes versiones se puede hacer uso de una nueva tecnica de enlace para datos complejos `array.${index}.name` y en la actualidad es el método por defecto a utilizar para poblar dinamicamente el array.
 

@@ -156,6 +156,7 @@ export default class AutoComplete extends Component {
   listen = () => ({
     'input': {
         input: (e) => search(e, this),
+        search: () => this.value = '',
         blur: () => {
             if (!this.value && this._index !== -1) {
                 this._index = -1;
