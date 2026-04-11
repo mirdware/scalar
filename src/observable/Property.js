@@ -18,6 +18,8 @@ import { __components__ } from '../Module';
  * @var {component.e_} events Eventos que debe escuchar el componente
  * @var {component.pc} privateComponent Propiedades privadas del componente
  */
+let computedTracking;
+
 const getPropertyHandler = (property, root) => ({
   set: (target, prop, value) => {
     root = root || target;
@@ -68,6 +70,7 @@ function changeContent(property, value, state) {
   property.a_.forEach((attr) => {
     Attribute.execute(property, attr, value);
   });
+  property.c_?.forEach(function(fn){ fn() });
   return true;
 }
 
@@ -114,6 +117,7 @@ export function create(component, name) {
 }
 
 export function get(property) {
+  if (computedTracking) computedTracking.add(property);
   const value = property.v;
   if (value instanceof Object) {
     if (property.o !== value) {
@@ -130,6 +134,19 @@ export function get(property) {
 
 export function set(property, value, state) {
   property.o_.forEach((prop) => prop.v = value);
+  if (typeof value === 'function') {
+    property.f = value;
+    const deps = new Set();
+    computedTracking = deps;
+    value = property.f();
+    computedTracking = null;
+    property.v = value;
+    deps.forEach((dep) => {
+      (dep.c_ || (dep.c_ = [])).push(
+        () => changeContent(property, property.f(), clone(property.v))
+      );
+    });
+  }
   return value instanceof Promise ?
   value.then((data) => changeContent(property, data, state)) :
   changeContent(property, value, state);

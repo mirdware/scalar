@@ -91,6 +91,9 @@ export function compose($node, behavioral, module) {
   (component.listen && component.listen()) :
   behavioral(component, ...dependencies);
   watch(component, props, $node);
+  if (typeof component.onInit === 'function') {
+    component.onInit();
+  }
   $node.dispatchEvent(new Event('mount'));
   return component;
 }

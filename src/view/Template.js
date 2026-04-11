@@ -50,6 +50,11 @@ export function getValue(template) {
     });
     value.push(obj.v);
   }
+  for (let i = 0, idx = 0, child; child = template.$.childNodes[i]; i++) {
+    if (child.nodeType === 1 && child.tagName !== 'SCRIPT') {
+      nodeContext.set(child, value[idx++]);
+    }
+  }
   return value;
 }
 
@@ -70,11 +75,7 @@ export function render(template, param) {
     $fragment = createFragment(fn(param));
     nodeContext.set($fragment.firstElementChild, param);
   }
-  updateNodes(
-    property,
-    $node,
-    $fragment
-  );
+  updateNodes(property, $node, $fragment);
   $node.dispatchEvent(new Event('mutate'));
   watch(property.c, property.pc, $node);
 }
