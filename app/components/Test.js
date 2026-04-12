@@ -1,6 +1,6 @@
+import { inject } from 'scalar';
 import Resource from '@spawm/resource';
 import Message from '../services/Message';
-import { inject } from '../../src/scalar';
 
 const { protocol, hostname, port } = window.location;
 const user = new Resource(protocol + '//' + hostname + ':' + port + '/response.json');
@@ -8,10 +8,10 @@ const user = new Resource(protocol + '//' + hostname + ':' + port + '/response.j
 export default inject(Message)(($, message) => {
   message.listen((msg) => $.my.msg = msg);
 
-  function sendRequest() {
+  async function sendRequest() {
     $.action.replace('open', 'reset');
-    $.people = user.get();
-    setTimeout(() => console.log($.people), 100);
+    $.people = await user.get();
+    console.log($.people);
   }
 
   function reset() {

@@ -1,7 +1,8 @@
 declare module 'scalar' {
     export class Component {
         [key: string]: any;
-        /** @deprecated use constructor dependencies instead */
+        onInit?(...providers: any[]): void;
+        /** @deprecated use onInit dependencies instead */
         inject<T>(provider: Class<T>): T;
         compose<T extends Component>($domElement: HTMLElement, component: Class<T>): T;
         compose<P extends any[]>($domElement: HTMLElement, component: BehavioralFunction<P>): Component;
@@ -11,7 +12,6 @@ declare module 'scalar' {
     }
 
     export interface CustomElementComponent extends Component {
-        onInit?(...providers: any[]): void;
         connectedCallback?(): void;
         disconnectedCallback?(): void;
         attributeChangedCallback?(name: string, oldVal: any, newVal: any): void;

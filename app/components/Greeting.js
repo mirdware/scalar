@@ -1,4 +1,4 @@
-import { Component, customElement } from "../../src/scalar";
+import { Component, customElement } from 'scalar';
 
 @customElement({
     template: /*html*/`

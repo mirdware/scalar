@@ -85,16 +85,16 @@ export function compose($node, behavioral, module) {
   const behavioralIsComponent = behavioral.prototype instanceof Component;
   const tokens = behavioral._providers || [];
   const dependencies = tokens.map(token => module.inject(token));
-  const component = behavioralIsComponent ? new behavioral(...dependencies) : new Component();
+  const component = behavioralIsComponent ? new behavioral() : new Component();
   Privy.set(component, props);
   props.e_ = behavioralIsComponent ?
   (component.listen && component.listen()) :
   behavioral(component, ...dependencies);
   watch(component, props, $node);
-  if (typeof component.onInit === 'function') {
-    component.onInit();
-  }
   $node.dispatchEvent(new Event('mount'));
+  if (behavioralIsComponent && typeof component.onInit === 'function') {
+    component.onInit(...dependencies);
+  }
   return component;
 }
 

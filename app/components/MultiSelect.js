@@ -1,4 +1,4 @@
-import { Component, customElement } from "../../src/scalar";
+import { Component, customElement } from 'scalar';
 
 function loadOptions($) {
   const $option = $.querySelector('option');
@@ -53,9 +53,13 @@ function search(e, $) {
 }
 
 function show($) {
-  $.show ='block';
-  $.$search.focus();
-  $.$search.select();
+  setTimeout(() => {
+    $._txtSearch = '';
+    $._currentFocus = -1;
+    $.show ='block';
+    $.$search.focus();
+    $.$search.select();
+  }, 1)
 }
 
 function toUp($) {
@@ -81,7 +85,7 @@ function toDown($) {
 function enter($) {
   const currentFocus = $._currentFocus;
   if (currentFocus > -1) {
-    toogleItem(currentFocus, $);
+    toogleItem($.checkList[currentFocus], $);
   }
 }
 
@@ -236,30 +240,31 @@ export default class MultiSelect extends Component {
     this.value = [];
   }
 
-  connectedCallback() {
+  onInit() {
     this.$select = this.shadowRoot.querySelector('select');
     this.$search = this.shadowRoot.querySelector('.search');
-    if (this.selectAll) {
-      const allSelector = { text: this._txtAll, all: true };
-      this.checkList.unshift(allSelector);
-    }
-    setTimeout(() => {
-      this._data = this.checkList;
-      refresh(this);
-    }, 0);
+    this._data = this.checkList;
     document.addEventListener('click', (e) => {
       if (e.target !== this) {
         close(this);
       }
     });
+    setTimeout(() => refresh(this), 0);
+  }
+
+  connectedCallback() {
+    if (this.selectAll) {
+      const allSelector = { text: this._txtAll, all: true };
+      this.checkList.unshift(allSelector);
+    }
   }
 
   listen = () => ({
     slotchange: () => loadOptions(this),
-    '.dropdown': { click: () => show(this), keydown: (e) => e.keyCode === 13 && show(this) },
+    '.dropdown': { click: () => show(this) },
     '.list-wrapper': { _keydown: (e) => controlKey(e, this) },
     '.list label': { change: (_, item) => toogleItem(item, this) },
     '.optext span': { _click: (e, badge) => removeBadge(e, badge, this) },
-    '.search': { input: (e) => search(e, this) }
+    '.search': { input: (e) => search(e, this), keydown: (e) => e.keyCode === 13 && search(e, this) }
   });
 }

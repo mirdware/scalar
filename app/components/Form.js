@@ -1,4 +1,4 @@
-import { inject } from '../../src/scalar';
+import { inject } from 'scalar';
 import Message from '../services/Message';
 
 const data = [

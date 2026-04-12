@@ -113,7 +113,7 @@ class Service {
 }
 ```
 
-Finalmente para usarse en `behavioral functions` se usa como decorador de la función.
+Para usarse en `behavioral functions` se usa como decorador de la función y se inyectan como argumentos despues del objecto compuesto, en el caso de los componentes por clases se usa siempre el método `onInit` en vez de el constructor.
 
 ```javascript
 import { inject } from 'scalar';
@@ -235,12 +235,12 @@ return {
 ### Métodos del objeto compuesto
 Es posible hacer uso de servicios mediante el método `inject(Message)` enviando como parámetro la clase que fue proveída al módulo, si esta no fue declarada se retornara undefined.
 
-> [!IMPORTANT]
+> [!WARNING]
 > Desde la versión `0.3.5` no se debe usar inject en su lugar se debe usar el decorador `@inject` o directamente la función inject para behavioral function.
 
 Para hacer uso de un arreglo dentro de un componente se debe establecer un data-key que sirva como índice del elemento, posteriormente se obtiene mediante el método `getIndex(e)` el cual recibe el evento como parámetro.
 
-> [!IMPORTANT]
+> [!WARNING]
 > Desde la versión `0.3.5` no se debe usar getIndex en su lugar se debe incluir el `context parameter`, en un futuro se cambiara el comportamiento de data-key para soportar keyed reconciliation.
 
 ```javascript
@@ -285,6 +285,9 @@ execute();
 ```
 
 En este caso tanto el componente pageable como checkTable hacen uso de la propiedad data, a esto hace referencia el solapamiento a compartir propiedades gracias a su ubicación dentro del DOM; un cambio en una propiedad afectara a la propiedad del componente solapado. Se debe tener cuidado al momento de solapar componentes pues es posible tener resultados inesperados, en muchas ocaciones lo recomendable es aislar cada comportamiento.
+
+> [!CAUTION]
+> En futuras versiones este comportamiento dejara de funcionar en favor de un sistema de ownership explicito o delegación de control.
 
 ### Aislamiento mediante web componentes
 En la versión `0.3.0` de scalar se da soporte al standard de [web components](https://developer.mozilla.org/en-US/docs/Web/Web_Components), lo cual generá una dependencia a javascript; esto va en contra de generar componentes no obstructivos, así que se puede agregar o no esta caracteristica e ir _escalando_ según las necesidades del proyecto.
@@ -338,7 +341,7 @@ La propiedad `_currentFocus` no sera enlazada al custom element. El paso de attr
 <auto-complete required="required" placeholder="Countries" data-attr="data:countries"></auto-complete>
 ```
 
-Al no poderse hacer inyección de dependencias por constructor, este comportamiento queda delegado al método `onInit`.
+Al no poderse hacer inyección de dependencias por constructor, este comportamiento queda delegado al método `onInit` al igual que para behavioral components para estandarizar su uso.
 
 ```javascript
 @inject(Message)

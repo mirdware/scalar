@@ -81,6 +81,7 @@ export default function customElement(options) {
         const $fragment = createFragment('<style>' + (styles || '') + '</style>' + (template || ''));
         updateNodes({ pc: props }, props.$, $fragment);
         watch(_this, props, props.$);
+        props.$.dispatchEvent(new Event('mount'));
         if (m) {
           const tokens = Class._providers || [];
           return tokens.map(token => m.inject(token));

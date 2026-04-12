@@ -1,9 +1,9 @@
-import { Component } from "../../src/scalar";
+import { Component } from 'scalar';
 
 export default class ToDo extends Component {
   onInit() {
     this._total = () => this.tasks.length;
-    this._pending = () => [...this.tasks].filter(task => !task.checked).length;
+    this._pending = () => this.tasks.filter(task => !task.checked).length;
   }
 
   listen() {

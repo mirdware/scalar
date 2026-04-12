@@ -6,6 +6,8 @@ import { __components__ } from '../Module';
 /**
  *
  * @var {property.c} component Referencia al componente que pertence la propiedad
+ * @var {property.f} component Función computada para el valor de la propiedad
+ * @var {property.c_} computeds Funciones computadas que dependen de la propiedad
  * @var {property.v} value Valor de la propiedad
  * @var {property.n_} nodes Elementos del dom que se controlan mediante la propiedad
  * @var {property.a_} attributes Atributos que controla la propiedad
@@ -24,11 +26,6 @@ const getPropertyHandler = (property, root) => ({
   set: (target, prop, value) => {
     root = root || target;
     const state = clone(root);
-    if (value instanceof Promise) {
-      return value.then((data) => {
-        if (Reflect.set(target, prop, data)) return set(property, root, state);
-      });
-    }
     if (Reflect.set(target, prop, value)) {
       return set(property, root, state);
     }
@@ -45,7 +42,7 @@ const getPropertyHandler = (property, root) => ({
             apply: (target, thisArg, argumentsList) => {
               const state = clone(root);
               const res = Reflect.apply(target, thisArg, argumentsList);
-              set(property, root, state);
+              !computedTracking && set(property, root, state);
               return res;
             }
           }
@@ -135,21 +132,25 @@ export function get(property) {
 export function set(property, value, state) {
   property.o_.forEach((prop) => prop.v = value);
   if (typeof value === 'function') {
-    property.f = value;
     const deps = new Set();
-    computedTracking = deps;
-    value = property.f();
-    computedTracking = null;
-    property.v = value;
+    const executeComputed = function () {
+      const lastTracking = computedTracking;
+      computedTracking = deps;
+      try {
+        return property.f();
+      } finally {
+        computedTracking = lastTracking;
+      }
+    };
+    property.f = value;
+    property.v = value = executeComputed();
     deps.forEach((dep) => {
       (dep.c_ || (dep.c_ = [])).push(
-        () => changeContent(property, property.f(), clone(property.v))
+        () => changeContent(property, executeComputed(), clone(property.v))
       );
     });
   }
-  return value instanceof Promise ?
-  value.then((data) => changeContent(property, data, state)) :
-  changeContent(property, value, state);
+  return changeContent(property, value, state);
 }
 
 export function addNode(property, $node, prop) {
