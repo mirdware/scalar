@@ -1,5 +1,6 @@
 import { setPropertyValue } from '../util/Element';
 import { watch } from "../observable/Component";
+import { wrap } from '../observable/Property';
 import { updateNodes } from './DOM';
 /**
  *
@@ -52,7 +53,7 @@ export function getValue(template) {
   }
   for (let i = 0, idx = 0, child; child = template.$.childNodes[i]; i++) {
     if (child.nodeType === 1 && child.tagName !== 'SCRIPT') {
-      nodeContext.set(child, value[idx++]);
+      nodeContext.set(child, wrap(template.p, value[idx++]));
     }
   }
   return value;
@@ -68,12 +69,12 @@ export function render(template, param) {
     let index = 0;
     for (let i = 0, $node; $node = $fragment.childNodes[i]; i++) {
       if ($node.nodeType === 1) {
-        nodeContext.set($node, param[index++]);
+       nodeContext.set($node, wrap(property, param[index++]));
       }
     }
   } else {
     $fragment = createFragment(fn(param));
-    nodeContext.set($fragment.firstElementChild, param);
+    nodeContext.set($fragment.firstElementChild, wrap(property, param));
   }
   updateNodes(property, $node, $fragment);
   $node.dispatchEvent(new Event('mutate'));

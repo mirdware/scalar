@@ -12,8 +12,7 @@ import { __components__ } from '../Module';
  * @var {property.n_} nodes Elementos del dom que se controlan mediante la propiedad
  * @var {property.a_} attributes Atributos que controla la propiedad
  * @var {property.o_} overlapings Componentes sobre los que se generan solapamientos
- * @var {property.o} observable Valor al que se le realizan las modificaciones
- * @var {property.p} proxy Proxy de value cuando se devuelve un objeto
+ * @var {property.p} proxy Proxies capturados por la propiedad
  * @var {component.$} $node Elemento base del componente
  * @var {component.m} module Módulo que genero el componente
  * @var {component.p_} properties Propiedades del componente
@@ -22,42 +21,44 @@ import { __components__ } from '../Module';
  */
 let computedTracking;
 
-const getPropertyHandler = (property, root) => ({
-  set: (target, prop, value) => {
-    root = root || target;
-    const state = clone(root);
-    if (Reflect.set(target, prop, value)) {
-      return set(property, root, state);
-    }
-    return false;
-  },
-  get: (target, prop, receiver) => {
-    const value = Reflect.get(target, prop, receiver);
-    if (value) {
-      const constructor = value.constructor;
-      root = root || target;
-      if (constructor === Function) {
-        return new Proxy(
-          value.bind(target), {
-            apply: (target, thisArg, argumentsList) => {
-              const state = clone(root);
-              const res = Reflect.apply(target, thisArg, argumentsList);
-              !computedTracking && set(property, root, state);
-              return res;
-            }
-          }
-        );
-      }
-      if (constructor === Object || constructor === Array) {
-        return new Proxy(
-          value,
-          getPropertyHandler(property, root)
-        );
-      }
-    }
-    return value;
+function setProperty(property, root, target, prop, value) {
+  const state = clone(root);
+  if (Reflect.set(target, prop, value)) {
+    return set(property, root, state);
   }
-});
+  return false;
+}
+
+function getProperty(property, root, target, prop, receiver) {
+  const value = Reflect.get(target, prop, receiver);
+  if (value) {
+    const { constructor } = value;
+    if (constructor === Function) {
+      return  new Proxy(
+        value.bind(target), {
+          apply: (target, thisArg, argumentsList) => {
+            const state = clone(root);
+            const response = Reflect.apply(target, thisArg, argumentsList);
+            !computedTracking && set(property, root, state);
+            return response;
+          }
+        }
+      );
+    }
+    if (constructor === Object || constructor === Array) {
+      let proxy = property.p.get(value);
+      if (!proxy) {
+        proxy = new Proxy(value, {
+          set: (target, prop, value) => setProperty(property, root, target, prop, value),
+          get: (target, prop, receiver) => getProperty(property, root, target, prop, receiver)
+        });
+        property.p.set(value, proxy);
+      }
+      return proxy;
+    }
+  }
+  return value;
+}
 
 function changeContent(property, value, state) {
   property.v = value;
@@ -99,12 +100,26 @@ function findComponent(property, $node, name) {
   }
 }
 
+export function wrap(property, item) {
+  if (typeof item !== 'object') return item;
+  let proxy = property.p.get(item);
+  if (!proxy) {
+    proxy = new Proxy(item, {
+      set: (target, prop, value) => setProperty(property, property.v, target, prop, value),
+      get: (target, prop, receiver) => getProperty(property, property.v, target, prop, receiver)
+    });
+    property.p.set(item, proxy);
+  }
+  return proxy;
+}
+
 export function create(component, name) {
   const privyComponent = Privy.get(component);
   const property = {
     c: component,
     pc: privyComponent,
     v: component[name] ?? '',
+    p: new WeakMap(),
     n_: [],
     a_: [],
     o_: []
@@ -116,17 +131,16 @@ export function create(component, name) {
 export function get(property) {
   if (computedTracking) computedTracking.add(property);
   const value = property.v;
-  if (value instanceof Object) {
-    if (property.o !== value) {
-      property.p = new Proxy(
-        value,
-        getPropertyHandler(property)
-      );
-      property.o = value;
-    }
-    return property.p;
+  if (!(value instanceof Object)) return value;
+  let proxy = property.p.get(value);
+  if (!proxy) {
+    proxy = new Proxy(value, {
+      set: (target, prop, value) => setProperty(property, target, target, prop, value),
+      get: (target, prop, receiver) => getProperty(property, target, target, prop, receiver)
+    });
+    property.p.set(value, proxy);
   }
-  return value;
+  return proxy;
 }
 
 export function set(property, value, state) {

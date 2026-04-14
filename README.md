@@ -1,7 +1,9 @@
 # Scalar
 Scalar nace de la necesidad de crear sistemas escalables, de alto rendimiento y no obstructivos usando los últimos estándares de programación web, lo cual incluye el uso de las últimas características basadas en [ECMAScript](https://www.ecma-international.org/ecma-262/8.0/index.html).
 
-El desarrollo de aplicaciones con scalar se basa en componentes no obstructivos o de backend, lo cual quiere decir que su funcionamiento no depende enteramente de javascript; obviamente muchas de las decisiones de que tan obstructivo puede llegar a ser scalar depende en gran medida del desarrollador. Otra premisa de scalar es la separación entre contenido, estilo y comportamiento.
+El desarrollo de aplicaciones con scalar se basa en componentes no obstructivos, lo cual quiere decir que su funcionamiento no depende enteramente de javascript; obviamente muchas de las decisiones de que tan obstructivo puede llegar a ser scalar depende en gran medida del desarrollador.
+
+Scalar es agnóstico al backend. No importa si tu HTML es generado por Node.js, PHP, Python, Go o es un archivo estático. Scalar trata al HTML como la fuente de verdad absoluta. Su motor de hidratación _despierta_ el marcado existente mediante selectores CSS, inyectando comportamiento y reactividad sin destruir la estructura original, lo que lo hace el framework más rápido y ligero para estrategias de SEO y SSR.
 
 ## Instalación
 Existen dos formas de usar scalar en un proyecto; la primera es mediante node y npm ejecutando el comando `npm i scalar`, la segunda es usar el [CDN](https://unpkg.com/scalar).
@@ -55,7 +57,7 @@ new Module()
 
 La ejecución del componente genera un `compound object`(Objeto compuesto) que contiene las propiedades enlazadas a la plantilla mediante `data-bind` y/o `data-attr`, este enlace varia de uno a doble sentido según sea el caso.
 
-Finalmente si se esta construyendo un SPA o se desea eliminar la huella de memoria de un modulo se puede hacer mediante el método `dispose()` pero se debe tener cuidado con esto, ya que al ejecutarse el módulo queda completamente inutilizable.
+Si estás construyendo una aplicación de una sola página (SPA) o cargando módulos dinámicamente, usa `module.dispose()`. Este método realiza una limpieza profunda: desvincula todos los listeners de eventos del DOM, elimina las referencias de memoria en los WeakMaps y destruye las instancias de los servicios, garantizando que el consumo de RAM de la pestaña se mantenga limpio al navegar.
 
 ```html
 <input type="text" value="scalar" data-bind="name" />
@@ -68,7 +70,7 @@ Finalmente si se esta construyendo un SPA o se desea eliminar la huella de memor
 > Las expresiones JavaScript en `data-attr` también se evalúan mediante Function, por lo cual aplica la misma restricción CSP. Si solo se usan propiedades simples sin expresiones (data-attr="class:active") esta evaluación no ocurre.
 
 ### Servicios
-Los servicios en scalar desde la versión `0.3.4` son autowire y no se necesitan declarar dentro del modulo, si se usan en modulo simplemente se registran al mismo, se debe tener cuidado con esto, ya que es posible registrar el mismo servicio en diferentes modulos, creando instancias diferentes.
+Los servicios en scalar desde la versión `0.3.4` son autowire y permiten las dependencias ciclicas, esto quiere decir que no se necesitan declarar dentro del modulo y que pueden depender entre sí (service A -> service B -> service A), si se usan en modulo simplemente se registran al mismo, se debe tener cuidado con esto, ya que es posible registrar el mismo servicio en diferentes modulos, creando instancias diferentes.
 
 El servicio es inyectado mediante el método inject del compound object o de la función enviada a cada servicio, pudiendo solucionar incluso dependencias ciclicas en actuales versiones de la libreria.
 
@@ -223,7 +225,7 @@ return {
 
 El evento `mount` es ejecutado tan pronto inicia el componente y cualquier cambio que se realice dentro de este hace parte del estado inicial por lo cual es ideal para enlazar propiedades y servicios.
 
-Aparte de mount existe el evento especial `mutate` el cual notifica cuando un elemento del componente ha sido modificado, para escuchar el evento se debe enlazar al elemento que se transformara con la mutación de la propiedad.
+Aparte de mount existe el evento especial `mutate` el cual notifica cuando un elemento del componente ha sido modificado, para escuchar el evento se debe enlazar al elemento que se transformara con la mutación de la propiedad. Este es el momento perfecto para que el desarrollador integre librerías de terceros (por ejemplo, si Scalar inyecta un input, el usuario puede escuchar mutate para inicializar un DatePicker sobre ese nuevo HTML).
 
 ```javascript
 return {
@@ -243,6 +245,8 @@ Para hacer uso de un arreglo dentro de un componente se debe establecer un data-
 > [!WARNING]
 > Desde la versión `0.3.5` no se debe usar getIndex en su lugar se debe incluir el `context parameter`, en un futuro se cambiara el comportamiento de data-key para soportar keyed reconciliation.
 
+Cuando manejas eventos en listas, el parameter context que recibe la función es un Proxy vinculado al estado original. Si modificas una propiedad del context directamente (ej: `task.done = true`), Scalar detectará el cambio y actualizará automáticamente la fila correspondiente en el DOM sin que tengas que manipular el array principal.
+
 ```javascript
 '.list label': { change: (_, item) => toogleItem(item, this) },
 '.optext span': { _click: (e, badge) => removeBadge(e, badge, this) },
@@ -255,6 +259,19 @@ const index = $.getIndex(e);
 const $domElement = await $.inject(Modal).open('https://sespesoft.com/resource', 'Recurso');
 const response = await $.compose($domElement, modalCOmponet).send({ index });
 ```
+
+### Computed properties
+
+Son propiedades especiales del objeto conductual de solo lectura que se procesan cada vez que una propiedad enlazada a la `computed function` es modificada, estas deben establecerse como funciones al cargar el componente.
+
+```javascript
+onInit(message) {
+  this._total = () => this.tasks.length;
+  this._pending = () => this.tasks.filter(task => !task.checked).length;
+}
+```
+
+Las propiedades usadas dentro de la función no deben ser modificadas, solo deben servir en modo lectura como base para recalcular las computed properties. Existen dos momentos de ejecución de la computed function: tracking y execution, en tracking se detecta automáticamente qué propiedades se usarón dentro de la función computada para suscribirse a ellas y en execution se ejecuta la computed property cada vez que cambia una propiedad trackeada.
 
 ### Solapamiento de componentes
 El solapamiento (overloaping) se presenta cuando se define un componente sobre otro ya establecido.
@@ -325,7 +342,7 @@ export default class MultiSelect extends Component {
 
 El constructor debe llamar al padre y proceder a declarar las propiedades, cabe resaltar el uso del caracter `_` para iniciar ciertas declaraciones, estas son propiedades que no se exponen al custom element, al igual que aquellas que inicien con `$`, las propiedades deben inicializarse para indicar como debe observedAttributes tratar el nuevo valor, así cuando es booleano y se aplica al elemento este lo convertira a `true` o si es un objeto `[]` o `{}` se tratara de hacer un `JSON.parse`.
 
-El framework convierte internamente el nombre del atributo de kebab-case a camelCase para la asignación de la propiedad. El método `attributeChangedCallback` del usuario, si se implementa, recibe el nombre original en kebab-case conforme al estándar Web Components.
+El framework convierte internamente el nombre del atributo de kebab-case a camelCase para la asignación de la propiedad. El método `attributeChangedCallback` del usuario, si se implementa, recibe el nombre original en kebab-case conforme al estándar Web Components. Las propiedades que comienzan con `_` o `$` son estrictamente privadas. No se convertirán en observedAttributes ni se expondrán al DOM.
 
 ```html
 <multi-select placeholder="Seleccionar tipo de items" _current-focus="0" required>
@@ -384,6 +401,8 @@ Las plantillas prerenderizadas son aquellas suministradas por el servidor y hace
 Una plantilla scalar podría contener atributos `data-bind` y/o `data-attr`, los primeros generan un enlace en dos direcciones entre el objeto compuesto y la plantilla, siempre y cuando el elemento al cual se enlaza pueda introducir información; en caso contrario dicho enlace se establecerá en una sola dirección; el segundo modifica los atributos del elemento según se modifique alguna propiedad y por su naturaleza es unidireccional.
 
 Mediante data-bind se crea un enlace a una propiedad del componente, por lo tanto debe tener el formato de una [propiedad javascript](https://developer.mozilla.org/es/docs/Web/JavaScript/Data_structures#Objetos), mientras data-attr puede tener tantos atributos separados por `;` como se desee, un atributo es un par clave valor en donde la clave es el nombre del atributo y el valor la propiedad del componente o una expresión javascript que manejará los cambios de estado, en caso de ser una propiedad no definida en un data-bind esta se creara en el componente, si la propiedad se encuentra dentro de una expresión esto no será posible.
+
+Los nombres reservados del sistema así como las variables globales (incluidas `undefined`, `Infiniy` y `NaN`) no pueden ser usadas como propiedades de un componente, porque el framework los protege para evitar colisiones con el ámbito global.
 
 > [!WARNING]
 > Aunque en la versión actual es posible usar cualquier propiedad desde la vista y automaticamente se crea en el componente, este comportamiento puede cambiar en futuras versiones en favor de evitar el solapamiento (overlaping) de propiedades.
@@ -461,6 +480,22 @@ Para poder usar el modo de emparejamiento es necesario colocarlo explicitamente 
 ### Hidden DOM
 
 Actualmente la idea de usar virtual DOM como mecanismo de actualización para las plantillas JIT se encuentra pospuesto, en su lugar se esta experimentando con el uso de un hidden DOM. El cual funciona como un [documentFragment](https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment) que no es adicionado al DOM en ningún momento, si no que sirve como referencia para saber exactamente cuales son los cambios que se deben realizar.
+
+# Debug mode
+
+Si estas trabajando directamente sobre la carpeta `src` puedes activar el debug mode con la variable de entorno `development`.
+
+```javascript
+new webpack.DefinePlugin({
+  'process.env.NODE_ENV': JSON.stringify('development')
+})
+```
+
+esto te permite entre otras cosas:
+
+* Ejecutar el debuging visual mediante `alt+s` y el cierre del mismo mediante `alt+x`. un componente con borde azul quiere decir que es un web component, si el borde es naranja es un behavioral comoponent y si es rojo es por peligro de solapamiento. A parte de componentes tambien es posible ver los 🔗 data-bind y ⚡ data-action.
+* Hacer consultas sobre componentes mediante la función `queryComponent(target)` en donde el target puede ser el id del componente o un nodo del HTML como `$0`.
+* Tambien es posible ejecutar el modo debug visual con las funciones `debug.enable()` y `debug.disable()`.
 
 # Todo
 * :key: modificar el reordenamiento de elementos HTML por `keyed conciliation`.

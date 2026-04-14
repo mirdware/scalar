@@ -10,10 +10,10 @@ export default class ToDo extends Component {
     return {
       _submit: (e) => this.add(e),
       '.close': {
-        _click: (e) => this.remove(e)
+        _click: (_, task) => this.remove(task)
       },
       '.check': {
-        _click: (e) => this.crossOutItem(e)
+        _click: (_, task) => task.checked = task.checked ? '' : 'checked'
       },
       '#clean': {
         click: () => this.tasks = []
@@ -21,8 +21,8 @@ export default class ToDo extends Component {
     };
   }
 
-  remove(e) {
-    const index = this.getIndex(e);
+  remove(task) {
+    const index = this.tasks.indexOf(task);
     this.tasks.splice(index, 1);
   }
 
@@ -34,11 +34,5 @@ export default class ToDo extends Component {
       checked: ''
     });
     this.task = '';
-  }
-
-  crossOutItem(e) {
-    const index = this.getIndex(e);
-    const task = this.tasks[index];
-    task.checked = task.checked ? '' : 'checked';
   }
 }
