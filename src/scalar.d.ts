@@ -29,7 +29,12 @@ declare module 'scalar' {
     export function inject<T extends any[]>(
         ...providers: { [K in keyof T]: Class<T[K]> }
     ): {
-        <TFunction extends Function>(target: TFunction): TFunction | void;
+        <TClass extends new () => Component & { onInit?(...args: T): void }>(
+            target: TClass
+        ): TClass;
+        <TClass extends new (...args: T) => any>(
+            target: TClass
+        ): TClass;
         <P extends T>(fn: BehavioralFunction<P>): BehavioralFunction<P>;
     };
 

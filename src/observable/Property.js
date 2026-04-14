@@ -19,46 +19,8 @@ import { __components__ } from '../Module';
  * @var {component.e_} events Eventos que debe escuchar el componente
  * @var {component.pc} privateComponent Propiedades privadas del componente
  */
+const proxies = new WeakMap();
 let computedTracking;
-
-function setProperty(property, root, target, prop, value) {
-  const state = clone(root);
-  if (Reflect.set(target, prop, value)) {
-    return set(property, root, state);
-  }
-  return false;
-}
-
-function getProperty(property, root, target, prop, receiver) {
-  const value = Reflect.get(target, prop, receiver);
-  if (value) {
-    const { constructor } = value;
-    if (constructor === Function) {
-      return  new Proxy(
-        value.bind(target), {
-          apply: (target, thisArg, argumentsList) => {
-            const state = clone(root);
-            const response = Reflect.apply(target, thisArg, argumentsList);
-            !computedTracking && set(property, root, state);
-            return response;
-          }
-        }
-      );
-    }
-    if (constructor === Object || constructor === Array) {
-      let proxy = property.p.get(value);
-      if (!proxy) {
-        proxy = new Proxy(value, {
-          set: (target, prop, value) => setProperty(property, root, target, prop, value),
-          get: (target, prop, receiver) => getProperty(property, root, target, prop, receiver)
-        });
-        property.p.set(value, proxy);
-      }
-      return proxy;
-    }
-  }
-  return value;
-}
 
 function changeContent(property, value, state) {
   property.v = value;
@@ -100,19 +62,6 @@ function findComponent(property, $node, name) {
   }
 }
 
-export function wrap(property, item) {
-  if (typeof item !== 'object') return item;
-  let proxy = property.p.get(item);
-  if (!proxy) {
-    proxy = new Proxy(item, {
-      set: (target, prop, value) => setProperty(property, property.v, target, prop, value),
-      get: (target, prop, receiver) => getProperty(property, property.v, target, prop, receiver)
-    });
-    property.p.set(item, proxy);
-  }
-  return proxy;
-}
-
 export function create(component, name) {
   const privyComponent = Privy.get(component);
   const property = {
@@ -128,17 +77,48 @@ export function create(component, name) {
   return property;
 }
 
-export function get(property) {
+export function get(property, item) {
   if (computedTracking) computedTracking.add(property);
-  const value = property.v;
-  if (!(value instanceof Object)) return value;
-  let proxy = property.p.get(value);
+  if (!(item instanceof Object)) return item;
+  let proxy = property.p.get(item);
   if (!proxy) {
-    proxy = new Proxy(value, {
-      set: (target, prop, value) => setProperty(property, target, target, prop, value),
-      get: (target, prop, receiver) => getProperty(property, target, target, prop, receiver)
+    proxy = new Proxy(item, {
+      set: function (target, prop, value) {
+        value = proxies.get(value) || value;
+        if (target[prop] === value) return true;
+        const state = clone(property.v);
+        if (Reflect.set(target, prop, value)) {
+          return set(property, property.v, state);
+        }
+        return false;
+      },
+      get: function (target, prop, receiver) {
+        const { constructor } = target;
+        if (constructor && globalThis[constructor.name] === constructor) {
+          receiver = target;
+        }
+        const value = Reflect.get(target, prop, receiver);
+        if (value && !computedTracking) {
+          if (typeof value === 'function') {
+            return  new Proxy(
+              value.bind(target), {
+                apply: (target, thisArg, argumentsList) => {
+                  argumentsList = argumentsList.map(arg => proxies.get(arg) || arg);
+                  const state = clone(property.v);
+                  const response = Reflect.apply(target, thisArg, argumentsList);
+                  set(property, property.v, state);
+                  return response;
+                }
+              }
+            );
+          }
+          return get(property, value);
+        }
+        return value;
+      }
     });
-    property.p.set(value, proxy);
+    property.p.set(item, proxy);
+    proxies.set(proxy, item);
   }
   return proxy;
 }

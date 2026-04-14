@@ -182,8 +182,8 @@ export default ($) => {
   }
 
   return {
-    submit: (e) => add,
-    '.close': { click: (e) => remove },
+    submit: add,
+    '.close': { click: remove },
     '#clean': { click: () => $.tasks = [] }
   };
 };
@@ -223,6 +223,9 @@ return {
 }
 ```
 
+> [!TIP]
+> Se recomienda usar atributos `data-action` como selectores en el objeto conductual en lugar de clases o IDs, separando así el comportamiento del estilo: { '[data-action="save"]': { click: save } }.
+
 El evento `mount` es ejecutado tan pronto inicia el componente y cualquier cambio que se realice dentro de este hace parte del estado inicial por lo cual es ideal para enlazar propiedades y servicios.
 
 Aparte de mount existe el evento especial `mutate` el cual notifica cuando un elemento del componente ha sido modificado, para escuchar el evento se debe enlazar al elemento que se transformara con la mutación de la propiedad. Este es el momento perfecto para que el desarrollador integre librerías de terceros (por ejemplo, si Scalar inyecta un input, el usuario puede escuchar mutate para inicializar un DatePicker sobre ese nuevo HTML).
@@ -260,7 +263,7 @@ const $domElement = await $.inject(Modal).open('https://sespesoft.com/resource',
 const response = await $.compose($domElement, modalCOmponet).send({ index });
 ```
 
-### Computed properties
+### Properties y computed properties
 
 Son propiedades especiales del objeto conductual de solo lectura que se procesan cada vez que una propiedad enlazada a la `computed function` es modificada, estas deben establecerse como funciones al cargar el componente.
 
@@ -271,7 +274,9 @@ onInit(message) {
 }
 ```
 
-Las propiedades usadas dentro de la función no deben ser modificadas, solo deben servir en modo lectura como base para recalcular las computed properties. Existen dos momentos de ejecución de la computed function: tracking y execution, en tracking se detecta automáticamente qué propiedades se usarón dentro de la función computada para suscribirse a ellas y en execution se ejecuta la computed property cada vez que cambia una propiedad trackeada.
+Las propiedades usadas dentro de la función **no deben ser modificadas**, solo deben servir en modo lectura como base para recalcular las computed properties. Existen dos momentos en el ciclo de vida la computed function: tracking y execution, en tracking se detecta automáticamente qué propiedades se usarón dentro de la función computada para suscribirse a ellas y en execution se ejecuta la computed property cada vez que cambia una propiedad trackeada. Dentro de una computed function los objetos anidados se devuelven sin proxificar, por lo cual la reactividad no aplica dentro de ellas.
+
+En cualquier parte del componente, los métodos de arrays y objetos reactivos (como `Array.indexOf`, `Array.find`, etc.) funcionan correctamente aunque se les pase un proxy como argumento, ya que el framework desenvuelve automáticamente el proxy al objeto real antes de ejecutar el método.
 
 ### Solapamiento de componentes
 El solapamiento (overloaping) se presenta cuando se define un componente sobre otro ya establecido.
@@ -496,6 +501,20 @@ esto te permite entre otras cosas:
 * Ejecutar el debuging visual mediante `alt+s` y el cierre del mismo mediante `alt+x`. un componente con borde azul quiere decir que es un web component, si el borde es naranja es un behavioral comoponent y si es rojo es por peligro de solapamiento. A parte de componentes tambien es posible ver los 🔗 data-bind y ⚡ data-action.
 * Hacer consultas sobre componentes mediante la función `queryComponent(target)` en donde el target puede ser el id del componente o un nodo del HTML como `$0`.
 * Tambien es posible ejecutar el modo debug visual con las funciones `debug.enable()` y `debug.disable()`.
+
+## Hot Module Replacement (HMR)
+
+Scalar expone integración con HMR mediante el evento personalizado `scalar-hmr-update`. Al recibirlo, el framework recompone automáticamente los componentes afectados sin recargar la página, preservando el estado del DOM.
+
+El evento espera en su detail los objetos _old y _new, que representan el módulo, clase o función conductual anterior y su reemplazo.
+
+```javascript
+window.dispatchEvent(new CustomEvent('scalar-hmr-update', {
+  detail: { _old: OldComponent, _new: NewComponent }
+}));
+```
+
+Esta integración está disponible únicamente cuando process.env.NODE_ENV !== 'production'.
 
 # Todo
 * :key: modificar el reordenamiento de elementos HTML por `keyed conciliation`.

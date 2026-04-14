@@ -17,7 +17,7 @@ const reserved = {undefined: 1, NaN: 1, Infinity: 1};
 function getProperty(component, name) {
   const prop = Property.create(component, name);
   Object.defineProperty(component, name, {
-    get: () => Property.get(prop),
+    get: () => Property.get(prop, prop.v),
     set: (value) => Property.set(prop, value, clone(prop.v))
   });
   return prop;

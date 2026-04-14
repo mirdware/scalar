@@ -138,7 +138,7 @@ function close($) {
       border: solid 1px #777;
       background-color: white;
       position: relative;
-      max-width: 100%;
+      min-width: 200px;
     }
     .optext, .placeholder {
       margin-right:0.5em;

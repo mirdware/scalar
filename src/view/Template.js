@@ -1,6 +1,6 @@
 import { setPropertyValue } from '../util/Element';
 import { watch } from "../observable/Component";
-import { wrap } from '../observable/Property';
+import { get } from '../observable/Property';
 import { updateNodes } from './DOM';
 /**
  *
@@ -13,6 +13,14 @@ import { updateNodes } from './DOM';
 export const nodeContext = new WeakMap();
 const range = document.createRange();
 range.selectNodeContents(document.createElement('template'));
+
+function populateContext($node, property, value) {
+  for (let i = 0, index = 0, $child; $child = $node.childNodes[i]; i++) {
+    if ($child.nodeType === 1 && $child.tagName !== 'SCRIPT') {
+      nodeContext.set($child, get(property, value[index++]));
+    }
+  }
+}
 
 export function create(property, $node, $template) {
   const normalize = (str) => str
@@ -51,31 +59,16 @@ export function getValue(template) {
     });
     value.push(obj.v);
   }
-  for (let i = 0, idx = 0, child; child = template.$.childNodes[i]; i++) {
-    if (child.nodeType === 1 && child.tagName !== 'SCRIPT') {
-      nodeContext.set(child, wrap(template.p, value[idx++]));
-    }
-  }
+  populateContext(template.$, template.p, value);
   return value;
 }
 
 export function render(template, param) {
-  const $node = template.$;
-  const property = template.p;
+  param = param?.forEach ? Array.from(param) : param != null ? [param] : [];
+  const { $: $node, p: property } = template;
   const fn = Function('data,index', 'return `' + template.t + '`');
-  let $fragment;
-  if (Array.isArray(param)) {
-    $fragment = createFragment(param.map(fn).join(''));
-    let index = 0;
-    for (let i = 0, $node; $node = $fragment.childNodes[i]; i++) {
-      if ($node.nodeType === 1) {
-       nodeContext.set($node, wrap(property, param[index++]));
-      }
-    }
-  } else {
-    $fragment = createFragment(fn(param));
-    nodeContext.set($fragment.firstElementChild, wrap(property, param));
-  }
+  const $fragment = createFragment(param.map(fn).join(''));
+  populateContext($fragment, property, param);
   updateNodes(property, $node, $fragment);
   $node.dispatchEvent(new Event('mutate'));
   watch(property.c, property.pc, $node);
