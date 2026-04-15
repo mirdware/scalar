@@ -22,18 +22,6 @@ import { __components__ } from '../Module';
 const proxies = new WeakMap();
 let computedTracking;
 
-function changeContent(property, value, state) {
-  property.v = value;
-  property.n_.forEach((node) => {
-    Node.execute(node, state, value);
-  });
-  property.a_.forEach((attr) => {
-    Attribute.execute(property, attr, value);
-  });
-  property.c_?.forEach(function(fn){ fn() });
-  return true;
-}
-
 function addOverlap(component, property, name) {
   component = Privy.get(component);
   const prop = component.p_[name];
@@ -71,7 +59,8 @@ export function create(component, name) {
     p: new WeakMap(),
     n_: [],
     a_: [],
-    o_: []
+    o_: [],
+    c_: []
   };
   findComponent(property, privyComponent.$, name);
   return property;
@@ -139,12 +128,10 @@ export function set(property, value, state) {
     property.f = value;
     property.v = value = executeComputed();
     deps.forEach((dep) => {
-      (dep.c_ || (dep.c_ = [])).push(
-        () => changeContent(property, executeComputed(), clone(property.v))
-      );
+      dep.c_.push(() => Node.changeContent(property, executeComputed(), clone(property.v)));
     });
   }
-  return changeContent(property, value, state);
+  return Node.changeContent(property, value, state);
 }
 
 export function addNode(property, $node, prop) {

@@ -1,4 +1,4 @@
-import { setPropertyValue } from '../util/Element';
+import { setPropertyValue, getPropertyValue } from '../util/Element';
 import { addListeners } from '../util/Event';
 /**
  *
@@ -24,14 +24,6 @@ function setAttribute($attribute, name, property) {
   }
 }
 
-function getPropertyValue(value, properties) {
-  for (let i = 0, prop; prop = properties[i]; i++) {
-    if (value[prop] == null) return;
-    value = value[prop];
-  }
-  return value;
-}
-
 export function create(property, name, $element, prop, exp) {
   const keys = name.split('.');
   const value = property.v;
@@ -39,6 +31,9 @@ export function create(property, name, $element, prop, exp) {
   name = keys.pop();
   keys.forEach((k) => {
     $attribute = $attribute[k];
+    if (process.env.NODE_ENV !== 'production' && !$attribute) {
+      throw new Error(`Attribute ${k} not found`);
+    }
   });
   const attribute = { n: name, a: $attribute, $: $element, pn: prop, exp };
   exp || getPropertyValue(value, prop) ? execute(property, attribute, value) : setPropertyValue(property, prop, $attribute[name]);

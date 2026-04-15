@@ -84,3 +84,9 @@ section {
 .external-component {
   text-align: center;
 }
+
+.stats {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}

@@ -64,6 +64,7 @@ function controlKey(e, $) {
 }
 
 function close($) {
+  if (!$._values.length) return;
   const index = $._index;
   $._values = [];
   $._currentFocus = -1;

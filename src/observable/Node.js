@@ -1,4 +1,4 @@
-import { setPropertyValue, clone } from '../util/Element';
+import { setPropertyValue, getPropertyValue, clone } from '../util/Element';
 import * as Attribute from './Attribute';
 import * as Template from '../view/Template';
 /**
@@ -10,6 +10,9 @@ import * as Template from '../view/Template';
  * @var {property.n_} nodes Elementos del dom que se controlan mediante la propiedad
  * @var {property.a_} attributes Atributos que controla la propiedad
  */
+const queue = new Map();
+let pending;
+
 function isInput({ nodeName }) {
   return nodeName === 'INPUT' || nodeName === 'TEXTAREA' || nodeName === 'SELECT';
 }
@@ -50,36 +53,40 @@ function evalValue({type, checked, value, files, selectedOptions}) {
   return value || null;
 }
 
-function changeContent(property, prop, value) {
-  const state = clone(property.v);
-  setPropertyValue(property, prop, value);
-  value = property.v;
-  property.n_.forEach((node) => {
-    execute(node, state, value);
-  });
-  property.a_.forEach((attr) => {
-    Attribute.execute(property, attr, value);
-  });
-}
-
-function getObjectValue(obj, props) {
-  for (let i = 0, prop; prop = props[i]; i++) {
-    if (obj[prop] == null) return '';
-    obj = obj[prop];
+export function changeContent(property, value, state) {
+  property.v = value;
+  queue.set(property, { v: value, s: state });
+  if (!pending) {
+    pending = 1;
+    Promise.resolve().then(() => {
+      queue.forEach(({ v, s }, property) => {
+        property.n_.forEach((node) => {
+          execute(node, s, v);
+        });
+        property.a_.forEach((attr) => {
+          Attribute.execute(property, attr, v);
+        });
+        property.c_.forEach(function (fn) { fn() });
+      })
+      queue.clear();
+      pending = 0;
+    });
   }
-  return obj;
+  return true;
 }
 
 export function create(property, $node, prop) {
   let value = property.v;
   let complexType = null;
   if (value instanceof Object) {
-    value = getObjectValue(value, prop);
+    value = getPropertyValue(value, prop);
   }
   if (isInput($node)) {
     const inputValue = evalValue($node);
     const changeHandler = function (e) {
-      changeContent(property, prop, evalValue(e.target));
+      const state = clone(property.v);
+      setPropertyValue(property, prop, evalValue(e.target));
+      changeContent(property, property.v, state);
     };
     if (!$node.eventListenerList) {
       $node.eventListenerList = [];
@@ -113,10 +120,9 @@ export function create(property, $node, prop) {
 }
 
 export function execute(node, state, value) {
-  const $node = node.$;
-  const complexType = node.ct;
-  value = getObjectValue(value, node.pn_);
-  state = getObjectValue(state, node.pn_);
+  const { $: $node, ct: complexType, pn_: properties } = node;
+  value = getPropertyValue(value, properties);
+  state = getPropertyValue(state, properties);
   if (value !== state) {
     complexType && value ?
     Template.render(complexType, value) :

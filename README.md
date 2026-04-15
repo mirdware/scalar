@@ -263,9 +263,13 @@ const $domElement = await $.inject(Modal).open('https://sespesoft.com/resource',
 const response = await $.compose($domElement, modalCOmponet).send({ index });
 ```
 
-### Properties y computed properties
+### Reactive & computed properties
 
-Son propiedades especiales del objeto conductual de solo lectura que se procesan cada vez que una propiedad enlazada a la `computed function` es modificada, estas deben establecerse como funciones al cargar el componente.
+Scalar genera automáticamente propiedades reactivas al parsear el DOM mediante los atributos `data-bind` o `data-attr`. Si una propiedad ya ha sido declarada en el componente antes del parseo, Scalar realizará una conciliación de estado, priorizando el valor presente en la vista (fuente de verdad del HTML).
+
+Los métodos nativos de arrays y objetos (como `Array.indexOf`, `Array.find`, `Array.includes`, etc) funcionan de manera transparente aunque se utilicen Proxies como argumentos. El framework realiza un unwrapping automático (desenvuelve el Proxy al objeto real) antes de ejecutar la lógica nativa, garantizando la compatibilidad total con el estándar ECMAScript.
+
+Las computed properties son propiedades especiales del objeto conductual de solo lectura que se procesan cada vez que una propiedad enlazada a la `computed function` es modificada, estas deben establecerse como funciones al cargar el componente.
 
 ```javascript
 onInit(message) {
@@ -274,9 +278,12 @@ onInit(message) {
 }
 ```
 
-Las propiedades usadas dentro de la función **no deben ser modificadas**, solo deben servir en modo lectura como base para recalcular las computed properties. Existen dos momentos en el ciclo de vida la computed function: tracking y execution, en tracking se detecta automáticamente qué propiedades se usarón dentro de la función computada para suscribirse a ellas y en execution se ejecuta la computed property cada vez que cambia una propiedad trackeada. Dentro de una computed function los objetos anidados se devuelven sin proxificar, por lo cual la reactividad no aplica dentro de ellas.
+Las propiedades usadas dentro de la función **no deben ser modificadas**, solo deben servir en modo lectura como base para recalcular las computed properties. Existen dos momentos en el ciclo de vida la computed function: tracking y execution, en tracking se detecta automáticamente qué propiedades se utilizan para crear el grafo de dependencias y en execution se evalua la computed property cada vez que sus dependencias mutan.
 
-En cualquier parte del componente, los métodos de arrays y objetos reactivos (como `Array.indexOf`, `Array.find`, etc.) funcionan correctamente aunque se les pase un proxy como argumento, ya que el framework desenvuelve automáticamente el proxy al objeto real antes de ejecutar el método.
+> [!TIP]
+> El uso de `_` se usa como convención para propedades de solo lectura.
+
+Durante la evaluación de una computada, se accede a los objetos sin envoltorios Proxy. Esto evita el desbordamiento de la pila de llamadas (stack overflow) y permite que métodos como .`filter` o `.map` se ejecuten a velocidad nativa del motor de JavaScript.
 
 ### Solapamiento de componentes
 El solapamiento (overloaping) se presenta cuando se define un componente sobre otro ya establecido.

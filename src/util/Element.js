@@ -7,10 +7,10 @@ function getObject(obj, props, value, index) {
 }
 
 export function clone(object) {
-  if (Array.isArray(object)) {
-    return object.map((obj) => clone(obj));
+  if (object instanceof Object) {
+    return JSON.parse(JSON.stringify(object));
   }
-  return Object.assign({}, object);
+  return object;
 }
 
 export function generateUUID(obj) {
@@ -28,4 +28,12 @@ export function setPropertyValue(property, prop, value) {
   property.v = prop.length ?
   getObject(property.v || {}, prop, value, 0) :
   value;
+}
+
+export function getPropertyValue(value, properties) {
+  for (let i = 0, prop; prop = properties[i]; i++) {
+    if (value == null || value[prop] == null) return '';
+    value = value[prop];
+  }
+  return value;
 }

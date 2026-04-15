@@ -63,6 +63,12 @@
       <input type="datetime-local" class="timestamp" data-bind="date"/>
       <input type="text" class="timestamp" data-bind="date"/><br/>
       <input type="file" data-bind="file"/><br/>
+      <input type="checkbox" data-bind="show" />
+      <div data-bind="my.name">
+        <script type="text/template">
+          <h3>Secret message: ${data}</h3>
+        </script>
+      </div>
       <input type="submit"/>
       <input type="reset"/><br/>
       <input type="button" value="Fill data inside" class="fill"/>
@@ -95,8 +101,16 @@
           </li>
         </script>
       </ul>
-      <b>Total: </b><span data-attr="innerText:_total">2</span>
-      <b>Pendientes: </b><span data-attr="innerText:_pending">1</span>
+      <div class="stats">
+        <div>
+          <b data-attr="style.color:_pending?'red':'green'">Pendientes: </b>
+          <span data-attr="innerText:_pending">1</span>
+        </div>
+        <div>
+          <b>Total: </b>
+          <span data-attr="innerText:_total">2</span>
+        </div>
+    </div>
     </form>
   </section>
   <section>

@@ -6,6 +6,7 @@ function loadOptions($) {
     $.$select.appendChild($option);
     $.checkList.push($option);
   }
+  refresh($);
 }
 
 function toogleItem(item, $) {
@@ -56,10 +57,10 @@ function show($) {
   setTimeout(() => {
     $._txtSearch = '';
     $._currentFocus = -1;
-    $.show ='block';
+    $.show = 'block';
     $.$search.focus();
     $.$search.select();
-  }, 1)
+  }, 1);
 }
 
 function toUp($) {
@@ -67,7 +68,7 @@ function toUp($) {
   const { length } = $.checkList;
   currentFocus++;
   if (currentFocus >= length) {
-      currentFocus = 0;
+    currentFocus = 0;
   }
   $._currentFocus = currentFocus;
 }
@@ -77,7 +78,7 @@ function toDown($) {
   const { length } = $.checkList;
   currentFocus--;
   if (currentFocus < 0) {
-      currentFocus = length - 1;
+    currentFocus = length - 1;
   }
   $._currentFocus = currentFocus;
 }
@@ -98,6 +99,7 @@ function controlKey(e, $) {
 }
 
 function close($) {
+  if ($.show === 'none') return;
   $.show = 'none';
   refresh($);
 }
@@ -249,13 +251,11 @@ export default class MultiSelect extends Component {
         close(this);
       }
     });
-    setTimeout(() => refresh(this), 0);
   }
 
   connectedCallback() {
     if (this.selectAll) {
-      const allSelector = { text: this._txtAll, all: true };
-      this.checkList.unshift(allSelector);
+      this.checkList.unshift({ text: this._txtAll, all: true });
     }
   }
 

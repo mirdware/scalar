@@ -8,9 +8,9 @@ export default class ToDo extends Component {
 
   listen() {
     return {
-      _submit: (e) => this.add(e),
+      _submit: (e) => this.#add(e),
       '.close': {
-        _click: (_, task) => this.remove(task)
+        _click: (_, task) => this.#remove(task)
       },
       '.check': {
         _click: (_, task) => task.checked = task.checked ? '' : 'checked'
@@ -21,12 +21,12 @@ export default class ToDo extends Component {
     };
   }
 
-  remove(task) {
+  #remove(task) {
     const index = this.tasks.indexOf(task);
     this.tasks.splice(index, 1);
   }
 
-  add() {
+  #add() {
     console.log(this);
     if (!this.task) return;
     this.tasks.push({
