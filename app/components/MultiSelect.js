@@ -1,11 +1,12 @@
 import { Component, customElement } from 'scalar';
 
 function loadOptions($) {
-  const $option = $.querySelector('option');
-  if ($option) {
+  const options = Array.from($.querySelectorAll('option'));
+  if (!options.length) return;
+  options.forEach(($option) => {
     $.$select.appendChild($option);
     $.checkList.push($option);
-  }
+  });
   refresh($);
 }
 
@@ -231,7 +232,8 @@ export default class MultiSelect extends Component {
     this._currentFocus = -1;
     this._txtAll ='All';
     this._txtRemove = 'Remove';
-    this._txtSearch ='Search';
+    this._txtSearch = 'Search';
+    this.show = 'none';
     this.placeholder ='select a item';
     this.maxItems = 5;
     this.selectAll = false;

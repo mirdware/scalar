@@ -10,7 +10,6 @@ module.exports = () => ({
     filename: `cjs/${config.name}.min.js`,
     library: {
       type: 'commonjs2'
-    },
-    clean: true
+    }
   }
 });

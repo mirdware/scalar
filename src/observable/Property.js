@@ -1,4 +1,3 @@
-import { clone } from '../util/Element';
 import * as Privy from '../util/Wrapper';
 import * as Node from './Node';
 import * as Attribute from './Attribute';
@@ -57,10 +56,11 @@ export function create(component, name) {
     pc: privyComponent,
     v: component[name] ?? '',
     p: new WeakMap(),
-    n_: [],
-    a_: [],
-    o_: [],
-    c_: []
+    n_: new Map(),
+    a_: new Map(),
+    c_: new Set(),
+    d_: new Set(),
+    o_: []
   };
   findComponent(property, privyComponent.$, name);
   return property;
@@ -75,9 +75,8 @@ export function get(property, item) {
       set: function (target, prop, value) {
         value = proxies.get(value) || value;
         if (target[prop] === value) return true;
-        const state = clone(property.v);
         if (Reflect.set(target, prop, value)) {
-          return set(property, property.v, state);
+          return set(property, property.v);
         }
         return false;
       },
@@ -88,20 +87,22 @@ export function get(property, item) {
         }
         const value = Reflect.get(target, prop, receiver);
         if (value && !computedTracking) {
-          if (typeof value === 'function') {
-            return  new Proxy(
-              value.bind(target), {
-                apply: (target, thisArg, argumentsList) => {
-                  argumentsList = argumentsList.map(arg => proxies.get(arg) || arg);
-                  const state = clone(property.v);
-                  const response = Reflect.apply(target, thisArg, argumentsList);
-                  set(property, property.v, state);
-                  return response;
-                }
-              }
-            );
+          if (typeof value !== 'function') {
+            return get(property, value);
           }
-          return get(property, value);
+          let proxyFn = property.p.get(value);
+          if (!proxyFn) {
+            proxyFn = new Proxy(value.bind(target), {
+              apply: (target, thisArg, argumentsList) => {
+                argumentsList = argumentsList.map(arg => proxies.get(arg) || arg);
+                const response = Reflect.apply(target, thisArg, argumentsList);
+                set(property, property.v);
+                return response;
+              }
+            });
+            property.p.set(value, proxyFn);
+          }
+          return proxyFn;
         }
         return value;
       }
@@ -112,7 +113,7 @@ export function get(property, item) {
   return proxy;
 }
 
-export function set(property, value, state) {
+export function set(property, value) {
   property.o_.forEach((prop) => prop.v = value);
   if (typeof value === 'function') {
     const deps = new Set();
@@ -125,21 +126,29 @@ export function set(property, value, state) {
         computedTracking = lastTracking;
       }
     };
+    property.d_.forEach(function (dep) { dep.c_.delete(property.cb) });
     property.f = value;
     property.v = value = executeComputed();
-    deps.forEach((dep) => {
-      dep.c_.push(() => Node.changeContent(property, executeComputed(), clone(property.v)));
-    });
+    property.d_ = deps;
+    property.cb = () => Node.changeContent(property, executeComputed());
+    deps.forEach(function (dep) { dep.c_.add(property.cb) });
   }
-  return Node.changeContent(property, value, state);
+  return Node.changeContent(property, value);
 }
 
 export function addNode(property, $node, prop) {
-  if (!property.n_.find((node) => node.$ === $node)) {
-    property.n_.push(Node.create(property, $node, prop));
+  if (!property.n_.has($node)) {
+    property.n_.set($node, Node.create(property, $node, prop));
   }
 }
 
-export function addAttribute(property, name, $element, prop, exp) {
-  property.a_.push(Attribute.create(property, name, $element, prop, exp));
+export function addAttribute(property, name, $node, prop, exp) {
+  let attributes = property.a_.get($node);
+  if (!attributes) {
+    attributes = {};
+    property.a_.set($node, attributes);
+  }
+  if (!attributes[name]) {
+    attributes[name] = Attribute.create(property, name, $node, prop, exp);
+  }
 }

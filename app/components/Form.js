@@ -48,6 +48,7 @@ export default inject(Message)(($, message) => ({
       sexo: 'M',
       paint: false,
       select: 1,
+      show: 1,
       date: new Date(),
       dependency: data[1],
       multi: ["0", "2"],

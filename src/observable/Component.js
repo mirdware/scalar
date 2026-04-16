@@ -1,4 +1,3 @@
-import { clone } from '../util/Element';
 import { addListeners } from '../util/Event';
 import * as Privy from '../util/Wrapper';
 import * as Property from './Property';
@@ -18,7 +17,7 @@ function getProperty(component, name) {
   const prop = Property.create(component, name);
   Object.defineProperty(component, name, {
     get: () => Property.get(prop, prop.v),
-    set: (value) => Property.set(prop, value, clone(prop.v))
+    set: (value) => Property.set(prop, value)
   });
   return prop;
 }

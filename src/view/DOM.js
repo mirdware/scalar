@@ -33,14 +33,9 @@ function removeNode(property, $node) {
   ) return;
   for (const key in property.pc.p_) {
     const prop = property.pc.p_[key];
-    clearElements($node, prop.n_);
-    clearElements($node, prop.a_);
+    prop.n_.delete($node);
+    prop.a_.delete($node);
   }
-}
-
-function clearElements($node, array) {
-  const index = array.findIndex((element) => element.$ === $node);
-  index !== -1 && array.splice(index, 1);
 }
 
 function removeNodes(property, $node) {

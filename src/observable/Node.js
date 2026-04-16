@@ -1,4 +1,4 @@
-import { setPropertyValue, getPropertyValue, clone } from '../util/Element';
+import { setPropertyValue, getPropertyValue } from '../util/Element';
 import * as Attribute from './Attribute';
 import * as Template from '../view/Template';
 /**
@@ -53,20 +53,20 @@ function evalValue({type, checked, value, files, selectedOptions}) {
   return value || null;
 }
 
-export function changeContent(property, value, state) {
+export function changeContent(property, value) {
   property.v = value;
-  queue.set(property, { v: value, s: state });
+  queue.set(property, value);
   if (!pending) {
     pending = 1;
     Promise.resolve().then(() => {
-      queue.forEach(({ v, s }, property) => {
-        property.n_.forEach((node) => {
-          execute(node, s, v);
-        });
+      queue.forEach((value, property) => {
+        property.n_.forEach(function(node){ execute(node, value) });
         property.a_.forEach((attr) => {
-          Attribute.execute(property, attr, v);
+          for (const name in attr) {
+            Attribute.execute(property, attr[name], value);
+          }
         });
-        property.c_.forEach(function (fn) { fn() });
+        property.c_.forEach(function(fn){ fn() });
       })
       queue.clear();
       pending = 0;
@@ -84,9 +84,8 @@ export function create(property, $node, prop) {
   if (isInput($node)) {
     const inputValue = evalValue($node);
     const changeHandler = function (e) {
-      const state = clone(property.v);
       setPropertyValue(property, prop, evalValue(e.target));
-      changeContent(property, property.v, state);
+      changeContent(property, property.v);
     };
     if (!$node.eventListenerList) {
       $node.eventListenerList = [];
@@ -119,13 +118,10 @@ export function create(property, $node, prop) {
   return { pn_: prop, $: $node, ct: complexType };
 }
 
-export function execute(node, state, value) {
+export function execute(node, value) {
   const { $: $node, ct: complexType, pn_: properties } = node;
   value = getPropertyValue(value, properties);
-  state = getPropertyValue(state, properties);
-  if (value !== state) {
-    complexType && value ?
-    Template.render(complexType, value) :
-    setValue($node, value, isInput($node) ? 'value' : 'innerText');
-  }
+  complexType && value ?
+  Template.render(complexType, value) :
+  setValue($node, value, isInput($node) ? 'value' : 'innerText');
 }

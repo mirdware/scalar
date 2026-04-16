@@ -24,10 +24,10 @@ function setAttribute($attribute, name, property) {
   }
 }
 
-export function create(property, name, $element, prop, exp) {
+export function create(property, name, $node, prop, exp) {
   const keys = name.split('.');
   const value = property.v;
-  let $attribute = $element;
+  let $attribute = $node;
   name = keys.pop();
   keys.forEach((k) => {
     $attribute = $attribute[k];
@@ -35,15 +35,14 @@ export function create(property, name, $element, prop, exp) {
       throw new Error(`Attribute ${k} not found`);
     }
   });
-  const attribute = { n: name, a: $attribute, $: $element, pn: prop, exp };
+  const attribute = { n: name, a: $attribute, $: $node, pn: prop, exp };
   exp || getPropertyValue(value, prop) ? execute(property, attribute, value) : setPropertyValue(property, prop, $attribute[name]);
   return attribute;
 }
 
 export function execute(property, attribute, value) {
-  const $element = attribute.$;
-  const name = attribute.n;
-  const { eventListenerList } = $element;
+  const { $: $node, n: name } = attribute;
+  const { eventListenerList } = $node;
   const privyComponent = property.pc;
   value = attribute.exp ?
   Function('p', 'return ' + attribute.exp)(property.c) :
@@ -52,7 +51,7 @@ export function execute(property, attribute, value) {
   if (eventListenerList && (name.indexOf('class') === 0 || name === 'id')) {
     while (eventListenerList.length) {
       const listener = eventListenerList.shift();
-      $element.removeEventListener(listener.name, listener.fn, listener.opt);
+      $node.removeEventListener(listener.name, listener.fn, listener.opt);
     }
     addListeners(privyComponent.$, privyComponent.e_);
   }
