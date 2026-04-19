@@ -1,15 +1,17 @@
 const MiniCSSExtractPlugin = require('mini-css-extract-plugin');
 
-module.exports = () => ({
+module.exports = (babelPlugins = []) => ({
   rules: [{
     test: /\.js$/,
     exclude: /node_modules/,
     use: {
       loader: 'babel-loader',
       options: {
+        cacheDirectory: false,
         presets: ['@babel/preset-env'],
         plugins: [
-          ["@babel/plugin-proposal-decorators", { "legacy" : true }]
+          ...babelPlugins,
+          ["@babel/plugin-proposal-decorators", { "legacy": true }]
         ]
       }
     }

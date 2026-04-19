@@ -7,6 +7,7 @@ import * as Template from '../view/Template';
  * @var {node.$} $node Elemento HTML que es encapsulado por el nodo
  * @var {node.pn_} propertyNames Nombres que componen el nombre del nodo?
  * @var {property.v} value Valor de la propiedad
+ * @var {property.c_} computeds Funciones computadas que dependen de la propiedad
  * @var {property.n_} nodes Elementos del dom que se controlan mediante la propiedad
  * @var {property.a_} attributes Atributos que controla la propiedad
  */

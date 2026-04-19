@@ -57,8 +57,6 @@ new Module()
 
 La ejecución del componente genera un `compound object`(Objeto compuesto) que contiene las propiedades enlazadas a la plantilla mediante `data-bind` y/o `data-attr`, este enlace varia de uno a doble sentido según sea el caso.
 
-Si estás construyendo una aplicación de una sola página (SPA) o cargando módulos dinámicamente, usa `module.dispose()`. Este método realiza una limpieza profunda: desvincula todos los listeners de eventos del DOM, elimina las referencias de memoria en los WeakMaps y destruye las instancias de los servicios, garantizando que el consumo de RAM de la pestaña se mantenga limpio al navegar.
-
 ```html
 <input type="text" value="scalar" data-bind="name" />
 <sc-hi data-attr="name:name">
@@ -68,6 +66,13 @@ Si estás construyendo una aplicación de una sola página (SPA) o cargando mód
 
 > [!NOTE]
 > Las expresiones JavaScript en `data-attr` también se evalúan mediante Function, por lo cual aplica la misma restricción CSP. Si solo se usan propiedades simples sin expresiones (data-attr="class:active") esta evaluación no ocurre.
+
+El framework gestiona automáticamente la limpieza de componentes mediante un `MutationObserver`: cuando un nodo con un componente es removido del DOM, se liberan sus event listeners y se invoca `onDestroy` si está definido.
+
+Si necesitas reasignar comportamiento a un selector o reiniciar el módulo, usa `module.dispose()`. Este método libera los componentes behavioral del módulo, invoca `onDestroy` en cada uno, y resetea el contenedor de dependencias, permitiendo que `execute()` corra nuevamente con un estado limpio.
+
+> [!WARNING]
+> `dispose()` no afecta web components — su registro en `customElements` es permanente por especificación. Solo los behavioral components pueden ser liberados y recompuestos.
 
 ### Servicios
 Los servicios en scalar desde la versión `0.3.4` son autowire y permiten las dependencias ciclicas, esto quiere decir que no se necesitan declarar dentro del modulo y que pueden depender entre sí (service A -> service B -> service A), si se usan en modulo simplemente se registran al mismo, se debe tener cuidado con esto, ya que es posible registrar el mismo servicio en diferentes modulos, creando instancias diferentes.
@@ -269,7 +274,7 @@ Scalar genera automáticamente propiedades reactivas al parsear el DOM mediante 
 
 Los métodos nativos de arrays y objetos (como `Array.indexOf`, `Array.find`, `Array.includes`, etc) funcionan de manera transparente aunque se utilicen Proxies como argumentos. El framework realiza un unwrapping automático (desenvuelve el Proxy al objeto real) antes de ejecutar la lógica nativa, garantizando la compatibilidad total con el estándar ECMAScript.
 
-Las computed properties son propiedades especiales del objeto conductual de solo lectura que se procesan cada vez que una propiedad enlazada a la `computed function` es modificada, estas deben establecerse como funciones al cargar el componente.
+Las computed properties son propiedades especiales del objeto conductual de solo lectura que se procesan cada vez que una propiedad enlazada a la `computed function` es modificada, estas deben establecerse como funciones de primer orden al cargar el componente, de primer orden quiere decir que si se establace un objeto, las funciones de este objeto no seran tratadas como computed properties, si no como métodos del objeto.
 
 ```javascript
 onInit(message) {
@@ -284,6 +289,26 @@ Las propiedades usadas dentro de la función **no deben ser modificadas**, solo 
 > El uso de `_` se usa como convención para propedades de solo lectura.
 
 Durante la evaluación de una computada, se accede a los objetos sin envoltorios Proxy. Esto evita el desbordamiento de la pila de llamadas (stack overflow) y permite que métodos como .`filter` o `.map` se ejecuten a velocidad nativa del motor de JavaScript.
+
+### Ciclo de vida
+
+El método `onInit` se ejecuta una vez cuando el componente es montado. Recibe las dependencias declaradas mediante `@inject` o `_providers` como parámetros. Es el lugar correcto para inicializar servicios, declarar computed properties y registrar recursos externos.
+
+El método `onDestroy` se invoca automáticamente cuando el nodo del componente es removido del DOM, o explícitamente cuando el módulo ejecuta `dispose()`. Es el lugar correcto para liberar recursos externos que el framework no puede gestionar automáticamente, como listeners en `document`, timers o conexiones.
+
+```javascript
+onInit() {
+  this._clickOutside = (e) => { if (e.target !== this) close(this); };
+  document.addEventListener('click', this._clickOutside);
+}
+
+onDestroy() {
+  document.removeEventListener('click', this._clickOutside);
+}
+```
+
+> [!TIP]
+> `onDestroy` no debe confundirse con `disconnectedCallback`. Este último es parte del estándar Web Components y puede dispararse múltiples veces durante el ciclo de vida del elemento (por ejemplo, al moverlo en el DOM). `onDestroy` se invoca una única vez, cuando el framework libera el componente de forma definitiva.
 
 ### Solapamiento de componentes
 El solapamiento (overloaping) se presenta cuando se define un componente sobre otro ya establecido.

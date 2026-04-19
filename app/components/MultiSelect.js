@@ -248,11 +248,16 @@ export default class MultiSelect extends Component {
     this.$select = this.shadowRoot.querySelector('select');
     this.$search = this.shadowRoot.querySelector('.search');
     this._data = this.checkList;
-    document.addEventListener('click', (e) => {
+    this.close = (e) => {
       if (e.target !== this) {
         close(this);
       }
-    });
+    };
+    document.addEventListener('click', this.close);
+  }
+
+  onDestroy() {
+    document.removeEventListener('click', this.close);
   }
 
   connectedCallback() {

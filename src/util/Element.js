@@ -6,13 +6,6 @@ function getObject(obj, props, value, index) {
   return obj;
 }
 
-export function clone(object) {
-  if (object instanceof Object) {
-    return JSON.parse(JSON.stringify(object));
-  }
-  return object;
-}
-
 export function generateUUID(obj) {
   const uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'
   .replace(/[xy]/g, (c) => {

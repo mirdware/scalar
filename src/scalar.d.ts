@@ -2,6 +2,7 @@ declare module 'scalar' {
     export class Component {
         [key: string]: any;
         onInit?(...providers: any[]): void;
+        onDestroy?(): void;
         /** @deprecated use onInit dependencies instead */
         inject<T>(provider: Class<T>): T;
         compose<T extends Component>($domElement: HTMLElement, component: Class<T>): T;

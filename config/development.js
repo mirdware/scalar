@@ -7,7 +7,6 @@ const MiniCSSExtractPlugin = require('mini-css-extract-plugin');
 
 module.exports = {
   entry: {
-    [config.name]: ['./src/' + config.name + '.js'],
     app: './app/app.js'
   },
   output: {
@@ -36,7 +35,7 @@ module.exports = {
       filename: './css/[name].min.css'
     })
   ],
-  module: require('./module')(),
+  module: require('./module')([require('./scalar-hmr-babel-plugin')]),
   optimization: require('./optimization')(),
   devServer: require('./dev-server')(),
   devtool: 'eval-source-map',

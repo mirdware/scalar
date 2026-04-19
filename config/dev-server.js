@@ -3,8 +3,8 @@ const port = process.env.port || 6969;
 module.exports = () => ({
   host: '0.0.0.0',
   allowedHosts: 'all',
-  hot:false,
-  liveReload: true,
+  hot: true,
+  liveReload: false,
   client: {
     webSocketURL: { port: 0 }
   },

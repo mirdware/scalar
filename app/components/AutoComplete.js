@@ -145,11 +145,16 @@ export default class AutoComplete extends Component {
   }
 
   onInit() {
-    document.addEventListener("click", (e) => {
+    this.close = (e) => {
       if (e.target !== this) {
         close(this);
       }
-    });
+    };
+    document.addEventListener("click", this.close);
+  }
+
+  onDestroy() {
+    document.removeEventListener("click", this.close);
   }
 
   listen = () => ({

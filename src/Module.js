@@ -3,6 +3,17 @@ import { clearEventListeners } from './util/Event';
 import * as Privy from './util/Wrapper';
 
 export const __components__ = new Map();
+const pendingRemoval = new Set();
+
+function mutateComponents(mutations, shouldRemove) {
+  for (const node of mutations) {
+    if (node.nodeType === 1) {
+      [node, ...node.querySelectorAll('[data-component],[data-webcomponent]')].forEach(($node) => {
+        shouldRemove ? pendingRemoval.delete($node) : pendingRemoval.add($node);
+      });
+    }
+  }
+}
 
 /**
  *
@@ -13,7 +24,7 @@ export const __components__ = new Map();
  */
 export default class Module {
   constructor() {
-    const properties = {C: new WeakMap(), i_: new WeakMap(), c_: [], m_: {},
+    const properties = {C: new Map(), i_: new Map(), c_: [], m_: {},
       inject: (provider) => {
         const instances = properties.i_;
         if (!instances.has(provider)) {
@@ -35,7 +46,7 @@ export default class Module {
   }
 
   compose(selector, behavioral) {
-    Privy.get(this).c_.push({ s: selector, b: behavioral, c_: [] });
+    Privy.get(this).c_.push({ s: selector, b: behavioral });
     if (process.env.NODE_ENV !== 'production') {
       if (!behavioral.moduleList) {
         behavioral.moduleList = [];
@@ -59,17 +70,15 @@ export default class Module {
   dispose() {
     const properties = Privy.get(this);
     properties.c_.forEach(wrapper => {
-      wrapper.c_.forEach(component => {
-        const compProps = Privy.get(component);
-        if (compProps?.$) {
-          clearEventListeners(compProps.$);
-          delete compProps.$.dataset.component;
-        }
-        Privy.remove(component);
+      document.querySelectorAll(wrapper.s).forEach(($node) => {
+        const uuid = $node.dataset.component;
+        if (!uuid) return;
+        clearEventListeners($node);
+        delete $node.dataset.component;
+        Privy.remove(__components__.get(uuid).c);
       });
     });
-    properties.i_ = new WeakMap();
-    properties.c_ = [];
+    properties.i_.clear();
   }
 
   execute() {
@@ -81,7 +90,7 @@ export default class Module {
         loader().then((mod) => mod.default.execute());
       }
     }
-    for (const { s: selector, b: behavioral, c_: components } of module.c_) {
+    for (const { s: selector, b: behavioral } of module.c_) {
       if (/^[a-z]+-/.test(selector)) {
         const options = {};
         if (behavioral.type) {
@@ -90,26 +99,49 @@ export default class Module {
         if (!customElements.get(selector)) {
           behavioral.m = module;
           customElements.define(selector, behavioral, options);
-          if (process.env.NODE_ENV !== 'production') {
-            document.querySelectorAll(selector).forEach((element) => {
-              element.shadowRoot.adoptedStyleSheets = [debug.sheet];
-              element.dataset.webcomponent = element.uuid;
-              __components__.set(element.uuid, {c: element, b: behavioral, s: selector});
-            });
-          }
+          document.querySelectorAll(selector).forEach((component) => {
+            __components__.set(component.uuid, { c: component, b: behavioral, s: selector });
+            component.dataset.webcomponent = component.uuid;
+            if (process.env.NODE_ENV !== 'production') {
+              component.shadowRoot.adoptedStyleSheets = [debug.sheet];
+            }
+          });
         }
       } else {
-        const $nodes = document.querySelectorAll(selector);
-        for (let i = 0, $node; $node = $nodes[i]; i++) {
+        document.querySelectorAll(selector).forEach(($node) => {
+          if ($node.dataset.component) {
+            if (process.env.NODE_ENV !== 'production') {
+              console.warn(`[Scalar] selector "${selector}" already composed on`, $node);
+            }
+            return;
+          }
           const component = compose($node, behavioral, module);
-          components.push(component);
           $node.dataset.component = component.uuid;
-          __components__.set(component.uuid, {c: component, b: behavioral, s: selector});
-        }
+          __components__.set(component.uuid, { c: component, b: behavioral, s: selector });
+        });
       }
     }
   }
 }
+
+const observer = new MutationObserver((mutations) => {
+  for (const mutation of mutations) {
+    mutateComponents(mutation.removedNodes, 0);
+    mutateComponents(mutation.addedNodes, 1);
+  }
+  Promise.resolve().then(() => {
+    pendingRemoval.forEach(($node) => {
+      const { dataset } = $node;
+      const uuid = dataset.component || dataset.webcomponent;
+      if (!uuid) return;
+      clearEventListeners($node);
+      Privy.remove(__components__.get(uuid).c);
+    });
+    pendingRemoval.clear();
+  });
+});
+
+observer.observe(document.body, { childList: true, subtree: true });
 
 if (process.env.NODE_ENV !== 'production') {
   window.addEventListener('scalar-hmr-update', (e) => {
@@ -122,32 +154,33 @@ if (process.env.NODE_ENV !== 'production') {
         const element = module.c_.find(element => element.b === _old);
         if (element) {
           if (/^[a-z]+-/.test(element.s)) {
-            Object.getOwnPropertyNames(_new.prototype).forEach(key => {
-              if (key !== 'constructor') {
-                Object.defineProperty(_old.prototype, key, Object.getOwnPropertyDescriptor(_new.prototype, key));
-              }
-            });
             document.querySelectorAll(element.s).forEach(component => {
               const props = Privy.get(component);
+              component.onDestroy?.();
+              Object.getOwnPropertyNames(_new.prototype).forEach(key => {
+                if (key !== 'constructor') {
+                  Object.defineProperty(
+                    Object.getPrototypeOf(component),
+                    key,
+                    Object.getOwnPropertyDescriptor(_new.prototype, key)
+                  );
+                }
+              });
               clearEventListeners(props.$);
               props.e_ = component.listen ? component.listen() : {};
-              props.p_ = {};
               Object.assign(component.constructor, _new);
               component.onInit();
             });
           } else {
-            for (let index = element.c_.length - 1, oldComponent; oldComponent = element.c_[index]; index--) {
-              const $component = document.querySelector(`[data-component="${oldComponent.uuid}"]`);
-              if (!$component) continue;
+            document.querySelectorAll(element.s).forEach($component => {
+              const oldUuid = $component.dataset.component;
               clearEventListeners($component);
+              Privy.remove(__components__.get(oldUuid).c);
               const component = compose($component, _new, module);
-              element.c_.splice(index, 1);
-              element.c_.push(component);
               $component.dataset.component = component.uuid;
-              Privy.remove(oldComponent);
               __components__.set(component.uuid, { c: component, b: _new, s: element.s });
-              console.log(`[HMR] updated component ${oldComponent.uuid} to ${component.uuid}`);
-            }
+              console.log(`[HMR] updated component ${oldUuid} to ${component.uuid}`);
+            });
           }
           element.b = _new;
         }
@@ -159,11 +192,7 @@ if (process.env.NODE_ENV !== 'production') {
         Privy.remove(_old);
         console.log(`[HMR] updated module ${_old.uuid} to ${_new.uuid}`);
       } else{
-        Object.defineProperty(_new, 'uuid', {
-          value: _old.uuid,
-          configurable: false,
-          writable: false
-        });
+        Object.defineProperty(_new, 'uuid', { value: _old.uuid });
         console.log(`[HMR] provider ${_old.uuid} replaced`);
       }
     }
