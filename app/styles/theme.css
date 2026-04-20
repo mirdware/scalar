@@ -12,6 +12,16 @@ section {
   vertical-align: top;
 }
 
+#control {
+  vertical-align: middle;
+  cursor: pointer;
+  background-color: #f58731;
+  color: #FFF;
+  border: none;
+  padding: .5em 1em;
+  border-radius: .5em;
+}
+
 #square {
   width: 200px;
   height: 200px;

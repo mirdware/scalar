@@ -5,14 +5,21 @@ import * as Privy from './util/Wrapper';
 export const __components__ = new Map();
 const pendingRemoval = new Set();
 
-function mutateComponents(mutations, shouldRemove) {
+function mutateComponents(mutations, cancelCleanup) {
   for (const node of mutations) {
     if (node.nodeType === 1) {
       [node, ...node.querySelectorAll('[data-component],[data-webcomponent]')].forEach(($node) => {
-        shouldRemove ? pendingRemoval.delete($node) : pendingRemoval.add($node);
+        cancelCleanup ? pendingRemoval.delete($node) : pendingRemoval.add($node);
       });
     }
   }
+}
+
+function removeComponent($node, uuid) {
+  $node.dispatchEvent(new Event('unmount'));
+  clearEventListeners($node);
+  delete $node.dataset.component;
+  Privy.remove(__components__.get(uuid).c);
 }
 
 /**
@@ -73,9 +80,7 @@ export default class Module {
       document.querySelectorAll(wrapper.s).forEach(($node) => {
         const uuid = $node.dataset.component;
         if (!uuid) return;
-        clearEventListeners($node);
-        delete $node.dataset.component;
-        Privy.remove(__components__.get(uuid).c);
+        removeComponent($node, uuid);
       });
     });
     properties.i_.clear();
@@ -111,7 +116,7 @@ export default class Module {
         document.querySelectorAll(selector).forEach(($node) => {
           if ($node.dataset.component) {
             if (process.env.NODE_ENV !== 'production') {
-              console.warn(`[Scalar] selector "${selector}" already composed on`, $node);
+              console.warn(`Selector "${selector}" already composed on`, $node);
             }
             return;
           }
@@ -134,8 +139,7 @@ const observer = new MutationObserver((mutations) => {
       const { dataset } = $node;
       const uuid = dataset.component || dataset.webcomponent;
       if (!uuid) return;
-      clearEventListeners($node);
-      Privy.remove(__components__.get(uuid).c);
+      removeComponent($node, uuid);
     });
     pendingRemoval.clear();
   });

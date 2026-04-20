@@ -50,6 +50,7 @@ declare module 'scalar' {
 
     export interface BehavioralObject {
         mount?: (e: Event) => void | boolean;
+        unmount?: (e: Event) => void | boolean;
         mutate?: (e: Event) => void | boolean;
         [key: string]: ((e: Event, context?: any) => void | boolean) | BehavioralObject | any;
     }

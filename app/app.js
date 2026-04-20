@@ -14,4 +14,15 @@ history.pushState = function(state, title, url) {
 window.addEventListener('pushstate', () => mainModule.execute());
 window.addEventListener('popstate', () => mainModule.execute());
 
+document.getElementById('control').addEventListener('click', (e) => {
+  const { target } = e;
+  if (target.textContent === 'Enable') {
+    target.textContent = 'Disable';
+    mainModule.execute();
+  } else {
+    target.textContent = 'Enable';
+    mainModule.dispose();
+  }
+});
+
 mainModule.execute();

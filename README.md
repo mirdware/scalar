@@ -229,11 +229,16 @@ return {
 ```
 
 > [!TIP]
-> Se recomienda usar atributos `data-action` como selectores en el objeto conductual en lugar de clases o IDs, separando así el comportamiento del estilo: { '[data-action="save"]': { click: save } }.
+> Se recomienda usar atributos `data-action` como selectores en el objeto conductual en lugar de clases o IDs, separando así el comportamiento del estilo: `{ '[data-action="save"]': { click: save } }`.
 
 El evento `mount` es ejecutado tan pronto inicia el componente y cualquier cambio que se realice dentro de este hace parte del estado inicial por lo cual es ideal para enlazar propiedades y servicios.
 
-Aparte de mount existe el evento especial `mutate` el cual notifica cuando un elemento del componente ha sido modificado, para escuchar el evento se debe enlazar al elemento que se transformara con la mutación de la propiedad. Este es el momento perfecto para que el desarrollador integre librerías de terceros (por ejemplo, si Scalar inyecta un input, el usuario puede escuchar mutate para inicializar un DatePicker sobre ese nuevo HTML).
+El evento `mutate` notifica cuando un elemento del componente ha sido modificado, para escuchar el evento se debe enlazar al elemento que se transformara con la mutación de la propiedad. Este es el momento perfecto para que el desarrollador integre librerías de terceros (por ejemplo, si se inyecta un input, el usuario puede escuchar mutate para inicializar un DatePicker sobre ese nuevo HTML).
+
+El evento `unmount` es el complemento de mount y se ejecuta justo antes de que el componente sea liberado, ya sea porque su nodo fue removido del DOM o porque el módulo ejecutó `dispose()`. Es el lugar correcto para liberar recursos externos que el componente haya adquirido durante su ciclo de vida, como listeners en document, timers o suscripciones. Para los componentes basados en clases el equivalente es `onDestroy`.
+
+>[!TIP]
+>mount y unmount son los equivalentes funcionales de onInit y onDestroy. En componentes de clase ambos mecanismos pueden coexistir: unmount/mount se dispara antes que onDestroy/onInit, por lo que el orden de ejecución es determinista. Evita usar el mismo recurso en ambos lugares.
 
 ```javascript
 return {
