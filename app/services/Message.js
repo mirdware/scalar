@@ -1,11 +1,11 @@
-const listeners = [];
-
 export default class Message {
+    #listeners = [];
+
     emit(msg) {
-        listeners.forEach((listener) => listener(msg));
+        this.#listeners.forEach((listener) => listener(msg));
     }
 
     listen(fn) {
-        listeners.push(fn);
+        this.#listeners.push(fn);
     }
 }

@@ -2,6 +2,8 @@ import './styles/theme.css';
 import mainModule from './main-module';
 
 const originalPushState = history.pushState;
+const $control = document.getElementById('control');
+
 history.pushState = function(state, title, url) {
   const result = originalPushState.apply(history, arguments);
   const event = new Event('pushstate');
@@ -14,13 +16,14 @@ history.pushState = function(state, title, url) {
 window.addEventListener('pushstate', () => mainModule.execute());
 window.addEventListener('popstate', () => mainModule.execute());
 
-document.getElementById('control').addEventListener('click', (e) => {
-  const { target } = e;
-  if (target.textContent === 'Enable') {
-    target.textContent = 'Disable';
+$control.addEventListener('click', () => {
+  if ($control.textContent === 'Enable') {
+    $control.className = '';
+    $control.textContent = 'Disable';
     mainModule.execute();
   } else {
-    target.textContent = 'Enable';
+    $control.className = 'disabled';
+    $control.textContent = 'Enable';
     mainModule.dispose();
   }
 });

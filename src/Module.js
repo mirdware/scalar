@@ -1,9 +1,16 @@
 import { compose } from './observable/Component';
 import { clearEventListeners } from './util/Event';
 import * as Privy from './util/Wrapper';
-
+/**
+ *
+ * @var {module.c_} components Componentes generados por el módulo
+ * @var {module.C} classes Clases provistas para el contenedor de dependencias
+ * @var {module.i_} instances Objetos creados por el contenedor de dependencias
+ * @var {module.m_} modules Loaders para cargar modulos dinamicos
+ */
 export const __components__ = new Map();
 const pendingRemoval = new Set();
+const resolving = new Set();
 
 function mutateComponents(mutations, cancelCleanup) {
   for (const node of mutations) {
@@ -16,36 +23,38 @@ function mutateComponents(mutations, cancelCleanup) {
 }
 
 function removeComponent($node, uuid) {
-  $node.dispatchEvent(new Event('unmount'));
+  ($node.shadowRoot || $node).dispatchEvent(new Event('unmount'));
   clearEventListeners($node);
   delete $node.dataset.component;
   Privy.remove(__components__.get(uuid).c);
 }
 
-/**
- *
- * @var {module.c_} components Componentes generados por el módulo
- * @var {module.C} classes Clases provistas para el contenedor de dependencias
- * @var {module.i_} instances Objetos creados por el contenedor de dependencias
- * @var {module.m_} modules Loaders para cargar modulos dinamicos
- */
 export default class Module {
   constructor() {
     const properties = {C: new Map(), i_: new Map(), c_: [], m_: {},
       inject: (provider) => {
         const instances = properties.i_;
-        if (!instances.has(provider)) {
-          if (properties.C.has(provider)) {
-            provider = properties.C.get(provider);
+        if (properties.C.has(provider)) {
+          provider = properties.C.get(provider);
+        }
+        if (process.env.NODE_ENV !== 'production') {
+          if (!provider || resolving.has(provider)) {
+            const chain = [...resolving].map(p => p.name).join(' → ');
+            if (provider) {
+              throw new Error(`Circular dependency detected while resolving: ${chain} → ${provider.name}`);
+            }
+            throw new Error(`A provider is undefined while resolving: ${chain} → undefined. This is likely caused by a circular import between modules`);
           }
-          const payload = {};
-          instances.set(provider, payload);
+          resolving.add(provider);
+        }
+        if (!instances.has(provider)) {
           const tokens = provider._providers || [];
           const dependencies = tokens.map(token => properties.inject(token));
-          const instance = new provider(...dependencies);
-          Object.setPrototypeOf(payload, Object.getPrototypeOf(instance));
-          Object.defineProperties(payload, Object.getOwnPropertyDescriptors(instance));
+          instances.set(provider, new provider(...dependencies));
         };
+        if (process.env.NODE_ENV !== 'production') {
+          resolving.delete(provider);
+        }
         return instances.get(provider);
       }
     };

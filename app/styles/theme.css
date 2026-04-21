@@ -22,6 +22,10 @@ section {
   border-radius: .5em;
 }
 
+#control.disabled {
+  background-color: #009c44;
+}
+
 #square {
   width: 200px;
   height: 200px;

@@ -48,19 +48,25 @@ export default class Greeting extends Component {
     this.name = '';
   }
 
+  onInit() {
+    console.log(this.name + ' initialized');
+  }
+
   onDestroy() {
     console.log(this.name + ' destroyed');
   }
 
   listen() {
     return {
+      mount: () => console.log(this.name + ' mounted'),
+      unmount: () => console.log(this.name + ' unmounted'),
       'a': { _click: () => alert("Hola " + this.name) },
       'div': {
         _click: () => {
           const { host } = this.shadowRoot;
           host.parentNode.removeChild(host);
         }
-        }
+      }
     };
   }
 }

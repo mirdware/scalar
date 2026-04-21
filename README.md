@@ -75,9 +75,7 @@ Si necesitas reasignar comportamiento a un selector o reiniciar el módulo, usa 
 > `dispose()` no afecta web components — su registro en `customElements` es permanente por especificación. Solo los behavioral components pueden ser liberados y recompuestos.
 
 ### Servicios
-Los servicios en scalar desde la versión `0.3.4` son autowire y permiten las dependencias ciclicas, esto quiere decir que no se necesitan declarar dentro del modulo y que pueden depender entre sí (service A -> service B -> service A), si se usan en modulo simplemente se registran al mismo, se debe tener cuidado con esto, ya que es posible registrar el mismo servicio en diferentes modulos, creando instancias diferentes.
-
-El servicio es inyectado mediante el método inject del compound object o de la función enviada a cada servicio, pudiendo solucionar incluso dependencias ciclicas en actuales versiones de la libreria.
+Los servicios en scalar desde la versión `0.3.4` son autowire, esto quiere decir que no se necesitan declarar dentro del módulo. Si dos servicios necesitan comunicarse entre sí, el patrón recomendado es un tercer servicio de tipo EventBus. El servicio es inyectado mediante el método inject del compound object o de la función enviada a cada servicio.
 
 ```javascript
 import Logger from './logger';

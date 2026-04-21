@@ -61,7 +61,9 @@ export function changeContent(property, value) {
     pending = 1;
     Promise.resolve().then(() => {
       queue.forEach((value, property) => {
-        property.n_.forEach(function(node){ execute(node, value) });
+        property.n_.forEach((node) => {
+          execute(property, node, value);
+        });
         property.a_.forEach((attr) => {
           for (const name in attr) {
             Attribute.execute(property, attr[name], value);
@@ -119,8 +121,11 @@ export function create(property, $node, prop) {
   return { pn_: prop, $: $node, ct: complexType };
 }
 
-export function execute(node, value) {
+export function execute(property, node, value) {
   const { $: $node, ct: complexType, pn_: properties } = node;
+  if (!$node.isConnected) {
+    return property.n_.delete($node);
+  }
   value = getPropertyValue(value, properties);
   complexType && value ?
   Template.render(complexType, value) :

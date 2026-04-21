@@ -44,6 +44,9 @@ export function execute(property, attribute, value) {
   const { $: $node, n: name } = attribute;
   const { eventListenerList } = $node;
   const privyComponent = property.pc;
+  if (!$node.isConnected) {
+    return property.a_.delete($node);
+  }
   value = attribute.exp ?
   Function('p', 'return ' + attribute.exp)(property.c) :
   getPropertyValue(value, attribute.pn);

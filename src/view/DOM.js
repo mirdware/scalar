@@ -24,17 +24,12 @@ function updateProps(property, $target, newProps, oldProps) {
 
 function removeNode(property, $node) {
   const { dataset } = $node;
-  if (
-    $node.nodeType === 3 ||
-    $node.tagName === 'SCRIPT' ||
-    !dataset ||
-    (!dataset.bind &&
-    !dataset.attr)
-  ) return;
-  for (const key in property.pc.p_) {
-    const prop = property.pc.p_[key];
-    prop.n_.delete($node);
-    prop.a_.delete($node);
+  if (dataset && (dataset.bind || dataset.attr)) {
+    for (const key in property.pc.p_) {
+      const prop = property.pc.p_[key];
+      prop.n_.delete($node);
+      prop.a_.delete($node);
+    }
   }
 }
 
@@ -52,6 +47,7 @@ function updateElement(property, $parent, $newNode, $oldNode, index) {
   if (!$oldNode) {
     $parent.appendChild($newNode);
   } else if (!$newNode) {
+    if ($oldNode.type === 'text/template') return;
     $parent.removeChild($oldNode);
     removeNodes(property, $oldNode);
     clearEventListeners($oldNode);
