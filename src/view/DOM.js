@@ -25,8 +25,9 @@ function updateProps(property, $target, newProps, oldProps) {
 function removeNode(property, $node) {
   const { dataset } = $node;
   if (dataset && (dataset.bind || dataset.attr)) {
-    for (const key in property.pc.p_) {
-      const prop = property.pc.p_[key];
+    const { p_: properties } = property.pc;
+    for (const key in properties) {
+      const prop = properties[key];
       prop.n_.delete($node);
       prop.a_.delete($node);
     }
@@ -40,6 +41,7 @@ function removeNodes(property, $node) {
     removeNode(property, $child);
   }
   removeNode(property, $node);
+  clearEventListeners($node);
 }
 
 function updateElement(property, $parent, $newNode, $oldNode, index) {
@@ -47,10 +49,8 @@ function updateElement(property, $parent, $newNode, $oldNode, index) {
   if (!$oldNode) {
     $parent.appendChild($newNode);
   } else if (!$newNode) {
-    if ($oldNode.type === 'text/template') return;
     $parent.removeChild($oldNode);
     removeNodes(property, $oldNode);
-    clearEventListeners($oldNode);
   } else if (
     $newNode.nodeType !== $oldNode.nodeType ||
     $newNode.nodeType === 3 && $newNode.nodeValue !== $oldNode.nodeValue ||

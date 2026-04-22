@@ -1,5 +1,5 @@
 import { setPropertyValue, getPropertyValue } from '../util/Element';
-import { addListeners } from '../util/Event';
+import { addListeners, clearEventListeners } from '../util/Event';
 /**
  *
  * @var {attribute.n} name Nombre del atributo
@@ -42,7 +42,6 @@ export function create(property, name, $node, prop, exp) {
 
 export function execute(property, attribute, value) {
   const { $: $node, n: name } = attribute;
-  const { eventListenerList } = $node;
   const privyComponent = property.pc;
   if (!$node.isConnected) {
     return property.a_.delete($node);
@@ -51,11 +50,8 @@ export function execute(property, attribute, value) {
   Function('p', 'return ' + attribute.exp)(property.c) :
   getPropertyValue(value, attribute.pn);
   setAttribute(attribute.a, name, value);
-  if (eventListenerList && (name.indexOf('class') === 0 || name === 'id')) {
-    while (eventListenerList.length) {
-      const listener = eventListenerList.shift();
-      $node.removeEventListener(listener.name, listener.fn, listener.opt);
-    }
+  if (name.indexOf('class') === 0 || name === 'id') {
+    clearEventListeners($node, 1);
     addListeners(privyComponent.$, privyComponent.e_);
   }
 }

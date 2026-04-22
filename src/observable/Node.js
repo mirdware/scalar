@@ -1,6 +1,7 @@
 import { setPropertyValue, getPropertyValue } from '../util/Element';
-import * as Attribute from './Attribute';
+import { changeContent } from './Property';
 import * as Template from '../view/Template';
+import { addListeners } from '../util/Event';
 /**
  *
  * @var {node.ct} complexType Define cuando una propiedad es un array
@@ -11,9 +12,6 @@ import * as Template from '../view/Template';
  * @var {property.n_} nodes Elementos del dom que se controlan mediante la propiedad
  * @var {property.a_} attributes Atributos que controla la propiedad
  */
-const queue = new Map();
-let pending;
-
 function isInput({ nodeName }) {
   return nodeName === 'INPUT' || nodeName === 'TEXTAREA' || nodeName === 'SELECT';
 }
@@ -54,30 +52,6 @@ function evalValue({type, checked, value, files, selectedOptions}) {
   return value || null;
 }
 
-export function changeContent(property, value) {
-  property.v = value;
-  queue.set(property, value);
-  if (!pending) {
-    pending = 1;
-    Promise.resolve().then(() => {
-      queue.forEach((value, property) => {
-        property.n_.forEach((node) => {
-          execute(property, node, value);
-        });
-        property.a_.forEach((attr) => {
-          for (const name in attr) {
-            Attribute.execute(property, attr[name], value);
-          }
-        });
-        property.c_.forEach(function(fn){ fn() });
-      })
-      queue.clear();
-      pending = 0;
-    });
-  }
-  return true;
-}
-
 export function create(property, $node, prop) {
   let value = property.v;
   let complexType = null;
@@ -90,15 +64,10 @@ export function create(property, $node, prop) {
       setPropertyValue(property, prop, evalValue(e.target));
       changeContent(property, property.v);
     };
-    if (!$node.eventListenerList) {
-      $node.eventListenerList = [];
-    }
     if (!['date', 'time', 'month', 'week', 'datetime-local'].includes($node.type)) {
-      $node.addEventListener('keyup', changeHandler);
-      $node.eventListenerList.push({ name: 'keyup', fn: changeHandler, opt: false });
+      addListeners($node, { keyup: changeHandler });
     }
-    $node.addEventListener('change', changeHandler);
-    $node.eventListenerList.push({ name: 'change', fn: changeHandler, opt: false });
+    addListeners($node, { change: changeHandler });
     if (inputValue === null) {
       setValue($node, value, 'value');
     } else {

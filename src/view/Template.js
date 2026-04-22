@@ -6,6 +6,7 @@ import { updateNodes } from './DOM';
  *
  * @var {template.p} property Propiedad que contiene la plantilla
  * @var {template.$} $node Elemento HTML que sera renderizado por la plantilla
+ * @var {template.$t} $template Plantilla como elemento HTML
  * @var {template.t} template Plantilla a renderizar
  * @var {template.ip} isParing Valida si la platilla de debe emparejar
  * @var {template.b} base Plantilla base?
@@ -22,16 +23,22 @@ function populateContext($node, property, value) {
   }
 }
 
-export function create(property, $node, $template) {
-  const normalize = (str) => str
+function normalize(str) {
+  return str
   .replace(/\s+/g, ' ')
   .replace(/<\s/g, '<')
   .replace(/\s?\/?\s?>/g, '>');
+}
+
+export function create(property, $node, $template) {
+  const template = normalize($template.innerHTML);
   return {
     p: property,
     $: $node,
+    $t: $template,
     ip: $template.hasAttribute('data-pairing'),
-    t: normalize($template.innerHTML),
+    t: template,
+    f: Function('data,index', 'return `' + template + '`'),
     b: normalize($node.innerHTML.replace($template.outerHTML, ''))
   };
 }
@@ -66,8 +73,8 @@ export function getValue(template) {
 export function render(template, param) {
   param = param?.forEach ? Array.from(param) : param != null ? [param] : [];
   const { $: $node, p: property } = template;
-  const fn = Function('data,index', 'return `' + template.t + '`');
-  const $fragment = createFragment(param.map(fn).join(''));
+  const $fragment = createFragment(param.map(template.f).join(''));
+  $fragment.appendChild(template.$t);
   populateContext($fragment, property, param);
   updateNodes(property, $node, $fragment);
   $node.dispatchEvent(new Event('mutate'));

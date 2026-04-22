@@ -19,6 +19,8 @@ import { __components__ } from '../Module';
  * @var {component.pc} privateComponent Propiedades privadas del componente
  */
 const proxies = new WeakMap();
+const queue = new Map();
+let pending;
 let computedTracking;
 
 function addOverlap(component, property, name) {
@@ -47,6 +49,30 @@ function findComponent(property, $node, name) {
     }
     findComponent(property, $node.parentNode, name);
   }
+}
+
+export function changeContent(property, value) {
+  property.v = value;
+  queue.set(property, value);
+  if (!pending) {
+    pending = 1;
+    Promise.resolve().then(() => {
+      queue.forEach((value, property) => {
+        property.n_.forEach((node) => {
+          Node.execute(property, node, value);
+        });
+        property.a_.forEach((attr) => {
+          for (const name in attr) {
+            Attribute.execute(property, attr[name], value);
+          }
+        });
+        property.c_.forEach(function(fn){ fn() });
+      })
+      queue.clear();
+      pending = 0;
+    });
+  }
+  return true;
 }
 
 export function create(component, name) {
@@ -130,10 +156,10 @@ export function set(property, value) {
     property.f = value;
     property.v = value = executeComputed();
     property.d_ = deps;
-    property.cb = () => Node.changeContent(property, executeComputed());
+    property.cb = () => changeContent(property, executeComputed());
     deps.forEach(function (dep) { dep.c_.add(property.cb) });
   }
-  return Node.changeContent(property, value);
+  return changeContent(property, value);
 }
 
 export function addNode(property, $node, prop) {

@@ -140,7 +140,7 @@ export default class Module {
 
 const observer = new MutationObserver((mutations) => {
   for (const mutation of mutations) {
-    mutateComponents(mutation.removedNodes, 0);
+    mutateComponents(mutation.removedNodes);
     mutateComponents(mutation.addedNodes, 1);
   }
   Promise.resolve().then(() => {
