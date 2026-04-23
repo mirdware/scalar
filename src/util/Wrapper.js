@@ -22,7 +22,6 @@ export function get(object) {
 export function remove(object) {
   const { uuid } = object;
   if (uuid) {
-    object.onDestroy?.();
     __components__.delete(uuid);
   }
   correlation.delete(object);

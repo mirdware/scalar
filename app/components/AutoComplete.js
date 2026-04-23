@@ -14,7 +14,7 @@ function search(e, $) {
     values.length = $.maxItems;
   }
   $._values = values;
-  $._timeout = setTimeout(() => $.dispatchEvent(new CustomEvent('changed', {
+  $._timeout = setTimeout(() => $.shadowRoot.host.dispatchEvent(new CustomEvent('changed', {
     detail: value
   })), 200);
 }
@@ -23,7 +23,7 @@ function selectItem(item, $) {
   $.value = item.value;
   $._index = item.index;
   $._values = [];
-  $.dispatchEvent(new CustomEvent('selected', {
+  $.shadowRoot.host.dispatchEvent(new CustomEvent('selected', {
     detail: JSON.parse(JSON.stringify($.data[$._index]))
   }));
 }
@@ -131,6 +131,8 @@ function getValue(data, label) {
   `
 })
 export default class AutoComplete extends Component {
+  #closeController = new AbortController();
+
   constructor() {
     super();
     this._currentFocus = -1;
@@ -145,26 +147,30 @@ export default class AutoComplete extends Component {
   }
 
   onInit() {
-    this.close = (e) => {
-      if (e.target !== this) {
+    document.addEventListener("click", (e) => {
+      if (e.target !== this.shadowRoot.host) {
         close(this);
       }
-    };
-    document.addEventListener("click", this.close);
+    }, {
+      passive: true,
+      signal: this.#closeController.signal
+    });
   }
 
   onDestroy() {
-    document.removeEventListener("click", this.close);
+    this.#closeController.abort();
   }
 
   listen = () => ({
+    mount: () => this.onInit(),
+    unmount: () => this.onDestroy(),
     'input': {
       input: (e) => search(e, this),
       search: () => this.value = '',
       blur: () => {
         if (!this.value && this._index !== -1) {
           this._index = -1;
-          this.dispatchEvent(new CustomEvent('selected'));
+          this.shadowRoot.host.dispatchEvent(new CustomEvent('selected'));
         }
         setTimeout(() => close(this), 150);
       },

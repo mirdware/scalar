@@ -67,9 +67,9 @@ La ejecución del componente genera un `compound object`(Objeto compuesto) que c
 > [!NOTE]
 > Las expresiones JavaScript en `data-attr` también se evalúan mediante Function, por lo cual aplica la misma restricción CSP. Si solo se usan propiedades simples sin expresiones (data-attr="class:active") esta evaluación no ocurre.
 
-El framework gestiona automáticamente la limpieza de componentes mediante un `MutationObserver`: cuando un nodo con un componente es removido del DOM, se liberan sus event listeners y se invoca `onDestroy` si está definido.
+El framework gestiona automáticamente la limpieza de componentes mediante un `MutationObserver`: cuando un nodo con un componente es removido del DOM, se liberan sus event listeners y se dispara el evento `unmount`.
 
-Si necesitas reasignar comportamiento a un selector o reiniciar el módulo, usa `module.dispose()`. Este método libera los componentes behavioral del módulo, invoca `onDestroy` en cada uno, y resetea el contenedor de dependencias, permitiendo que `execute()` corra nuevamente con un estado limpio.
+Si necesitas reasignar comportamiento a un selector o reiniciar el módulo, usa `module.dispose()`. Este método libera los componentes behavioral del módulo, dispara `unmount` en cada uno, y resetea el contenedor de dependencias, permitiendo que `execute()` corra nuevamente con un estado limpio.
 
 > [!WARNING]
 > `dispose()` no afecta web components — su registro en `customElements` es permanente por especificación. Solo los behavioral components pueden ser liberados y recompuestos.
@@ -118,7 +118,7 @@ class Service {
 }
 ```
 
-Para usarse en `behavioral functions` se usa como decorador de la función y se inyectan como argumentos despues del objecto compuesto, en el caso de los componentes por clases se usa siempre el método `onInit` en vez de el constructor.
+Para usarse en `behavioral functions` se usa como decorador de la función y se inyectan como argumentos despues del objecto compuesto.
 
 ```javascript
 import { inject } from 'scalar';
@@ -233,10 +233,9 @@ El evento `mount` es ejecutado tan pronto inicia el componente y cualquier cambi
 
 El evento `mutate` notifica cuando un elemento del componente ha sido modificado, para escuchar el evento se debe enlazar al elemento que se transformara con la mutación de la propiedad. Este es el momento perfecto para que el desarrollador integre librerías de terceros (por ejemplo, si se inyecta un input, el usuario puede escuchar mutate para inicializar un DatePicker sobre ese nuevo HTML).
 
-El evento `unmount` es el complemento de mount y se ejecuta justo antes de que el componente sea liberado, ya sea porque su nodo fue removido del DOM o porque el módulo ejecutó `dispose()`. Es el lugar correcto para liberar recursos externos que el componente haya adquirido durante su ciclo de vida, como listeners en document, timers o suscripciones. Para los componentes basados en clases el equivalente es `onDestroy`.
+El evento `unmount` es el complemento de mount y se ejecuta justo antes de que el componente sea liberado, ya sea porque su nodo fue removido del DOM o porque el módulo ejecutó `dispose()`. Es el lugar correcto para liberar recursos externos que el componente haya adquirido durante su ciclo de vida, como listeners en document, timers o suscripciones.
 
->[!TIP]
->mount y unmount son los equivalentes funcionales de onInit y onDestroy. En componentes de clase ambos mecanismos pueden coexistir: unmount/mount se dispara antes que onDestroy/onInit, por lo que el orden de ejecución es determinista. Evita usar el mismo recurso en ambos lugares.
+Los eventos mount, unmount y mutate se despachan con bubbles: true y composed: true, por lo que atraviesan shadow boundaries y burbujean hacia el árbol del documento. Es posible observarlos desde un componente padre o desde una referencia externa a un elemento interno del shadow DOM.
 
 ```javascript
 return {
@@ -280,9 +279,13 @@ Los métodos nativos de arrays y objetos (como `Array.indexOf`, `Array.find`, `A
 Las computed properties son propiedades especiales del objeto conductual de solo lectura que se procesan cada vez que una propiedad enlazada a la `computed function` es modificada, estas deben establecerse como funciones de primer orden al cargar el componente, de primer orden quiere decir que si se establace un objeto, las funciones de este objeto no seran tratadas como computed properties, si no como métodos del objeto.
 
 ```javascript
-onInit(message) {
-  this._total = () => this.tasks.length;
-  this._pending = () => this.tasks.filter(task => !task.checked).length;
+listen() {
+  return {
+    mount: () => {
+      this._total = () => this.tasks.length;
+      this._pending = () => this.tasks.filter(task => !task.checked).length;
+    }
+  };
 }
 ```
 
@@ -292,26 +295,6 @@ Las propiedades usadas dentro de la función **no deben ser modificadas**, solo 
 > El uso de `_` se usa como convención para propedades de solo lectura.
 
 Durante la evaluación de una computada, se accede a los objetos sin envoltorios Proxy. Esto evita el desbordamiento de la pila de llamadas (stack overflow) y permite que métodos como .`filter` o `.map` se ejecuten a velocidad nativa del motor de JavaScript.
-
-### Ciclo de vida
-
-El método `onInit` se ejecuta una vez cuando el componente es montado. Recibe las dependencias declaradas mediante `@inject` o `_providers` como parámetros. Es el lugar correcto para inicializar servicios, declarar computed properties y registrar recursos externos.
-
-El método `onDestroy` se invoca automáticamente cuando el nodo del componente es removido del DOM, o explícitamente cuando el módulo ejecuta `dispose()`. Es el lugar correcto para liberar recursos externos que el framework no puede gestionar automáticamente, como listeners en `document`, timers o conexiones.
-
-```javascript
-onInit() {
-  this._clickOutside = (e) => { if (e.target !== this) close(this); };
-  document.addEventListener('click', this._clickOutside);
-}
-
-onDestroy() {
-  document.removeEventListener('click', this._clickOutside);
-}
-```
-
-> [!TIP]
-> `onDestroy` no debe confundirse con `disconnectedCallback`. Este último es parte del estándar Web Components y puede dispararse múltiples veces durante el ciclo de vida del elemento (por ejemplo, al moverlo en el DOM). `onDestroy` se invoca una única vez, cuando el framework libera el componente de forma definitiva.
 
 ### Solapamiento de componentes
 El solapamiento (overloaping) se presenta cuando se define un componente sobre otro ya establecido.
@@ -364,7 +347,9 @@ export default class Greeting extends Component {}
 
 Como se puede observar el web component debe extender de Component y no de HTMLElement como lo hace el estandard, esto es para que la libreria pueda manejar cosas como el [shadown DOM](https://developer.mozilla.org/en-US/docs/Web/Web_Components/Using_shadow_DOM) y ciertas funciones del ciclo de vida que se integran en el comportamiento normal de un backend component.
 
-Es importante mencionar que el componente puede hacer uso de todos los métodos del ciclo de vida del custom element como: `attributeChangedCallback(name, oldValue, newValue)`, `connectedCallback()` o `disconnectedCallback()`, al igual que del método `onInit()` el cual es implementado por la libreria y se ejcuta cuando el componente es montado; al basarse en el estandar es posible hacer uso de [slots y templates](https://developer.mozilla.org/en-US/docs/Web/Web_Components/Using_templates_and_slots).
+Es importante mencionar que el componente puede hacer uso de todos los métodos del ciclo de vida del custom element como: `attributeChangedCallback(name, oldValue, newValue)`, `connectedCallback()` o `disconnectedCallback()`; al basarse en el estandar es posible hacer uso de [slots y templates](https://developer.mozilla.org/en-US/docs/Web/Web_Components/Using_templates_and_slots).
+
+Al igual que en los behavioral components, `mount` y `unmount` dentro del objeto retornado por listen() son los hooks del ciclo de vida gestionados por Scalar. connectedCallback y disconnectedCallback siguen disponibles para interactuar con el estándar Web Components directamente, pero para la lógica de inicialización y limpieza de recursos se recomienda mount/unmount ya que se ejecutan una unica vez.
 
 El uso de `observedAttributes` se reemplaza por la declaración explicita de la priopiedad dentro de la clase.
 
@@ -398,17 +383,12 @@ La propiedad `_currentFocus` no sera enlazada al custom element. El paso de attr
 <auto-complete required="required" placeholder="Countries" data-attr="data:countries"></auto-complete>
 ```
 
-Al no poderse hacer inyección de dependencias por constructor, este comportamiento queda delegado al método `onInit` al igual que para behavioral components para estandarizar su uso.
-
 ```javascript
 @inject(Message)
 export default class MultiSelect extends Component {
-  constructor() {
+  constructor(message) {
     super();
     this.data = [];
-  }
-
-  onInit(message) {
     this._message = message;
   }
 }

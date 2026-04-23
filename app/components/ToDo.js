@@ -8,6 +8,7 @@ export default class ToDo extends Component {
 
   listen() {
     return {
+      mount: () => this.onInit(),
       _submit: (e) => this.#add(e),
       '.close': {
         _click: (_, task) => this.#remove(task)

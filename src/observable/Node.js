@@ -40,7 +40,7 @@ function setValue($node, value, attr) {
   }
   if ($node[attr] !== value) {
     $node[attr] = value;
-    $node.dispatchEvent(new Event('mutate'));
+    $node.dispatchEvent(new Event('mutate', { bubbles: true, composed: true }));
   }
 }
 
@@ -65,9 +65,9 @@ export function create(property, $node, prop) {
       changeContent(property, property.v);
     };
     if (!['date', 'time', 'month', 'week', 'datetime-local'].includes($node.type)) {
-      addListeners($node, { keyup: changeHandler });
+      addListeners($node, { keyup: changeHandler }, 1);
     }
-    addListeners($node, { change: changeHandler });
+    addListeners($node, { change: changeHandler }, 1);
     if (inputValue === null) {
       setValue($node, value, 'value');
     } else {

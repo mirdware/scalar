@@ -84,23 +84,18 @@ export function compose($node, behavioral, module) {
   const behavioralIsComponent = behavioral.prototype instanceof Component;
   const tokens = behavioral._providers || [];
   const dependencies = tokens.map(token => module.inject(token));
-  const component = behavioralIsComponent ? new behavioral() : new Component();
+  const component = behavioralIsComponent ? new behavioral(...dependencies) : new Component();
   Privy.set(component, props);
   props.e_ = behavioralIsComponent ?
   (component.listen && component.listen()) :
   behavioral(component, ...dependencies);
   watch(component, props, $node);
-  $node.dispatchEvent(new Event('mount'));
-  if (behavioralIsComponent && typeof component.onInit === 'function') {
-    component.onInit(...dependencies);
-  }
+  $node.dispatchEvent(new Event('mount', { bubbles: true, composed: true }));
   return component;
 }
 
 export default class Component {
-  /**
-   * @deprecated use contructor dependencies instead
-   */
+  /**  @deprecated */
   inject(provider) {
     return Privy.get(this).m.inject(provider);
   }
@@ -109,9 +104,7 @@ export default class Component {
     return compose($domElement, behavioral, Privy.get(this).m);
   }
 
-  /**
-   * @deprecated use context parameter instead
-   */
+  /** @deprecated */
   getIndex(e) {
     const $node = Privy.get(this).$;
     let parent = e.target;

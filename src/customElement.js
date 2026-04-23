@@ -1,4 +1,4 @@
-import Component, { watch } from "./observable/Component";
+import { watch } from "./observable/Component";
 import { createFragment } from './view/Template';
 import { updateNodes } from './view/DOM';
 import * as Privy from "./util/Wrapper"
@@ -18,83 +18,90 @@ const TYPES = {
   img: HTMLImageElement
 };
 
+function onInit(_this, UserClass, options) {
+  const { m } = _this.constructor;
+  const tokens = UserClass._providers || [];
+  const deps = m ? tokens.map(token => m.inject(token)) : [];
+  const host = new UserClass(...deps);
+  const props = Privy.get(host);
+  host.shadowRoot = _this.shadowRoot;
+  if (!props.$) {
+    Object.assign(props, {
+      m,
+      $: host.shadowRoot,
+      p_: {},
+      e_: host.listen ? host.listen() : {}
+    });
+  }
+  const $fragment = createFragment('<style>' + (options.styles || '') + '</style>' + (options.template || ''));
+  updateNodes({ pc: props }, props.$, $fragment);
+  watch(host, props, props.$);
+  props.$.dispatchEvent(new Event('mount', { bubbles: true, composed: true }));
+  Privy.get(_this).h = host;
+}
+
 export default function customElement(options) {
-  const type = options.type;
-  const element = TYPES[type] ? TYPES[type] : HTMLElement;
-  let component = element.C;
-  if (!component) {
-    component = class extends element {
+  const Element = TYPES[options.type] || HTMLElement;
+  return function (UserClass) {
+    class NewClass extends Element {
       constructor() {
         super();
         this.attachShadow({mode: 'open'});
       }
+
+      connectedCallback() {
+        const privy = Privy.get(this);
+        if (!privy.h) onInit(this, UserClass, options);
+        if (privy.h.connectedCallback) {
+          privy.h.connectedCallback();
+        }
+      }
+
+      disconnectedCallback() {
+        const host = Privy.get(this).h;
+        if (host.disconnectedCallback) {
+          host.disconnectedCallback();
+        }
+      }
+
+      adoptedCallback() {
+        const host = Privy.get(this).h;
+        if (host.adoptedCallback) {
+          host.adoptedCallback();
+        }
+      }
+
+      attributeChangedCallback(...args) {
+        const privy = Privy.get(this);
+        let name = args[0];
+        let newValue = args[2];
+        if (!privy.h) onInit(this, UserClass, options);
+        const host = privy.h;
+        name = name.replace(/-./g, (x) => x[1].toUpperCase());
+        if (typeof host[name] === 'boolean') {
+          newValue = (newValue !== null && newValue !== 'false');
+        } else if (host[name] instanceof Object) {
+          newValue = JSON.parse(newValue);
+        }
+        host[name] = newValue;
+        if (host.attributeChangedCallback) {
+          host.attributeChangedCallback(...args);
+        }
+      }
     }
-    const componentMethods = ["inject", "getIndex", "compose"];
-    for (let i = 0, method; method = componentMethods[i]; i++) {
-      component.prototype[method] = Component.prototype[method];
-    }
-    element.C = component;
-  }
-  return function (Class) {
-    Object.assign(Class, options);
-    let prototype = Class;
-    const properties = Object.keys(new Class()).filter(p => !p.startsWith('_') && !p.startsWith('$'));
-    while (prototype.__proto__ !== Component) {
-      prototype = prototype.__proto__;
-    }
-    Object.setPrototypeOf(prototype, component);
-    Object.setPrototypeOf(prototype.prototype, component.prototype);
-    Object.defineProperty(Class, 'observedAttributes', {
+    const properties = Object.keys(new UserClass()).filter(p => !p.startsWith('_') && !p.startsWith('$'));
+    Object.defineProperty(NewClass, 'observedAttributes', {
       get: function () {
         return properties.map((property) => property.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase());
       }
     });
-    const methods = {
-      connectedCallback: function (_this) {
-        if (!Privy.get(_this).i) _this.onInit();
-      },
-      attributeChangedCallback: function (_this, args) {
-        let name = args[0];
-        let newValue = args[2];
-        if (!Privy.get(_this).i) _this.onInit();
-        name = name.replace(/-./g, (x) => x[1].toUpperCase());
-        if (typeof _this[name] === 'boolean') {
-          newValue = (newValue !== null && newValue !== 'false');
-        } else if (_this[name] instanceof Object) {
-          newValue = JSON.parse(newValue);
-        }
-        _this[name] = newValue;
-        return args;
-      },
-      onInit: function (_this) {
-        const props = Privy.get(_this);
-        const { template, styles, m } = _this.constructor;
-        if (!props.$) {
-          Object.assign(props, {
-            m,
-            $: _this.shadowRoot,
-            p_: {},
-            e_: _this.listen ? _this.listen() : {},
-            i: true
-          });
-        }
-        const $fragment = createFragment('<style>' + (styles || '') + '</style>' + (template || ''));
-        updateNodes({ pc: props }, props.$, $fragment);
-        watch(_this, props, props.$);
-        props.$.dispatchEvent(new Event('mount'));
-        if (m) {
-          const tokens = Class._providers || [];
-          return tokens.map(token => m.inject(token));
-        }
-      }
-    };
-    for (const method in methods) {
-      const userMethod = Class.prototype[method];
-      Class.prototype[method] = function (...args) {
-        args = methods[method](this, args);
-        userMethod && userMethod.bind(this)(...(args || []));
-      }
+    if (process.env.NODE_ENV !== 'production') {
+      NewClass._userClass = UserClass;
+      NewClass.prototype.reload = function (NewDecoratedClass) {
+        const TargetClass = NewDecoratedClass._userClass || NewDecoratedClass;
+        onInit(this, TargetClass, options);
+      };
     }
-    return Class;
+    return NewClass;
   }
 }

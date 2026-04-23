@@ -1,7 +1,7 @@
 import { Component, customElement } from 'scalar';
 
 function loadOptions($) {
-  const options = Array.from($.querySelectorAll('option'));
+  const options = Array.from($.shadowRoot.host.querySelectorAll('option'));
   if (!options.length) return;
   options.forEach(($option) => {
     $.$select.appendChild($option);
@@ -23,7 +23,7 @@ function toogleItem(item, $) {
 
 function dispatchEvent($) {
   $.$select.dispatchEvent(new Event('change'));
-  $.dispatchEvent(new CustomEvent('changed', {
+  $.shadowRoot.host.dispatchEvent(new CustomEvent('changed', {
     detail: JSON.parse(JSON.stringify($.value))
   }));
 }
@@ -226,6 +226,8 @@ function close($) {
     `
 })
 export default class MultiSelect extends Component {
+  #closeController = new AbortController();
+
   constructor() {
     super();
     this._data = [];
@@ -248,16 +250,18 @@ export default class MultiSelect extends Component {
     this.$select = this.shadowRoot.querySelector('select');
     this.$search = this.shadowRoot.querySelector('.search');
     this._data = this.checkList;
-    this.close = (e) => {
-      if (e.target !== this) {
+    document.addEventListener("click", (e) => {
+      if (e.target !== this.shadowRoot.host) {
         close(this);
       }
-    };
-    document.addEventListener('click', this.close);
+    }, {
+      passive: true,
+      signal: this.#closeController.signal
+    });
   }
 
   onDestroy() {
-    document.removeEventListener('click', this.close);
+    this.#closeController.abort();
   }
 
   connectedCallback() {
@@ -267,6 +271,8 @@ export default class MultiSelect extends Component {
   }
 
   listen = () => ({
+    mount: () => this.onInit(),
+    unmount: () => this.onDestroy(),
     slotchange: () => loadOptions(this),
     '.dropdown': { click: () => show(this) },
     '.list-wrapper': { _keydown: (e) => controlKey(e, this) },

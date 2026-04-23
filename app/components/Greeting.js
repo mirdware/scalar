@@ -43,23 +43,32 @@ import { Component, customElement } from 'scalar';
     `
 })
 export default class Greeting extends Component {
+  #closeController = new AbortController();
+
   constructor () {
     super();
     this.name = '';
   }
 
   onInit() {
-    console.log(this.name + ' initialized');
+    document.addEventListener("click",(e) => {
+      if (e.target !== this) {
+        console.log('click outside: ' + this.name);
+      }
+    }, {
+      passive: true,
+      signal: this.#closeController.signal
+    });
   }
 
   onDestroy() {
-    console.log(this.name + ' destroyed');
+    this.#closeController.abort();
   }
 
   listen() {
     return {
-      mount: () => console.log(this.name + ' mounted'),
-      unmount: () => console.log(this.name + ' unmounted'),
+      mount: () => this.onInit(),
+      unmount: () => this.onDestroy(),
       'a': { _click: () => alert("Hola " + this.name) },
       'div': {
         _click: () => {

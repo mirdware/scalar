@@ -1,9 +1,8 @@
 declare module 'scalar' {
     export class Component {
         [key: string]: any;
-        onInit?(...providers: any[]): void;
-        onDestroy?(): void;
-        /** @deprecated use onInit dependencies instead */
+        constructor(...providers: any[]);
+        /** @deprecated use constructor dependencies instead */
         inject<T>(provider: Class<T>): T;
         compose<T extends Component>($domElement: HTMLElement, component: Class<T>): T;
         compose<P extends any[]>($domElement: HTMLElement, component: BehavioralFunction<P>): Component;
@@ -15,6 +14,7 @@ declare module 'scalar' {
     export interface CustomElementComponent extends Component {
         connectedCallback?(): void;
         disconnectedCallback?(): void;
+        adoptedCallback?(): void;
         attributeChangedCallback?(name: string, oldVal: any, newVal: any): void;
     }
 
@@ -30,9 +30,6 @@ declare module 'scalar' {
     export function inject<T extends any[]>(
         ...providers: { [K in keyof T]: Class<T[K]> }
     ): {
-        <TClass extends new () => Component & { onInit?(...args: T): void }>(
-            target: TClass
-        ): TClass;
         <TClass extends new (...args: T) => any>(
             target: TClass
         ): TClass;
@@ -40,7 +37,7 @@ declare module 'scalar' {
     };
 
     export function customElement(options: CustomElementOptions):
-    <T extends new(...args: any[]) => CustomElementComponent>(target: T) => T;
+    <T extends new(...args: any[]) => CustomElementComponent>(target: T) => new() => HTMLElement;
 
     export interface CustomElementOptions {
         template?: string;
@@ -49,10 +46,10 @@ declare module 'scalar' {
     }
 
     export interface BehavioralObject {
-        mount?: (e: Event) => void | boolean;
-        unmount?: (e: Event) => void | boolean;
-        mutate?: (e: Event) => void | boolean;
-        [key: string]: ((e: Event, context?: any) => void | boolean) | BehavioralObject | any;
+        mount?: (e?: Event) => void;
+        unmount?: (e?: Event) => void;
+        mutate?: (e?: Event) => void;
+        [key: string]: ((e?: Event, context?: any) => void | boolean) | BehavioralObject | any;
     }
 
     type BehavioralFunction<P extends any[]> = ($: Component, ...args: P) => BehavioralObject;

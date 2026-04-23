@@ -23,10 +23,13 @@ function mutateComponents(mutations, cancelCleanup) {
 }
 
 function removeComponent($node, uuid) {
-  ($node.shadowRoot || $node).dispatchEvent(new Event('unmount'));
+  const component = __components__.get(uuid).c;
+  const privy = Privy.get(component);
+  ($node.shadowRoot || $node).dispatchEvent(new Event('unmount', { bubbles: true, composed: true }));
   clearEventListeners($node);
   delete $node.dataset.component;
-  Privy.remove(__components__.get(uuid).c);
+  if (privy.h) Privy.remove(privy.h);
+  Privy.remove(component);
 }
 
 export default class Module {
@@ -89,6 +92,7 @@ export default class Module {
       document.querySelectorAll(wrapper.s).forEach(($node) => {
         const uuid = $node.dataset.component;
         if (!uuid) return;
+        $node.dispatchEvent(new Event('unmount', { bubbles: true, composed: true }));
         removeComponent($node, uuid);
       });
     });
@@ -168,21 +172,10 @@ if (process.env.NODE_ENV !== 'production') {
         if (element) {
           if (/^[a-z]+-/.test(element.s)) {
             document.querySelectorAll(element.s).forEach(component => {
-              const props = Privy.get(component);
-              component.onDestroy?.();
-              Object.getOwnPropertyNames(_new.prototype).forEach(key => {
-                if (key !== 'constructor') {
-                  Object.defineProperty(
-                    Object.getPrototypeOf(component),
-                    key,
-                    Object.getOwnPropertyDescriptor(_new.prototype, key)
-                  );
-                }
-              });
+              const props = Privy.get(Privy.get(component).h);
+              props.$.dispatchEvent(new Event('unmount', { bubbles: true, composed: true }));
               clearEventListeners(props.$);
-              props.e_ = component.listen ? component.listen() : {};
-              Object.assign(component.constructor, _new);
-              component.onInit();
+              component.reload(_new);
             });
           } else {
             document.querySelectorAll(element.s).forEach($component => {
@@ -191,6 +184,7 @@ if (process.env.NODE_ENV !== 'production') {
               Privy.remove(__components__.get(oldUuid).c);
               const component = compose($component, _new, module);
               $component.dataset.component = component.uuid;
+              $component.dispatchEvent(new Event('mount', { bubbles: true, composed: true }));
               __components__.set(component.uuid, { c: component, b: _new, s: element.s });
               console.log(`[HMR] updated component ${oldUuid} to ${component.uuid}`);
             });

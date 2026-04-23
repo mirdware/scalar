@@ -77,7 +77,7 @@ export function render(template, param) {
   $fragment.appendChild(template.$t);
   populateContext($fragment, property, param);
   updateNodes(property, $node, $fragment);
-  $node.dispatchEvent(new Event('mutate'));
+  $node.dispatchEvent(new Event('mutate', { bubbles: true, composed: true }));
   watch(property.c, property.pc, $node);
 }
 
