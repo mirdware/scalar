@@ -157,13 +157,9 @@ export default class AutoComplete extends Component {
     });
   }
 
-  onDestroy() {
-    this.#closeController.abort();
-  }
-
   listen = () => ({
     mount: () => this.onInit(),
-    unmount: () => this.onDestroy(),
+    unmount: () => this.#closeController.abort(),
     'input': {
       input: (e) => search(e, this),
       search: () => this.value = '',

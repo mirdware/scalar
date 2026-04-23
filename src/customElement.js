@@ -10,14 +10,6 @@ import * as Privy from "./util/Wrapper"
  * @var {m} module Referencia al módulo que esta componiendo la clase
  * @var {i} initialized Flag que indica si el web component ha sido inicializado
  */
-const TYPES = {
-  p: HTMLParagraphElement,
-  ul: HTMLUListElement,
-  button: HTMLButtonElement,
-  select: HTMLSelectElement,
-  img: HTMLImageElement
-};
-
 function onInit(_this, UserClass, options) {
   const { m } = _this.constructor;
   const tokens = UserClass._providers || [];
@@ -25,14 +17,12 @@ function onInit(_this, UserClass, options) {
   const host = new UserClass(...deps);
   const props = Privy.get(host);
   host.shadowRoot = _this.shadowRoot;
-  if (!props.$) {
-    Object.assign(props, {
-      m,
-      $: host.shadowRoot,
-      p_: {},
-      e_: host.listen ? host.listen() : {}
-    });
-  }
+  Object.assign(props, {
+    m,
+    $: host.shadowRoot,
+    p_: {},
+    e_: host.listen ? host.listen() : {}
+  });
   const $fragment = createFragment('<style>' + (options.styles || '') + '</style>' + (options.template || ''));
   updateNodes({ pc: props }, props.$, $fragment);
   watch(host, props, props.$);
@@ -41,7 +31,13 @@ function onInit(_this, UserClass, options) {
 }
 
 export default function customElement(options) {
-  const Element = TYPES[options.type] || HTMLElement;
+  let Element = HTMLElement;
+  if (options.type) {
+    const { constructor } = document.createElement(options.type);
+    if (constructor !== HTMLUnknownElement) {
+      Element = constructor;
+    }
+  }
   return function (UserClass) {
     class NewClass extends Element {
       constructor() {
@@ -95,11 +91,12 @@ export default function customElement(options) {
         return properties.map((property) => property.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase());
       }
     });
+    Object.assign(NewClass, options);
     if (process.env.NODE_ENV !== 'production') {
       NewClass._userClass = UserClass;
       NewClass.prototype.reload = function (NewDecoratedClass) {
         const TargetClass = NewDecoratedClass._userClass || NewDecoratedClass;
-        onInit(this, TargetClass, options);
+        onInit(this, TargetClass, NewDecoratedClass);
       };
     }
     return NewClass;

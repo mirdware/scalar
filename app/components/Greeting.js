@@ -50,25 +50,17 @@ export default class Greeting extends Component {
     this.name = '';
   }
 
-  onInit() {
-    document.addEventListener("click",(e) => {
-      if (e.target !== this) {
-        console.log('click outside: ' + this.name);
-      }
-    }, {
-      passive: true,
-      signal: this.#closeController.signal
-    });
-  }
-
-  onDestroy() {
-    this.#closeController.abort();
-  }
-
   listen() {
     return {
-      mount: () => this.onInit(),
-      unmount: () => this.onDestroy(),
+      mount: () => document.addEventListener("click",(e) => {
+        if (e.target !== this.shadowRoot.host) {
+          console.log('click outside: ' + this.name);
+        }
+      }, {
+        passive: true,
+        signal: this.#closeController.signal
+      }),
+      unmount: () => this.#closeController.abort(),
       'a': { _click: () => alert("Hola " + this.name) },
       'div': {
         _click: () => {

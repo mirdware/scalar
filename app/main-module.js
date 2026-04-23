@@ -7,19 +7,20 @@ import MultiSelect from './components/MultiSelect';
 import AutoComplete from './components/AutoComplete';
 
 export default new Module()
-.add("/test", () => import('./test-module'))
-.compose('#square', Test)
-.compose('#hello-world', Form)
-.compose('#todo', ToDo)
-.compose('sc-hi', Greeting)
-.compose('multi-select', MultiSelect)
-.compose('auto-complete', AutoComplete)
-.compose('.external-component', ($) => ({
-  'a': { _click: () => {
-    console.log($);
-    history.pushState(null, "newTitle", '/test');
-   } }
-}))
-.compose('.alert', () => ({
-  '.show': { click: (e) => alert(e.target.innerText) }
-}));
+  .add("/test", () => import('./test-module'))
+  .compose('#square', Test)
+  .compose('#hello-world', Form)
+  .compose('#todo', ToDo)
+  .compose('multi-select', MultiSelect)
+  .compose('auto-complete', AutoComplete)
+  .compose('.external-component', ($) => ({
+    'sc-hi': { unmount: (e) => console.log(e) },
+    'a': { _click: () => {
+      console.log($);
+      history.pushState(null, "newTitle", '/test');
+    } }
+  }))
+  .compose('.alert', () => ({
+    '.show': { click: (e) => alert(e.target.innerText) }
+  }))
+  .compose('sc-hi', Greeting);

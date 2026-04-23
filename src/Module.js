@@ -172,21 +172,29 @@ if (process.env.NODE_ENV !== 'production') {
         if (element) {
           if (/^[a-z]+-/.test(element.s)) {
             document.querySelectorAll(element.s).forEach(component => {
-              const props = Privy.get(Privy.get(component).h);
-              props.$.dispatchEvent(new Event('unmount', { bubbles: true, composed: true }));
-              clearEventListeners(props.$);
+              const privy = Privy.get(Privy.get(component).h);
+              const props = privy.p_;
+              privy.$.dispatchEvent(new Event('unmount', { bubbles: true, composed: true }));
+              clearEventListeners(privy.$);
               component.reload(_new);
+              const host = Privy.get(component).h;
+              setProperties(host, props);
+              console.log(`[HMR] updated component ${component.uuid}`);
             });
           } else {
             document.querySelectorAll(element.s).forEach($component => {
-              const oldUuid = $component.dataset.component;
+              const uuid = $component.dataset.component;
+              const oldComponent = __components__.get(uuid).c;
+              const props = Privy.get(oldComponent).p_;
+              $component.dispatchEvent(new Event('unmount', { bubbles: true, composed: true }));
               clearEventListeners($component);
-              Privy.remove(__components__.get(oldUuid).c);
+              Privy.remove(oldComponent);
               const component = compose($component, _new, module);
               $component.dataset.component = component.uuid;
-              $component.dispatchEvent(new Event('mount', { bubbles: true, composed: true }));
               __components__.set(component.uuid, { c: component, b: _new, s: element.s });
-              console.log(`[HMR] updated component ${oldUuid} to ${component.uuid}`);
+              __components__.delete(uuid);
+              setProperties(component, props);
+              console.log(`[HMR] updated component ${uuid} to ${component.uuid}`);
             });
           }
           element.b = _new;
@@ -269,6 +277,15 @@ if (process.env.NODE_ENV !== 'production') {
     },
     disable() {
       this.sheet.replaceSync('');
+    }
+  }
+
+  function setProperties(target, properties) {
+    for (const name in properties) {
+      const property = properties[name];
+      if (!property.f) {
+        target[name] = property.v;
+      }
     }
   }
 

@@ -260,10 +260,6 @@ export default class MultiSelect extends Component {
     });
   }
 
-  onDestroy() {
-    this.#closeController.abort();
-  }
-
   connectedCallback() {
     if (this.selectAll) {
       this.checkList.unshift({ text: this._txtAll, all: true });
@@ -272,7 +268,7 @@ export default class MultiSelect extends Component {
 
   listen = () => ({
     mount: () => this.onInit(),
-    unmount: () => this.onDestroy(),
+    unmount: () => this.#closeController.abort(),
     slotchange: () => loadOptions(this),
     '.dropdown': { click: () => show(this) },
     '.list-wrapper': { _keydown: (e) => controlKey(e, this) },
