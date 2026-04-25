@@ -6,12 +6,13 @@ import Greeting from './components/Greeting';
 import MultiSelect from './components/MultiSelect';
 import AutoComplete from './components/AutoComplete';
 
+customElements.define('multi-select', MultiSelect);
+
 export default new Module()
   .add("/test", () => import('./test-module'))
   .compose('#square', Test)
   .compose('#hello-world', Form)
   .compose('#todo', ToDo)
-  .compose('multi-select', MultiSelect)
   .compose('auto-complete', AutoComplete)
   .compose('.external-component', ($) => ({
     'sc-hi': { unmount: (e) => console.log(e) },

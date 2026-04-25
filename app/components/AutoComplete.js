@@ -1,4 +1,4 @@
-import { Component, customElement } from 'scalar';
+import { customElement } from 'scalar';
 
 function search(e, $) {
   const { value } = e.target;
@@ -130,11 +130,10 @@ function getValue(data, label) {
   }
   `
 })
-export default class AutoComplete extends Component {
+export default class AutoComplete {
   #closeController = new AbortController();
 
   constructor() {
-    super();
     this._currentFocus = -1;
     this._index = -1;
     this.value = '';

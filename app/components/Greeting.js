@@ -1,4 +1,5 @@
-import { Component, customElement } from 'scalar';
+import { customElement, inject } from 'scalar';
+import Message from '../services/Message';
 
 @customElement({
   template: /*html*/`
@@ -42,11 +43,10 @@ import { Component, customElement } from 'scalar';
     }
     `
 })
-export default class Greeting extends Component {
+export default class Greeting {
   #closeController = new AbortController();
 
-  constructor () {
-    super();
+  constructor() {
     this.name = '';
   }
 

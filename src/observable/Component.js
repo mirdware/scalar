@@ -80,15 +80,18 @@ export function watch(component, privyComponent, $node) {
 }
 
 export function compose($node, behavioral, module) {
+  let component;
   const props = { $: $node, m: module, p_: {} };
-  const behavioralIsComponent = behavioral.prototype instanceof Component;
   const tokens = behavioral._providers || [];
-  const dependencies = tokens.map(token => module.inject(token));
-  const component = behavioralIsComponent ? new behavioral(...dependencies) : new Component();
+  const dependencies = module ? tokens.map(token => module.inject(token)) : [];
+  if (behavioral.prototype instanceof Component) {
+    component = new behavioral(...dependencies);
+    props.e_ = component.listen && component.listen();
+  } else {
+    component = new Component();
+    props.e_ = behavioral(component, ...dependencies);
+  }
   Privy.set(component, props);
-  props.e_ = behavioralIsComponent ?
-  (component.listen && component.listen()) :
-  behavioral(component, ...dependencies);
   watch(component, props, $node);
   $node.dispatchEvent(new Event('mount', { bubbles: true, composed: true }));
   return component;

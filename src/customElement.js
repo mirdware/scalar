@@ -18,7 +18,7 @@ function onInit(_this, UserClass, NewClass) {
     m: NewClass.m,
     $: host.shadowRoot,
     p_: {},
-    e_: host.listen ? host.listen() : {}
+    e_: host.listen && host.listen()
   });
   const $fragment = createFragment('<style>' + (NewClass.styles || '') + '</style>' + (NewClass.template || ''));
   updateNodes({ pc: props }, props.$, $fragment);
@@ -42,23 +42,13 @@ export default function customElement(options) {
         this.attachShadow({mode: 'open'});
       }
 
-      connectedCallback() {
-        const privy = Privy.get(this);
-        if (!privy.h) {
-          onInit(this, UserClass, NewClass);
-        }
-        if (privy.h.connectedCallback) {
-          privy.h.connectedCallback();
-        }
-      }
-
       attributeChangedCallback(...args) {
         const privy = Privy.get(this);
         let name = args[0];
         let newValue = args[2];
         if (!privy.h) onInit(this, UserClass, NewClass);
         const host = privy.h;
-        name = name.replace(/-./g, (x) => x[1].toUpperCase());
+        name = name.replace(/-./g, word => word[1].toUpperCase());
         if (typeof host[name] === 'boolean') {
           newValue = (newValue !== null && newValue !== 'false');
         } else if (host[name] instanceof Object) {
@@ -71,16 +61,19 @@ export default function customElement(options) {
       }
     }
     const { prototype } = NewClass;
-    Object.getOwnPropertyNames(UserClass.prototype).forEach(key => {
-      if (typeof UserClass.prototype[key] === 'function' && !prototype[key]) {
-        prototype[key] = function (...args) {
-          const privy = Privy.get(this);
-          if (privy.h) {
-            return privy.h[key](...args);
-          }
-          if (process.env.NODE_ENV !== 'production') {
-             console.warn(`method "${key}" ignored. Component not inicialized.`);
-          }
+    const methods = new Set(
+      Object.getOwnPropertyNames(UserClass.prototype)
+        .filter(name => typeof UserClass.prototype[name] === 'function' && !prototype[name])
+        .concat(['connectedCallback', 'disconnectedCallback', 'adoptedCallback'])
+    );
+    methods.forEach(name => {
+      prototype[name] = function (...args) {
+        const privy = Privy.get(this);
+        if (!privy.h) {
+          onInit(this, UserClass, NewClass);
+        }
+        if (privy.h[name]) {
+          privy.h[name](...args);
         }
       }
     });
@@ -105,6 +98,15 @@ export default function customElement(options) {
       prototype.reload = function (NewDecoratedClass) {
         const { m } = this.constructor;
         const TargetClass = NewDecoratedClass._userClass || NewDecoratedClass;
+        Object.getOwnPropertyNames(TargetClass.prototype).forEach(key => {
+          if (typeof TargetClass.prototype[key] === 'function' && !NewClass.prototype[key]) {
+            NewClass.prototype[key] = function (...args) {
+              const privy = Privy.get(this);
+              if (privy.h) return privy.h[key](...args);
+              console.warn(`method "${key}" ignored. Component not inicialized.`);
+            };
+          }
+        });
         const tokens = TargetClass._providers || [];
         Privy.get(TargetClass).d_ = m ? tokens.map(token => m.inject(token)) : [];
         NewDecoratedClass.m = m;

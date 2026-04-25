@@ -1,4 +1,4 @@
-import { Component, customElement } from 'scalar';
+import { customElement } from 'scalar';
 
 function loadOptions($) {
   const options = Array.from($.shadowRoot.host.querySelectorAll('option'));
@@ -225,11 +225,10 @@ function close($) {
     }
     `
 })
-export default class MultiSelect extends Component {
+export default class MultiSelect {
   #closeController = new AbortController();
 
   constructor() {
-    super();
     this._data = [];
     this._currentFocus = -1;
     this._txtAll ='All';
