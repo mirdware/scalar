@@ -1,7 +1,5 @@
-import { generateUUID } from './Element';
+import * as Privy from './Wrapper'
 import { nodeContext } from '../view/Template';
-
-const listenerKey = 'eventListenerList';
 
 let hasObjectConfig = false;
 document.createElement('b')
@@ -13,22 +11,22 @@ document.createElement('b')
 
 function removeListener(listenerList, $node) {
   for (const selector in listenerList) {
-    for (const uuid in listenerList[selector]) {
-      const listener = listenerList[selector][uuid];
+    listenerList[selector].forEach((listener) => {
       $node.removeEventListener(listener.name, listener.fn, listener.opt);
-    }
+    });
   }
 }
 
 export function clearEventListeners($node, single) {
   const $nodes = single ? [$node] : [$node, ...$node.querySelectorAll('*')];
   $nodes.forEach(($node) => {
-    if ($node[listenerKey]) {
-      removeListener($node[listenerKey].p, $node);
-      $node[listenerKey].p = {};
+    const eventListeners = Privy.get($node);
+    if (eventListeners.p) {
+      removeListener(eventListeners.p, $node);
+      eventListeners.p = {};
       if (!single) {
-        removeListener($node[listenerKey]._, $node);
-        $node[listenerKey]._ = {};
+        removeListener(eventListeners._, $node);
+        eventListeners._ = {};
       }
     }
   });
@@ -39,17 +37,15 @@ export function addListeners($element, events, isPrivate) {
   for (const selector in events) {
     let fn = events[selector];
     if (fn instanceof Function) {
-      let { uuid } = fn;
-      if (!uuid) {
-        uuid = generateUUID(fn);
+      const eventListeners = Privy.get($element);
+      if (!eventListeners[modifier]) {
+        eventListeners.p = {};
+        eventListeners._ = {};
       }
-      if (!$element[listenerKey]) {
-        $element[listenerKey] = { _: {}, p: {} };
+      if (!eventListeners[modifier][selector]) {
+        eventListeners[modifier][selector] = new Map();
       }
-      if (!$element[listenerKey][modifier][selector]) {
-        $element[listenerKey][modifier][selector] = {};
-      }
-      if (!$element[listenerKey][modifier][selector][uuid]) {
+      if (!eventListeners[modifier][selector].has(fn)) {
         const originalFunction = fn;
         const handler = (e) => {
           let $target = e.target;
@@ -77,7 +73,7 @@ export function addListeners($element, events, isPrivate) {
         }
         const opt = hasObjectConfig ? { passive, capture } : capture;
         $element.addEventListener(name, fn, opt);
-        $element[listenerKey][modifier][selector][uuid] = { name, fn, opt };
+        eventListeners[modifier][selector].set(originalFunction, { name, fn, opt });
       }
     } else {
       const $nodeList = $element.querySelectorAll(selector);

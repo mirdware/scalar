@@ -37,7 +37,7 @@ declare module 'scalar' {
     };
 
     export function customElement(options: CustomElementOptions):
-    <T extends new(...args: any[]) => CustomElementComponent>(target: T) => new() => HTMLElement;
+    <T extends new(...args: any[]) => CustomElementComponent>(target: T) => new() => HTMLElement & InstanceType<T>;
 
     export interface CustomElementOptions {
         template?: string;
@@ -46,10 +46,7 @@ declare module 'scalar' {
     }
 
     export interface BehavioralObject {
-        mount?: (e?: Event) => void;
-        unmount?: (e?: Event) => void;
-        mutate?: (e?: Event) => void;
-        [key: string]: ((e?: Event, context?: any) => void | boolean) | BehavioralObject | any;
+        [key: string]: ((e?: Event, context?: any) => void | boolean) | BehavioralObject;
     }
 
     type BehavioralFunction<P extends any[]> = ($: Component, ...args: P) => BehavioralObject;

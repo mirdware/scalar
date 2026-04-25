@@ -3,7 +3,7 @@ Scalar nace de la necesidad de crear sistemas escalables, de alto rendimiento y 
 
 El desarrollo de aplicaciones con scalar se basa en componentes no obstructivos, lo cual quiere decir que su funcionamiento no depende enteramente de javascript; obviamente muchas de las decisiones de que tan obstructivo puede llegar a ser scalar depende en gran medida del desarrollador.
 
-Scalar es agnóstico al backend. No importa si tu HTML es generado por Node.js, PHP, Python, Go o es un archivo estático. Scalar trata al HTML como la fuente de verdad absoluta. Su motor de hidratación _despierta_ el marcado existente mediante selectores CSS, inyectando comportamiento y reactividad sin destruir la estructura original, lo que lo hace el framework más rápido y ligero para estrategias de SEO y SSR.
+Scalar es agnóstico al backend. No importa si tu HTML es generado por NodeJS, PHP, Python, Go o es un archivo estático. Scalar trata al HTML como la fuente de verdad absoluta. Su motor de hidratación _despierta_ el marcado existente mediante selectores CSS, inyectando comportamiento y reactividad sin destruir la estructura original, lo que lo hace el framework más rápido y ligero para estrategias de SEO y SSR.
 
 ## Instalación
 Existen dos formas de usar scalar en un proyecto; la primera es mediante node y npm ejecutando el comando `npm i scalar`, la segunda es usar el [CDN](https://unpkg.com/scalar).
@@ -50,8 +50,7 @@ import { Module } from 'scalar';
 import formComponent from './components/form';
 
 const module = new Module();
-new Module()
-.compose('#hello-world', formComponent)
+module.compose('#hello-world', formComponent)
 .execute();
 ```
 
@@ -229,11 +228,12 @@ return {
 > [!TIP]
 > Se recomienda usar atributos `data-action` como selectores en el objeto conductual en lugar de clases o IDs, separando así el comportamiento del estilo: `{ '[data-action="save"]': { click: save } }`.
 
-El evento `mount` es ejecutado tan pronto inicia el componente y cualquier cambio que se realice dentro de este hace parte del estado inicial por lo cual es ideal para enlazar propiedades y servicios.
+El evento `mount` se ejecuta tan pronto como el componente es instanciado, hidratado y vinculado al DOM. Es el lugar ideal para establecer el estado inicial, inyectar servicios y realizar cualquier operación que dependa del marcado. Se debe priorizar el uso de mount sobre el constructor para ejecutar efectos secundarios (como llamadas a APIs o suscripciones), ya que esto garantiza que la lógica pueda ser reiniciada limpiamente por el sistema de Hot Module Replacement (HMR) o re-hidratada sin duplicar recursos.
 
-El evento `mutate` notifica cuando un elemento del componente ha sido modificado, para escuchar el evento se debe enlazar al elemento que se transformara con la mutación de la propiedad. Este es el momento perfecto para que el desarrollador integre librerías de terceros (por ejemplo, si se inyecta un input, el usuario puede escuchar mutate para inicializar un DatePicker sobre ese nuevo HTML).
+El evento `unmount` es el complemento de mount. Se ejecuta justo antes de que el componente sea liberado, ya sea porque su nodo fue removido del DOM mediante manipulación dinámica o porque se invocó el método `module.dispose()`. Es obligatorio usar este evento para liberar recursos externos: limpiar timers, abortar peticiones de red o eliminar listeners agregados globalmente a window o document.
 
-El evento `unmount` es el complemento de mount y se ejecuta justo antes de que el componente sea liberado, ya sea porque su nodo fue removido del DOM o porque el módulo ejecutó `dispose()`. Es el lugar correcto para liberar recursos externos que el componente haya adquirido durante su ciclo de vida, como listeners en document, timers o suscripciones.
+El evento `mutate` se dispara cada vez que Scalar transforma el DOM de un elemento debido a una mutación de su propiedad enlazada.
+Es el punto de integración perfecto para librerías de terceros. Por ejemplo, si scalar inyecta dinámicamente un input, el desarrollador puede escuchar el evento mutate en ese elemento para inicializar sobre él un DatePicker o un InputMask, asegurando que el componente externo se mantenga sincronizado con el HTML reactivo.
 
 Los eventos mount, unmount y mutate se despachan con bubbles: true y composed: true, por lo que atraviesan shadow boundaries y burbujean hacia el árbol del documento. Es posible observarlos desde un componente padre o desde una referencia externa a un elemento interno del shadow DOM.
 
@@ -367,7 +367,7 @@ export default class MultiSelect extends Component {
 
 El constructor debe llamar al padre y proceder a declarar las propiedades, cabe resaltar el uso del caracter `_` para iniciar ciertas declaraciones, estas son propiedades que no se exponen al custom element, al igual que aquellas que inicien con `$`, las propiedades deben inicializarse para indicar como debe observedAttributes tratar el nuevo valor, así cuando es booleano y se aplica al elemento este lo convertira a `true` o si es un objeto `[]` o `{}` se tratara de hacer un `JSON.parse`.
 
-El framework convierte internamente el nombre del atributo de kebab-case a camelCase para la asignación de la propiedad. El método `attributeChangedCallback` del usuario, si se implementa, recibe el nombre original en kebab-case conforme al estándar Web Components. Las propiedades que comienzan con `_` o `$` son estrictamente privadas. No se convertirán en observedAttributes ni se expondrán al DOM.
+El framework convierte internamente el nombre del atributo de kebab-case a camelCase para la asignación de la propiedad. El método `attributeChangedCallback` del usuario, si se implementa, recibe el nombre original en kebab-case conforme al estándar Web Components. Las propiedades que comienzan con `_` o `$` no se convierten en observedAttributes ni deberían participar en binding bidireccional.
 
 ```html
 <multi-select placeholder="Seleccionar tipo de items" _current-focus="0" required>
@@ -394,7 +394,7 @@ export default class MultiSelect extends Component {
 }
 ```
 
-Las unicas vias de comunicación entre custom element y componente padre son los atributos y [CustomEvent](https://developer.mozilla.org/en-US/docs/Web/API/CustomEvent/CustomEvent), por lo tanto el enlace en doble vía no es posible en este tipo de comunicación y se debe de hacer de manera explicita.
+Las únicas vias de comunicación entre custom element, componente padre son los atributos y [CustomEvent](https://developer.mozilla.org/en-US/docs/Web/API/CustomEvent/CustomEvent) y acceso público a los métodos para control imperativo. El enlace bidireccional directo no es posible en este tipo de comunicación y debe hacerse de forma explícita mediante las vías anteriores.
 
 ```javascript
 {
@@ -534,3 +534,5 @@ Esta integración está disponible únicamente cuando process.env.NODE_ENV !== '
 # Todo
 * :key: modificar el reordenamiento de elementos HTML por `keyed conciliation`.
 * :back: Reemplazar el sistema de solapamientos por un modelo de ownership explícito mediante notación `^`; cada `^` representa un nivel de componente hacia arriba en la jerarquía. El componente del nivel indicado es el dueño del binding — si no tiene la propiedad, la crea; si el nivel no existe en la jerarquía el enlace es ignorado. Aplica tanto para `data-bind` como `data-attr`. En modo desarrollo los enlaces huérfanos serán marcados visualmente mediante el modo debug.
+* :recycle: Eliminar el sistema de `uuid` como mecanismo de enlace entre nodos y componentes, reemplazando `__components__` por un `WeakMap` con el nodo como clave. Esto permitiría eliminar `Privy.remove` y toda la gestión manual de memoria asociada, delegando la limpieza completamente al garbage collector. `generateUUID` se mantendría exclusivamente para la deduplicación de listeners en `Event.js`. La pérdida es exclusiva del modo desarrollo: `queryComponent` dejaría de aceptar un id como argumento
+y `data-component` pasaría de exponer el uuid a ser un marcador booleano en el inspector del browser.
