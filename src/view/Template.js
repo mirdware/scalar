@@ -1,4 +1,4 @@
-import { setPropertyValue } from '../util/Element';
+import { setValue } from '../util/Element';
 import { watch } from "../observable/Component";
 import { get } from '../observable/Property';
 import { updateNodes } from './DOM';
@@ -62,7 +62,7 @@ export function getValue(template) {
   while ((matches = regex.exec(template.b)) !== null) {
     const obj = {};
     keys.forEach((key, i) => {
-      setPropertyValue(obj, key ? key.split('.') : key, matches[i + 1]);
+      setValue(obj, key ? key.split('.') : key, matches[i + 1]);
     });
     value.push(obj.v);
   }

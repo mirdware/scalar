@@ -1,4 +1,4 @@
-import { setPropertyValue, getPropertyValue } from '../util/Element';
+import * as Property from '../util/Element';
 import { changeContent } from './Property';
 import * as Template from '../view/Template';
 import { addListeners } from '../util/Event';
@@ -56,12 +56,12 @@ export function create(property, $node, prop) {
   let value = property.v;
   let complexType = null;
   if (value instanceof Object) {
-    value = getPropertyValue(value, prop);
+    value = Property.getValue(value, prop);
   }
   if (isInput($node)) {
     const inputValue = evalValue($node);
     const changeHandler = function (e) {
-      setPropertyValue(property, prop, evalValue(e.target));
+      Property.setValue(property, prop, evalValue(e.target));
       changeContent(property, property.v);
     };
     if (!['date', 'time', 'month', 'week', 'datetime-local'].includes($node.type)) {
@@ -86,7 +86,7 @@ export function create(property, $node, prop) {
   } else {
     setValue($node, value, 'innerText');
   }
-  setPropertyValue(property, prop, value);
+  Property.setValue(property, prop, value);
   return { pn_: prop, $: $node, ct: complexType };
 }
 
@@ -95,7 +95,7 @@ export function execute(property, node, value) {
   if (!$node.isConnected) {
     return property.n_.delete($node);
   }
-  value = getPropertyValue(value, properties);
+  value = Property.getValue(value, properties);
   complexType && value ?
   Template.render(complexType, value) :
   setValue($node, value, isInput($node) ? 'value' : 'innerText');

@@ -2,6 +2,7 @@ import { watch } from "./observable/Component";
 import { createFragment } from './view/Template';
 import { updateNodes } from './view/DOM';
 import * as Privy from "./util/Wrapper"
+import { __components__ } from "./Module";
 /**
  *
  * @var {E} Element Elemento HTML del que hereda el componente
@@ -39,7 +40,13 @@ export default function customElement(options) {
     class NewClass extends Element {
       constructor() {
         super();
-        this.attachShadow({mode: 'open'});
+        this.attachShadow({ mode: 'open' });
+        const selector = this.tagName.toLowerCase();
+        __components__.set(this, { c: this, b: UserClass, s: selector });
+        this.dataset.webcomponent = selector;
+        if (process.env.NODE_ENV !== 'production') {
+          this.shadowRoot.adoptedStyleSheets = [debug.sheet];
+        }
       }
 
       attributeChangedCallback(...args) {

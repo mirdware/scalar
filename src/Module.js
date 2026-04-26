@@ -8,28 +8,32 @@ import * as Privy from './util/Wrapper';
  * @var {module.i_} instances Objetos creados por el contenedor de dependencias
  * @var {module.m_} modules Loaders para cargar modulos dinamicos
  */
-export const __components__ = new Map();
+export const __components__ = new WeakMap();
 const pendingRemoval = new Set();
 const resolving = new Set();
 
-function mutateComponents(mutations, cancelCleanup) {
+function mutateComponents(mutations, callback) {
   for (const node of mutations) {
     if (node.nodeType === 1) {
-      [node, ...node.querySelectorAll('[data-component],[data-webcomponent]')].forEach(($node) => {
-        cancelCleanup ? pendingRemoval.delete($node) : pendingRemoval.add($node);
+      callback(node);
+      node.querySelectorAll('[data-component],[data-webcomponent]').forEach(($node) => {
+        callback($node);
       });
     }
   }
 }
 
-function removeComponent($node, uuid) {
-  const component = __components__.get(uuid).c;
-  const privy = Privy.get(component);
-  ($node.shadowRoot || $node).dispatchEvent(new Event('unmount', { bubbles: true, composed: true }));
-  clearEventListeners($node);
+function removeComponent($node, shouldDeleteWebComponent) {
+  const { shadowRoot } = $node
+  if (!__components__.has($node) || (!shouldDeleteWebComponent && shadowRoot)) return;
+  __components__.delete($node);
   delete $node.dataset.component;
-  if (privy.h) Privy.remove(privy.h);
-  Privy.remove(component);
+  if (shadowRoot) {
+    delete Privy.get($node).h;
+    $node = shadowRoot;
+  }
+  $node.dispatchEvent(new Event('unmount', { bubbles: true, composed: true }));
+  clearEventListeners($node);
 }
 
 export default class Module {
@@ -89,12 +93,7 @@ export default class Module {
   dispose() {
     const properties = Privy.get(this);
     properties.c_.forEach(wrapper => {
-      document.querySelectorAll(wrapper.s).forEach(($node) => {
-        const uuid = $node.dataset.component;
-        if (!uuid) return;
-        $node.dispatchEvent(new Event('unmount', { bubbles: true, composed: true }));
-        removeComponent($node, uuid);
-      });
+      document.querySelectorAll(wrapper.s).forEach(($node) => removeComponent($node));
     });
     properties.i_.clear();
   }
@@ -117,25 +116,18 @@ export default class Module {
         if (!customElements.get(selector)) {
           behavioral.m = module;
           customElements.define(selector, behavioral, options);
-          document.querySelectorAll(selector).forEach((component) => {
-            __components__.set(component.uuid, { c: component, b: behavioral, s: selector });
-            component.dataset.webcomponent = component.uuid;
-            if (process.env.NODE_ENV !== 'production') {
-              component.shadowRoot.adoptedStyleSheets = [debug.sheet];
-            }
-          });
         }
       } else {
         document.querySelectorAll(selector).forEach(($node) => {
-          if ($node.dataset.component) {
+          if (__components__.has($node)) {
             if (process.env.NODE_ENV !== 'production') {
               console.warn(`Selector "${selector}" already composed on`, $node);
             }
             return;
           }
           const component = compose($node, behavioral, module);
-          $node.dataset.component = component.uuid;
-          __components__.set(component.uuid, { c: component, b: behavioral, s: selector });
+          $node.dataset.component = selector;
+          __components__.set($node, { c: component, b: behavioral, s: selector });
         });
       }
     }
@@ -144,16 +136,11 @@ export default class Module {
 
 const observer = new MutationObserver((mutations) => {
   for (const mutation of mutations) {
-    mutateComponents(mutation.removedNodes);
-    mutateComponents(mutation.addedNodes, 1);
+    mutateComponents(mutation.removedNodes, ($node) => pendingRemoval.add($node));
+    mutateComponents(mutation.addedNodes, ($node) => pendingRemoval.delete($node));
   }
   Promise.resolve().then(() => {
-    pendingRemoval.forEach(($node) => {
-      const { dataset } = $node;
-      const uuid = dataset.component || dataset.webcomponent;
-      if (!uuid) return;
-      removeComponent($node, uuid);
-    });
+    pendingRemoval.forEach(removeComponent);
     pendingRemoval.clear();
   });
 });
@@ -179,37 +166,23 @@ if (process.env.NODE_ENV !== 'production') {
               component.reload(_new);
               const host = Privy.get(component).h;
               setProperties(host, props);
-              console.log(`[HMR] updated component ${component.uuid}`);
             });
           } else {
             document.querySelectorAll(element.s).forEach($component => {
-              const uuid = $component.dataset.component;
-              const oldComponent = __components__.get(uuid).c;
+              const oldComponent = __components__.get($component).c;
               const props = Privy.get(oldComponent).p_;
               $component.dispatchEvent(new Event('unmount', { bubbles: true, composed: true }));
               clearEventListeners($component);
-              Privy.remove(oldComponent);
               const component = compose($component, _new, module);
-              $component.dataset.component = component.uuid;
-              __components__.set(component.uuid, { c: component, b: _new, s: element.s });
-              __components__.delete(uuid);
+              __components__.set($component, { c: component, b: _new, s: element.s });
               setProperties(component, props);
-              console.log(`[HMR] updated component ${uuid} to ${component.uuid}`);
             });
           }
           element.b = _new;
+          console.log(`[HMR] updated component ${element.s}`);
         }
       });
       _new.moduleList = _old.moduleList
-    }
-    if (_old.uuid) {
-      if (_new.uuid) {
-        Privy.remove(_old);
-        console.log(`[HMR] updated module ${_old.uuid} to ${_new.uuid}`);
-      } else{
-        Object.defineProperty(_new, 'uuid', { value: _old.uuid });
-        console.log(`[HMR] provider ${_old.uuid} replaced`);
-      }
     }
   });
 
@@ -218,7 +191,16 @@ if (process.env.NODE_ENV !== 'production') {
     if (e.altKey && e.code === 'KeyX') debug.disable();
   });
 
-  window.queryComponent = (target) => __components__.get(getComponentId(target));
+  window.queryComponent = ($node) => {
+    let $element = $node.closest('[data-component]');
+    if (!$element) {
+      const root = $node.getRootNode();
+      if (root instanceof ShadowRoot) {
+        $element = root.host;
+      }
+    }
+    return __components__.get($element);
+  };
 
   window.debug = {
     sheet: new CSSStyleSheet(),
@@ -246,6 +228,11 @@ if (process.env.NODE_ENV !== 'production') {
       [data-component] [data-component] {
         outline: 2px dashed #F00;
       }
+      [data-component] [data-component]:hover::after {
+        z-index: 2;
+        position: absolute;
+        right: 0;
+      }
       [data-bind] {
         outline: 1px solid #f58731;
         outline-offset: -1px;
@@ -254,7 +241,6 @@ if (process.env.NODE_ENV !== 'production') {
         font-size: 10px;
         color: #fff;
         position: absolute;
-        z-index: 2;
       }
       [data-bind]::before {
         content: "🔗";
@@ -287,19 +273,5 @@ if (process.env.NODE_ENV !== 'production') {
         target[name] = property.v;
       }
     }
-  }
-
-  function getComponentId(target) {
-    if (target instanceof HTMLElement) {
-      const $el = target.closest('[data-component]');
-      if ($el) {
-        return $el.dataset.component;
-      }
-      const root = target.getRootNode();
-      if (root instanceof ShadowRoot) {
-        return root.host.uuid;
-      }
-    }
-    return target;
   }
 }

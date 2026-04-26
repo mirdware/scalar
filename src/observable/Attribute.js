@@ -1,4 +1,4 @@
-import { setPropertyValue, getPropertyValue } from '../util/Element';
+import * as Property from '../util/Element';
 import { addListeners, clearEventListeners } from '../util/Event';
 /**
  *
@@ -35,8 +35,8 @@ export function create(property, name, $node, prop, exp) {
       throw new Error(`Attribute ${k} not found`);
     }
   });
-  const attribute = { n: name, a: $attribute, $: $node, pn: prop, exp };
-  exp || getPropertyValue(value, prop) ? execute(property, attribute, value) : setPropertyValue(property, prop, $attribute[name]);
+  const attribute = { n: name, a: $attribute, $: $node, pn: prop, f: exp ? Function('p', 'return ' + exp) : null };
+  exp || Property.getValue(value, prop) ? execute(property, attribute, value) : Property.setValue(property, prop, $attribute[name]);
   return attribute;
 }
 
@@ -46,9 +46,7 @@ export function execute(property, attribute, value) {
   if (!$node.isConnected) {
     return property.a_.delete($node);
   }
-  value = attribute.exp ?
-  Function('p', 'return ' + attribute.exp)(property.c) :
-  getPropertyValue(value, attribute.pn);
+  value = attribute.f ? attribute.f(property.c) : Property.getValue(value, attribute.pn);
   setAttribute(attribute.a, name, value);
   if (name.indexOf('class') === 0 || name === 'id') {
     clearEventListeners($node, 1);

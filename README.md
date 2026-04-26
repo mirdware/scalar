@@ -514,7 +514,7 @@ new webpack.DefinePlugin({
 esto te permite entre otras cosas:
 
 * Ejecutar el debuging visual mediante `alt+s` y el cierre del mismo mediante `alt+x`. un componente con borde azul quiere decir que es un web component, si el borde es naranja es un behavioral comoponent y si es rojo es por peligro de solapamiento. A parte de componentes tambien es posible ver los 🔗 data-bind y ⚡ data-action.
-* Hacer consultas sobre componentes mediante la función `queryComponent(target)` en donde el target puede ser el id del componente o un nodo del HTML como `$0`.
+* Hacer consultas sobre componentes mediante la función `queryComponent(target)` en donde el target debe ser un nodo del HTML como `$0`.
 * Tambien es posible ejecutar el modo debug visual con las funciones `debug.enable()` y `debug.disable()`.
 
 ## Hot Module Replacement (HMR)
@@ -534,5 +534,3 @@ Esta integración está disponible únicamente cuando process.env.NODE_ENV !== '
 # Todo
 * :key: modificar el reordenamiento de elementos HTML por `keyed conciliation`.
 * :back: Reemplazar el sistema de solapamientos por un modelo de ownership explícito mediante notación `^`; cada `^` representa un nivel de componente hacia arriba en la jerarquía. El componente del nivel indicado es el dueño del binding — si no tiene la propiedad, la crea; si el nivel no existe en la jerarquía el enlace es ignorado. Aplica tanto para `data-bind` como `data-attr`. En modo desarrollo los enlaces huérfanos serán marcados visualmente mediante el modo debug.
-* :recycle: Eliminar el sistema de `uuid` como mecanismo de enlace entre nodos y componentes, reemplazando `__components__` por un `WeakMap` con el nodo como clave. Esto permitiría eliminar `Privy.remove` y toda la gestión manual de memoria asociada, delegando la limpieza completamente al garbage collector. `generateUUID` se mantendría exclusivamente para la deduplicación de listeners en `Event.js`. La pérdida es exclusiva del modo desarrollo: `queryComponent` dejaría de aceptar un id como argumento
-y `data-component` pasaría de exponer el uuid a ser un marcador booleano en el inspector del browser.

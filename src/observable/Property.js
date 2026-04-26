@@ -41,8 +41,7 @@ function findComponent(property, $node, name) {
   if ($node.parentNode) {
     const { parentNode } = $node;
     if (parentNode.dataset?.component){
-      const uuid = parentNode.dataset.component;
-      const component = __components__.get(uuid).c;
+      const component = __components__.get(parentNode).c;
       if (component[name]) {
         addOverlap(component, property, name);
       }

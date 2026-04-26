@@ -9,7 +9,7 @@ document.createElement('b')
   }
 }));
 
-function removeListener(listenerList, $node) {
+function removeListeners(listenerList, $node) {
   for (const selector in listenerList) {
     listenerList[selector].forEach((listener) => {
       $node.removeEventListener(listener.name, listener.fn, listener.opt);
@@ -17,19 +17,25 @@ function removeListener(listenerList, $node) {
   }
 }
 
-export function clearEventListeners($node, single) {
-  const $nodes = single ? [$node] : [$node, ...$node.querySelectorAll('*')];
-  $nodes.forEach(($node) => {
-    const eventListeners = Privy.get($node);
-    if (eventListeners.p) {
-      removeListener(eventListeners.p, $node);
-      eventListeners.p = {};
-      if (!single) {
-        removeListener(eventListeners._, $node);
-        eventListeners._ = {};
+function remove($node, single) {
+  const eventListeners = Privy.get($node);
+  if (eventListeners.p) {
+    removeListeners(eventListeners.p, $node);
+    eventListeners.p = {};
+    if (!single) {
+      removeListeners(eventListeners._, $node);
+      eventListeners._ = {};
+      if ($node.dataset) {
+        delete $node.dataset.events;
       }
     }
-  });
+  }
+}
+
+export function clearEventListeners($node, single) {
+  remove($node, single);
+  if (single) return;
+  $node.querySelectorAll('[data-events]').forEach(($node) => remove($node));
 }
 
 export function addListeners($element, events, isPrivate) {
@@ -73,6 +79,9 @@ export function addListeners($element, events, isPrivate) {
         }
         const opt = hasObjectConfig ? { passive, capture } : capture;
         $element.addEventListener(name, fn, opt);
+        if ($element.dataset) {
+          $element.dataset.events = '';
+        }
         eventListeners[modifier][selector].set(originalFunction, { name, fn, opt });
       }
     } else {
