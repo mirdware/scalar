@@ -26,6 +26,13 @@ function mutateComponents(mutations, callback) {
 function removeComponent($node, shouldDeleteWebComponent) {
   const { shadowRoot } = $node
   if (!__components__.has($node) || (!shouldDeleteWebComponent && shadowRoot)) return;
+  const component = __components__.get($node);
+  const { p_: properties } = Privy.get(component.c);
+  for (const key in properties) {
+    const prop = properties[key];
+    prop.o_.forEach((overlapped) => overlapped.o_.delete(prop));
+    prop.o_.clear();
+  }
   __components__.delete($node);
   delete $node.dataset.component;
   if (shadowRoot) {

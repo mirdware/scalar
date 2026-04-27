@@ -292,7 +292,7 @@ listen() {
 Las propiedades usadas dentro de la función **no deben ser modificadas**, solo deben servir en modo lectura como base para recalcular las computed properties. Existen dos momentos en el ciclo de vida la computed function: tracking y execution, en tracking se detecta automáticamente qué propiedades se utilizan para crear el grafo de dependencias y en execution se evalua la computed property cada vez que sus dependencias mutan.
 
 > [!TIP]
-> El uso de `_` se usa como convención para propedades de solo lectura.
+> El uso de `_` se usa como convención para propedades de solo lectura. Las computed properties son la alternativa recomendada para entornos con políticas **CSP estrictas**. Al ser funciones de JavaScript puro, no requieren la evaluación dinámica de strings (eval/Function), evitando así las restricciones de `unsafe-eval`.
 
 Durante la evaluación de una computada, se accede a los objetos sin envoltorios Proxy. Esto evita el desbordamiento de la pila de llamadas (stack overflow) y permite que métodos como .`filter` o `.map` se ejecuten a velocidad nativa del motor de JavaScript.
 
@@ -326,8 +326,8 @@ execute();
 
 En este caso tanto el componente pageable como checkTable hacen uso de la propiedad data, a esto hace referencia el solapamiento a compartir propiedades gracias a su ubicación dentro del DOM; un cambio en una propiedad afectara a la propiedad del componente solapado. Se debe tener cuidado al momento de solapar componentes pues es posible tener resultados inesperados, en muchas ocaciones lo recomendable es aislar cada comportamiento.
 
-> [!CAUTION]
-> En futuras versiones este comportamiento dejara de funcionar en favor de un sistema de ownership explicito o delegación de control.
+> [!TIP]
+> El solapamiento es una herramienta poderosa pero debe usarse deliberadamente. Si el flujo de datos entre componentes se vuelve difícil de rastrear, considera aislar el comportamiento mediante web components o un servicio compartido como EventBus.
 
 ### Aislamiento mediante web componentes
 En la versión `0.3.0` de scalar se da soporte al standard de [web components](https://developer.mozilla.org/en-US/docs/Web/Web_Components), lo cual generá una dependencia a javascript; esto va en contra de generar componentes no obstructivos, así que se puede agregar o no esta caracteristica e ir _escalando_ según las necesidades del proyecto.
@@ -351,7 +351,7 @@ Es importante mencionar que el componente puede hacer uso de todos los métodos 
 
 Al igual que en los behavioral components, `mount` y `unmount` dentro del objeto retornado por listen() son los hooks del ciclo de vida gestionados por Scalar. connectedCallback y disconnectedCallback siguen disponibles para interactuar con el estándar Web Components directamente, pero para la lógica de inicialización y limpieza de recursos se recomienda mount/unmount ya que se ejecutan una unica vez.
 
-El uso de `observedAttributes` se reemplaza por la declaración explicita de la priopiedad dentro de la clase.
+El uso de `observedAttributes` se automatiza mediante el descubrimiento de propiedades en el constructor de la clase. Scalar identifica las propiedades inicializadas (que no comiencen con `_` o `$`) y las registra como atributos observados.
 
 ```javascript
 export default class MultiSelect extends Component {
@@ -533,4 +533,4 @@ Esta integración está disponible únicamente cuando process.env.NODE_ENV !== '
 
 # Todo
 * :key: modificar el reordenamiento de elementos HTML por `keyed conciliation`.
-* :back: Reemplazar el sistema de solapamientos por un modelo de ownership explícito mediante notación `^`; cada `^` representa un nivel de componente hacia arriba en la jerarquía. El componente del nivel indicado es el dueño del binding — si no tiene la propiedad, la crea; si el nivel no existe en la jerarquía el enlace es ignorado. Aplica tanto para `data-bind` como `data-attr`. En modo desarrollo los enlaces huérfanos serán marcados visualmente mediante el modo debug.
+* :shield: Implementar **Compiled Templates** para pre-procesar las plantillas JIT, eliminando el uso de `Function` en tiempo de ejecución y logrando compatibilidad total con cualquier política CSP.

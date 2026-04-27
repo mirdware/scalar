@@ -23,30 +23,15 @@ const queue = new Map();
 let pending;
 let computedTracking;
 
-function addOverlap(component, property, name) {
-  component = Privy.get(component);
-  const prop = component.p_[name];
-  const events = Object.assign({}, property.pc.e_);
-  prop.o_.push(property);
-  property.o_.push(prop);
-  for (const name in events) {
-    if (events[name] instanceof Function) {
-      delete events[name];
+function mergeEvents(target, source, isFirstLevel) {
+  for (const key in source) {
+    const targetValue = target[key];
+    const sourceValue = source[key];
+    if (targetValue) {
+      !(targetValue instanceof Function) && mergeEvents(targetValue, sourceValue);
+    } else if (!isFirstLevel || !(sourceValue instanceof Function)) {
+      target[key] = sourceValue;
     }
-  }
-  Object.assign(component.e_, events);
-}
-
-function findComponent(property, $node, name) {
-  if ($node.parentNode) {
-    const { parentNode } = $node;
-    if (parentNode.dataset?.component){
-      const component = __components__.get(parentNode).c;
-      if (component[name]) {
-        addOverlap(component, property, name);
-      }
-    }
-    findComponent(property, $node.parentNode, name);
   }
 }
 
@@ -85,9 +70,22 @@ export function create(component, name) {
     a_: new Map(),
     c_: new Set(),
     d_: new Set(),
-    o_: []
+    o_: new Set()
   };
-  findComponent(property, privyComponent.$, name);
+  let $node = privyComponent.$;
+  while ($node = $node.parentNode) {
+    let parent = __components__.get($node);
+    const { dataset } = $node;
+    if (parent && dataset && dataset.component) {
+      parent = Privy.get(parent.c);
+      const parentProperty = parent.p_[name];
+      if (parentProperty) {
+        parentProperty.o_.add(property);
+        property.o_.add(parentProperty);
+        mergeEvents(parent.e_, property.pc.e_, 1);
+      }
+    }
+  }
   return property;
 }
 
