@@ -24,7 +24,7 @@ function onInit(_this, UserClass, NewClass) {
   const $fragment = createFragment('<style>' + (NewClass.styles || '') + '</style>' + (NewClass.template || ''));
   updateNodes({ pc: props }, props.$, $fragment);
   watch(host, props, props.$);
-  props.$.dispatchEvent(new Event('mount', { bubbles: true, composed: true }));
+  props.$.dispatchEvent(new Event('mount', { composed: true }));
   Privy.get(_this).h = host;
 }
 

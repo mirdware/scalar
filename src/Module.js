@@ -39,7 +39,7 @@ function removeComponent($node, shouldDeleteWebComponent) {
     delete Privy.get($node).h;
     $node = shadowRoot;
   }
-  $node.dispatchEvent(new Event('unmount', { bubbles: true, composed: true }));
+  $node.dispatchEvent(new Event('unmount', { composed: true }));
   clearEventListeners($node);
 }
 
@@ -168,7 +168,7 @@ if (process.env.NODE_ENV !== 'production') {
             document.querySelectorAll(element.s).forEach(component => {
               const privy = Privy.get(Privy.get(component).h);
               const props = privy.p_;
-              privy.$.dispatchEvent(new Event('unmount', { bubbles: true, composed: true }));
+              privy.$.dispatchEvent(new Event('unmount', { composed: true }));
               clearEventListeners(privy.$);
               component.reload(_new);
               const host = Privy.get(component).h;
@@ -178,7 +178,7 @@ if (process.env.NODE_ENV !== 'production') {
             document.querySelectorAll(element.s).forEach($component => {
               const oldComponent = __components__.get($component).c;
               const props = Privy.get(oldComponent).p_;
-              $component.dispatchEvent(new Event('unmount', { bubbles: true, composed: true }));
+              $component.dispatchEvent(new Event('unmount'));
               clearEventListeners($component);
               const component = compose($component, _new, module);
               __components__.set($component, { c: component, b: _new, s: element.s });

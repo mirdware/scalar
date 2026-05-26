@@ -22,61 +22,61 @@ function getProperty(component, name) {
   return prop;
 }
 
+function bind(name, $node, fn) {
+  const { dataset } = $node;
+  if (dataset && dataset[name]) {
+    fn($node);
+  }
+  $node.querySelectorAll('[data-' + name + ']').forEach(fn);
+}
 
 export function watch(component, privyComponent, $node) {
   const privy = privyComponent.p_;
   const noReserved = {};
-  const { dataset } = $node;
-  const $nodes = [...$node.querySelectorAll('[data-bind],[data-attr]')];
-  if (dataset && (dataset.bind || dataset.attr)) {
-    $nodes.push($node);
-  }
-  $nodes.forEach(($domElement) => {
-    if ($domElement.dataset.bind) {
-      const propertyObj = $domElement.dataset.bind.split('.');
-      const name = propertyObj.shift();
-      if (!privy[name]) {
-        privy[name] = getProperty(component, name);
-      }
-      Property.addNode(privy[name], $domElement, propertyObj);
+  bind('bind', $node, ($domElement) => {
+    const propertyObj = $domElement.dataset.bind.split('.');
+    const name = propertyObj.shift();
+    if (!privy[name]) {
+      privy[name] = getProperty(component, name);
     }
-    if ($domElement.dataset.attr) {
-      $domElement.dataset.attr.split(';').forEach((attribute) => {
-        const index = attribute.indexOf(':');
-        const properties = [];
-        const prop = attribute.substr(index + 1).trim();
-        const exp = prop.replace(/('.*?')|[a-zA-Z_$][\w\.]*/g, (match, group) => {
-          if (group) return group;
-          const props = match.split('.');
-          const name = props.shift();
-          if (!reserved[name] && !noReserved[name]) {
-            try {
-              Function('"use strict";var ' + name);
-              const global = globalThis[name];
-              if (Object(global) === global) {
-                reserved[name] = 1;
-              } else {
-                noReserved[name] = 1;
-              }
-            } catch(_) {
+    Property.addNode(privy[name], $domElement, propertyObj);
+  });
+  bind('attr', $node, ($domElement) => {
+    $domElement.dataset.attr.split(';').forEach((attribute) => {
+      const index = attribute.indexOf(':');
+      const properties = [];
+      const prop = attribute.substr(index + 1).trim();
+      const exp = prop.replace(/('.*?'|".*?")|[a-zA-Z_$][\w\.]*/g, (match, group) => {
+        if (group) return group;
+        const props = match.split('.');
+        const name = props.shift();
+        if (!reserved[name] && !noReserved[name]) {
+          try {
+            Function('"use strict";var ' + name);
+            const global = globalThis[name];
+            if (Object(global) === global) {
               reserved[name] = 1;
+            } else {
+              noReserved[name] = 1;
             }
+          } catch(_) {
+            reserved[name] = 1;
           }
-          if (reserved[name]) return match;
-          if (!privy[name]) {
-            privy[name] = getProperty(component, name);
-          }
-          properties.push({
-            p_: props,
-            v: privy[name]
-          });
-          return prop !== match ? 'p.' + match.replace(/\.(\w+)/g, "['$1']") : '';
+        }
+        if (reserved[name]) return match;
+        if (!privy[name]) {
+          privy[name] = getProperty(component, name);
+        }
+        properties.push({
+          p_: props,
+          v: privy[name]
         });
-        properties.forEach((p) => {
-          Property.addAttribute(p.v, attribute.substr(0, index).trim(), $domElement, p.p_, exp);
-        });
+        return prop !== match ? 'p.' + match.replace(/\.(\w+)/g, "['$1']") : '';
       });
-    }
+      properties.forEach((p) => {
+        Property.addAttribute(p.v, attribute.substr(0, index).trim(), $domElement, p.p_, exp);
+      });
+    });
   });
   addListeners($node, privyComponent.e_);
 }
@@ -95,7 +95,7 @@ export function compose($node, behavioral, module) {
   }
   Privy.set(component, props);
   watch(component, props, $node);
-  $node.dispatchEvent(new Event('mount', { bubbles: true, composed: true }));
+  $node.dispatchEvent(new Event('mount'));
   return component;
 }
 

@@ -138,7 +138,7 @@ Existen diferentes maneras de generar un componente; la primera es extendiendo d
 export default class ToDo extends Component {
   listen() {
     return {
-      submit: () => add(this),
+      _submit: () => add(this),
       '.close': { click: (e) => remove(this, e) },
       '.check': { click: (e) => crossOutItem(e) },
       '#clean': { click: () => this.tasks = [] }
@@ -153,7 +153,7 @@ Otra manera es mediante `behavioral function`(función conductual) la cual es un
 
 ```javascript
 export default ($) => ({
-  submit: (e) => {
+  _submit: (e) => {
     if (!$.task) return;
     $.tasks.push($.task);
     $.task = "";
@@ -184,7 +184,7 @@ export default ($) => {
   }
 
   return {
-    submit: add,
+    _submit: add,
     '.close': { click: remove },
     '#clean': { click: () => $.tasks = [] }
   };
@@ -206,7 +206,7 @@ function add($) {
 }
 
 export default ($) => ({
-  submit: (e) => add($),
+  _submit: (e) => add($),
   '.close': { click: (e) => remove($, e) },
   '#clean': { click: () => $.tasks = [] }
 });
@@ -342,10 +342,10 @@ La implementación de [custom elements](https://developer.mozilla.org/en-US/docs
     'img{vertical-align: middle; margin-right: 1em;} ' +
     ':host{border: 1px solid; display: block; border-radius: 1em; padding: .5em; margin: .5em;}'
 })
-export default class Greeting extends Component {}
+export default class Greeting {}
 ```
 
-Como se puede observar el web component debe extender de Component y no de HTMLElement como lo hace el estandard, esto es para que la libreria pueda manejar cosas como el [shadown DOM](https://developer.mozilla.org/en-US/docs/Web/Web_Components/Using_shadow_DOM) y ciertas funciones del ciclo de vida que se integran en el comportamiento normal de un backend component.
+La clases decoradas se encargan automaticamente del manejo del [shadown DOM](https://developer.mozilla.org/en-US/docs/Web/Web_Components/Using_shadow_DOM) y ciertas funciones del ciclo de vida. Actualmente no es necesario que se extienda de ninguna clase especifica como es el caso de los behavioral components y es posible registrar el componente de forma stand alone fuera de un modulo mediante [customElements.define](https://developer.mozilla.org/en-US/docs/Web/API/CustomElementRegistry/define), perdiendo la inyección de dependencias por constructor.
 
 Es importante mencionar que el componente puede hacer uso de todos los métodos del ciclo de vida del custom element como: `attributeChangedCallback(name, oldValue, newValue)`, `connectedCallback()` o `disconnectedCallback()`; al basarse en el estandar es posible hacer uso de [slots y templates](https://developer.mozilla.org/en-US/docs/Web/Web_Components/Using_templates_and_slots).
 

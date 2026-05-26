@@ -1,6 +1,6 @@
 {
   "name": "scalar",
-  "version": "0.3.5",
+  "version": "0.3.6",
   "description": "Scalable and not intrusive Javascript",
   "main": "./lib/cjs/scalar.min.js",
   "module": "./lib/mjs/scalar.min.js",

@@ -25,9 +25,6 @@ function remove($node, single) {
     if (!single) {
       removeListeners(eventListeners._, $node);
       eventListeners._ = {};
-      if ($node.dataset) {
-        delete $node.dataset.events;
-      }
     }
   }
 }
@@ -35,7 +32,10 @@ function remove($node, single) {
 export function clearEventListeners($node, single) {
   remove($node, single);
   if (single) return;
-  $node.querySelectorAll('[data-events]').forEach(($node) => remove($node));
+  const walker = document.createTreeWalker($node, NodeFilter.SHOW_ELEMENT);
+  while ($node = walker.nextNode()) {
+    remove($node, single);
+  }
 }
 
 export function addListeners($element, events, isPrivate) {
@@ -79,9 +79,6 @@ export function addListeners($element, events, isPrivate) {
         }
         const opt = hasObjectConfig ? { passive, capture } : capture;
         $element.addEventListener(name, fn, opt);
-        if ($element.dataset) {
-          $element.dataset.events = '';
-        }
         eventListeners[modifier][selector].set(originalFunction, { name, fn, opt });
       }
     } else {

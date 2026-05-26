@@ -11,7 +11,7 @@ declare module 'scalar' {
         listen?(): BehavioralObject;
     }
 
-    export interface CustomElementComponent extends Component {
+    export interface CustomElementComponent {
         connectedCallback?(): void;
         disconnectedCallback?(): void;
         adoptedCallback?(): void;
