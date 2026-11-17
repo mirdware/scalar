@@ -1,13 +1,28 @@
 import { nodeContext } from "./Template";
 import { clearEventListeners } from "../util/Event";
 
+function isManaged(property, $node, attrName) {
+  const { p_: properties } = property.pc;
+  for (const key in properties) {
+    const attributes = properties[key].a_.get($node);
+    for (const name in attributes) {
+      let root = name.split('.')[0].toLowerCase();
+      if (root === 'classname' || root === 'classlist') root = 'class';
+      if (root === attrName) return true;
+    }
+  }
+  return false;
+}
+
 function updateProps(property, $target, newProps, oldProps) {
   for (let i = oldProps.length - 1; i >= 0; i--) {
     const { name, value } = oldProps[i];
     const newProp = newProps.getNamedItem(name);
     if (!newProp || newProp.value !== value) {
       if (name === 'data-bind') removeNode(property, $target);
-      if (!newProp) $target.removeAttribute(name);
+      if (!newProp && !isManaged(property, $target, name)) {
+        $target.removeAttribute(name);
+      }
     } else {
       newProps.removeNamedItem(name);
     }
@@ -44,8 +59,7 @@ function removeNodes(property, $node) {
   clearEventListeners($node);
 }
 
-function updateElement(property, $parent, $newNode, $oldNode, index) {
-  index = index || 0;
+function updateElement(property, $parent, $newNode, $oldNode) {
   if (!$oldNode) {
     $parent.appendChild($newNode);
   } else if (!$newNode) {
@@ -63,18 +77,16 @@ function updateElement(property, $parent, $newNode, $oldNode, index) {
      * @todo Keyed Reconciliation
      */
     const newContext = nodeContext.get($newNode);
-    if (newContext !== undefined) {
-      nodeContext.set($oldNode, newContext);
-    }
-    updateProps(property, $parent.childNodes[index], $newNode.attributes, $oldNode.attributes);
+    if (newContext !== undefined) nodeContext.set($oldNode, newContext);
+    updateProps(property, $oldNode, $newNode.attributes, $oldNode.attributes);
     updateNodes(property, $oldNode, $newNode);
   }
 }
 
-export function updateNodes(property, $parent, $path) {
-  const oldNodes = Array.from($parent.childNodes);
+export function updateNodes(property, $parent, $path, $skip) {
+  const oldNodes = Array.from($parent.childNodes).filter(($n) => $n !== $skip);
   const newNodes = Array.from($path.childNodes);
   for (let i = 0; i < newNodes.length || i < oldNodes.length; i++) {
-    updateElement(property, $parent, newNodes[i], oldNodes[i], i);
+    updateElement(property, $parent, newNodes[i], oldNodes[i]);
   }
 }

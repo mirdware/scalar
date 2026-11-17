@@ -29,12 +29,10 @@ declare module 'scalar' {
 
     export function inject<T extends any[]>(
         ...providers: { [K in keyof T]: Class<T[K]> }
-    ): {
-        <TClass extends new (...args: T) => any>(
-            target: TClass
-        ): TClass;
-        <P extends T>(fn: BehavioralFunction<P>): BehavioralFunction<P>;
-    };
+    ): <TClass extends (new (...args: T) => any) | BehavioralFunction<T>>(
+        target: TClass,
+        context?: ClassDecoratorContext
+    ) => TClass;
 
     export function customElement(options: CustomElementOptions):
     <T extends new(...args: any[]) => CustomElementComponent>(target: T) => new() => HTMLElement & InstanceType<T>;

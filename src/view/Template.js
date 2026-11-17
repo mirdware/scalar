@@ -74,9 +74,8 @@ export function render(template, param) {
   param = param?.forEach ? Array.from(param) : param != null ? [param] : [];
   const { $: $node, p: property } = template;
   const $fragment = createFragment(param.map(template.f).join(''));
-  $fragment.appendChild(template.$t);
   populateContext($fragment, property, param);
-  updateNodes(property, $node, $fragment);
+  updateNodes(property, $node, $fragment, template.$t);
   $node.dispatchEvent(new Event('mutate', { bubbles: true, composed: true }));
   watch(property.c, property.pc, $node);
 }

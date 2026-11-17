@@ -11,7 +11,7 @@ module.exports = (babelPlugins = []) => ({
         presets: ['@babel/preset-env'],
         plugins: [
           ...babelPlugins,
-          ["@babel/plugin-proposal-decorators", { "legacy": true }]
+          ["@babel/plugin-proposal-decorators", { "version": "2023-11" }]
         ]
       }
     }
